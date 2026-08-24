@@ -11,7 +11,9 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-brand);
@@ -28,7 +30,9 @@
   --muted: oklch(91.5% 0.024 83);
   --muted-foreground: oklch(49% 0.025 73);
   --border: oklch(87% 0.026 82);
+  --input: var(--border);
   --ring: oklch(69% 0.13 77);
+  --destructive: var(--danger);
   --success: oklch(63% 0.13 147);
   --danger: oklch(60% 0.18 27);
   --font-brand:
