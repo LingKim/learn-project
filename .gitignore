@@ -1,0 +1,23 @@
+.DS_Store
+.env
+.env.*.local
+!.env.example
+
+# Frontend
+frontend/.next/
+frontend/node_modules/
+frontend/coverage/
+
+# Backend
+backend/.venv/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+backend/__pycache__/
+*.py[cod]
+
+# Local runtime
+.runtime/
+data/

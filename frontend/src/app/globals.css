@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-sidebar: var(--sidebar);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-brand);
+}
+
+:root {
+  --background: oklch(97.8% 0.012 88);
+  --foreground: oklch(25% 0.018 73);
+  --surface: oklch(99% 0.008 88);
+  --sidebar: oklch(95.2% 0.022 83);
+  --primary: oklch(82.5% 0.156 86);
+  --primary-foreground: oklch(25% 0.04 74);
+  --accent-foreground: oklch(47% 0.12 72);
+  --muted: oklch(91.5% 0.024 83);
+  --muted-foreground: oklch(49% 0.025 73);
+  --border: oklch(87% 0.026 82);
+  --ring: oklch(69% 0.13 77);
+  --success: oklch(63% 0.13 147);
+  --danger: oklch(60% 0.18 27);
+  --font-brand:
+    "MiSans", "Source Han Sans SC", "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-brand);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: oklch(86% 0.13 88);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

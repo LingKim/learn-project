@@ -1,0 +1,6 @@
+.next
+node_modules
+coverage
+src/lib/api/generated
+pnpm-lock.yaml
+
