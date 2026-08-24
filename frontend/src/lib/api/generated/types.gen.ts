@@ -33,6 +33,56 @@ export type LiveResponse = {
 };
 
 /**
+ * ProblemDetails
+ */
+export type ProblemDetails = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Status
+     */
+    status: number;
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Instance
+     */
+    instance: string;
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: null;
+    /**
+     * Error Key
+     */
+    error_key?: string | null;
+    /**
+     * Request Id
+     */
+    request_id?: string | null;
+    /**
+     * Errors
+     */
+    errors?: Array<ValidationIssue> | null;
+};
+
+/**
  * ReadyResponse
  */
 export type ReadyResponse = {
@@ -48,12 +98,134 @@ export type ReadyResponse = {
     };
 };
 
+/**
+ * ValidationIssue
+ */
+export type ValidationIssue = {
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Message
+     */
+    message: string;
+};
+
+/**
+ * ApiResponse[Any]
+ */
+export type ApiResponse = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: unknown;
+};
+
+/**
+ * PageMeta
+ */
+export type PageMeta = {
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Total Pages
+     */
+    total_pages: number;
+};
+
+/**
+ * PageResponse[Any]
+ */
+export type PageResponse = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<unknown>;
+    meta: PageMeta;
+};
+
 export type HealthLiveData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/health/live';
 };
+
+export type HealthLiveErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type HealthLiveError = HealthLiveErrors[keyof HealthLiveErrors];
 
 export type HealthLiveResponses = {
     /**
@@ -73,9 +245,49 @@ export type HealthReadyData = {
 
 export type HealthReadyErrors = {
     /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
      * Service Unavailable
      */
     503: ReadyResponse;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
 };
 
 export type HealthReadyError = HealthReadyErrors[keyof HealthReadyErrors];

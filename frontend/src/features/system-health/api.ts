@@ -9,7 +9,10 @@ export async function getSystemHealth(): Promise<ReadyResponse> {
     return result.data;
   }
   if (result.error) {
-    return result.error;
+    if ("checks" in result.error) {
+      return result.error;
+    }
+    throw new Error(result.error.message);
   }
   throw new Error("health_response_unavailable");
 }

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from xuemian_ai.api.health import router as health_router
 from xuemian_ai.core.config import get_settings
 from xuemian_ai.core.logging import configure_logging
-from xuemian_ai.core.problem_details import register_problem_handlers
+from xuemian_ai.core.problem_details import PROBLEM_RESPONSES, register_problem_handlers
 from xuemian_ai.core.request_context import request_context_middleware
 from xuemian_ai.infrastructure.resources import Infrastructure
 
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         version=settings.app_version,
         lifespan=lifespan,
+        responses=PROBLEM_RESPONSES,
     )
     application.middleware("http")(request_context_middleware)
     register_problem_handlers(application)

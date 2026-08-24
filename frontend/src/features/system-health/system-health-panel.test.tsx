@@ -40,4 +40,32 @@ describe("SystemHealthPanel", () => {
     expect(screen.getByText("Redis")).toBeInTheDocument();
     expect(screen.getByText("RustFS")).toBeInTheDocument();
   });
+
+  it("shows degraded dependencies from the readiness 503 response", async () => {
+    vi.mocked(healthReady).mockResolvedValue({
+      data: undefined,
+      error: {
+        status: "degraded",
+        checks: {
+          postgresql: { status: "up", code: "ok" },
+          redis: { status: "down", code: "redis_unavailable" },
+          rustfs: { status: "up", code: "ok" },
+        },
+      },
+      request: new Request("http://localhost/api/backend/api/v1/health/ready"),
+      response: new Response(null, { status: 503 }),
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SystemHealthPanel />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("存在异常")).toBeInTheDocument();
+    expect(screen.getByText("不可用")).toBeInTheDocument();
+  });
 });
