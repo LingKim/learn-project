@@ -8,9 +8,12 @@ from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from xuemian_ai.core.errors import AppError
-from xuemian_ai.core.logging import get_logger
+from xuemian_ai.core.logging import get_logger, safe_exception_fields
+from xuemian_ai.core.request_context import route_template
 from xuemian_ai.core.responses import ApiResponse, PageResponse
 from xuemian_ai.core.status_codes import ApiStatusCode
+
+_logger = get_logger(__name__)
 
 
 class ValidationIssue(BaseModel):
@@ -95,10 +98,13 @@ def _problem(
     )
     content = body.model_dump(mode="json", exclude_none=True)
     content["data"] = None
+    response_headers = dict(headers) if headers is not None else {}
+    if request_id is not None:
+        response_headers.setdefault("x-request-id", request_id)
     return JSONResponse(
         content,
         status_code=status,
-        headers=dict(headers) if headers is not None else None,
+        headers=response_headers,
         media_type="application/problem+json",
     )
 
@@ -194,10 +200,11 @@ def register_problem_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
-        get_logger().exception(
+        _logger.error(
             "unhandled_exception",
-            exception_type=type(exc).__name__,
-            path=request.url.path,
+            route=route_template(request),
+            request_id=getattr(request.state, "request_id", None),
+            **safe_exception_fields(exc),
         )
         return _problem(
             request,

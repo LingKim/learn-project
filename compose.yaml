@@ -37,6 +37,7 @@ services:
       RUSTFS_HEALTH_URL: http://rustfs:9000/health
       ENVIRONMENT: development
       LOG_FORMAT: json
+      LOG_LEVEL: INFO
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:

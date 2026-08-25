@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from time import perf_counter
 from typing import Literal
 
 from fastapi import APIRouter, Request
@@ -7,9 +8,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from xuemian_ai.core.config import Settings, get_settings
+from xuemian_ai.core.logging import get_logger
 from xuemian_ai.infrastructure.resources import Infrastructure
 
 router = APIRouter(prefix="/health", tags=["system"])
+_logger = get_logger(__name__)
 
 
 class LiveResponse(BaseModel):
@@ -32,9 +35,16 @@ async def _probe(
     operation: Callable[[], Awaitable[None]],
     timeout_seconds: float,
 ) -> tuple[str, DependencyCheck]:
+    started_at = perf_counter()
     try:
         await asyncio.wait_for(operation(), timeout=timeout_seconds)
-    except Exception:
+    except Exception as exc:
+        _logger.warning(
+            "dependency_check_failed",
+            dependency=name,
+            duration_ms=round((perf_counter() - started_at) * 1000, 2),
+            exception_type=type(exc).__name__,
+        )
         return name, DependencyCheck(status="down", code=f"{name}_unavailable")
     return name, DependencyCheck(status="up", code="ok")
 

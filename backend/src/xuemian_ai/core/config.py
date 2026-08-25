@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     environment: Literal["development", "test", "production"] = "development"
     log_format: Literal["console", "json"] = "console"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     api_v1_prefix: str = "/api/v1"
     database_url: SecretStr = SecretStr(
         "postgresql+asyncpg://xuemian_ai_app:change-me@localhost:5432/xuemian_ai"

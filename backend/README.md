@@ -6,12 +6,22 @@ FastAPI 模块化单体脚手架。当前只包含系统健康纵切，不包含
 
 ```bash
 uv sync
-uv run uvicorn xuemian_ai.main:app --reload
+uv run uvicorn xuemian_ai.main:app --reload --no-access-log
 uv run ruff check .
 uv run mypy
 uv run pytest
 uv run python -m xuemian_ai.openapi ../openapi/openapi.json
 ```
+
+## 日志约定
+
+后端统一使用 `core.logging.get_logger(__name__)` 获取 structlog logger。事件名使用固定的
+`snake_case`，动态技术信息放在结构化字段中；不得记录请求正文、请求头、query string、
+凭据、模型输入输出或用户业务正文。
+
+`LOG_FORMAT` 支持 `console` 和 `json`，`LOG_LEVEL` 支持 `DEBUG`、`INFO`、`WARNING`、
+`ERROR`、`CRITICAL`。项目中间件已经记录唯一的 `request_completed`，业务代码不得再写
+HTTP access log。
 
 ## API 响应约定
 

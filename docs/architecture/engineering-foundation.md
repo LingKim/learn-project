@@ -10,9 +10,16 @@
 4. 本机 PostgreSQL 与 Redis 是外部依赖，项目 Compose 不管理其生命周期。
 5. 管理员、日志和健康检查均不得暴露用户业务正文或秘密。
 
+## 后端日志
+
+- 统一使用 structlog，并通过 ProcessorFormatter 接入 Uvicorn、标准库和第三方日志。
+- 本地可使用 console，部署使用逐行 JSON；级别由 `LOG_LEVEL` 配置。
+- 项目请求中间件是 HTTP access log 的唯一来源，Uvicorn access log 必须关闭。
+- 请求日志使用路由模板和经过校验的 `request_id`，不记录原始 URL、请求头、query string 或请求体。
+- 未知异常只记录异常类型和安全堆栈位置，不记录原始异常消息或局部变量。
+
 ## 当前边界
 
 - 本期只有系统健康纵切，不代表 PRD 业务里程碑已经开始实现。
 - PostgreSQL 暂不启用 pgvector；进入内容库与 RAG 开发前必须补充对应 OpenSpec。
 - GitHub Actions、生产发布、云端域名与 TLS 不在本期范围内。
-
