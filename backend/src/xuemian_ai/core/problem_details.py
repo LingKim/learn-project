@@ -48,6 +48,7 @@ PROBLEM_RESPONSES: dict[int | str, dict[str, Any]] = {
         (ApiStatusCode.METHOD_NOT_ALLOWED, "请求方法不支持"),
         (ApiStatusCode.CONFLICT, "资源状态冲突"),
         (ApiStatusCode.VALIDATION_ERROR, "请求参数校验失败"),
+        (ApiStatusCode.TOO_MANY_REQUESTS, "请求过于频繁"),
         (ApiStatusCode.INTERNAL_SERVER_ERROR, "服务内部错误"),
         (ApiStatusCode.BAD_GATEWAY, "上游服务异常"),
         (ApiStatusCode.SERVICE_UNAVAILABLE, "服务暂时不可用"),

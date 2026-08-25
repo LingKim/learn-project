@@ -1,18 +1,21 @@
 "use client";
 
-import { Check, CircleAlert, LockKeyhole, LogOut } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { CheckboxField } from "@/components/ui/checkbox-field";
 import { InputField } from "@/components/ui/input-field";
 import { PasswordField } from "@/components/ui/password-field";
-import { cn } from "@/lib/utils";
+import { toApiError, toFieldErrors } from "@/lib/api/errors";
 
-const integrationNotice = "前端校验已通过，认证接口尚未接入。";
+import { loadRememberedUsername, useAuth } from "./auth-provider";
+import { loginMutationOptions, registerMutationOptions } from "./mutations";
 
 type Errors = Record<string, string>;
+
+const USERNAME_PATTERN = /^[a-z0-9_]{3,32}$/;
 
 function formValue(form: FormData, name: string) {
   const value = form.get(name);
@@ -26,6 +29,16 @@ function passwordCategories(value: string) {
 
 export function isPasswordValid(value: string) {
   return value.length >= 8 && passwordCategories(value) >= 2;
+}
+
+function normalizedUsername(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function usernameError(value: string) {
+  if (!value) return "请输入用户名";
+  if (!USERNAME_PATTERN.test(value)) return "用户名为 3 至 32 位小写字母、数字或下划线";
+  return undefined;
 }
 
 function FormHeader({ title, description }: { title: string; description: string }) {
@@ -42,27 +55,62 @@ function FormHeader({ title, description }: { title: string; description: string
 function StatusNotice({ message }: { message: string }) {
   return (
     <p
-      className="flex items-start gap-2 rounded-md border border-border bg-sidebar px-3 py-2.5 text-sm leading-5 text-foreground"
-      role="status"
+      className="rounded-md border border-danger/30 bg-danger/5 px-3 py-2.5 text-sm leading-5 text-danger"
+      role="alert"
     >
-      <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent-foreground" />
       {message}
     </p>
   );
 }
 
+function authenticationMessage(error: unknown) {
+  const apiError = toApiError(error);
+  if (apiError.errorKey === "AUTH_INVALID_CREDENTIALS") return "用户名或密码错误";
+  if (apiError.errorKey === "AUTH_RATE_LIMITED") return "尝试次数过多，请稍后再试";
+  if (apiError.errorKey === "AUTH_USERNAME_TAKEN") return "该用户名已被使用";
+  return apiError.message;
+}
+
 export function LoginForm() {
+  const { completeAuthentication } = useAuth();
+  const mutation = useMutation(loginMutationOptions());
   const [errors, setErrors] = useState<Errors>({});
   const [notice, setNotice] = useState("");
+  const [username, setUsername] = useState("");
+  const [rememberUsername, setRememberUsername] = useState(false);
+
+  useEffect(() => {
+    const remembered = loadRememberedUsername();
+    if (remembered) {
+      setUsername(remembered);
+      setRememberUsername(true);
+    }
+  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const normalized = normalizedUsername(username);
+    const password = formValue(form, "password");
     const nextErrors: Errors = {};
-    if (!formValue(form, "username").trim()) nextErrors.username = "请输入用户名";
-    if (!formValue(form, "password")) nextErrors.password = "请输入密码";
+    const invalidUsername = usernameError(normalized);
+    if (invalidUsername) nextErrors.username = invalidUsername;
+    if (!password) nextErrors.password = "请输入密码";
     setErrors(nextErrors);
-    setNotice(Object.keys(nextErrors).length ? "" : integrationNotice);
+    setNotice("");
+    if (Object.keys(nextErrors).length) return;
+
+    mutation.mutate(
+      { username: normalized, password },
+      {
+        onSuccess: (result) =>
+          completeAuthentication(result.data, rememberUsername ? normalized : undefined),
+        onError: (error) => {
+          setErrors(toFieldErrors(error));
+          setNotice(authenticationMessage(error));
+        },
+      },
+    );
   }
 
   return (
@@ -75,6 +123,8 @@ export function LoginForm() {
           label="用户名"
           autoComplete="username"
           placeholder="请输入用户名"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
           error={errors.username}
         />
         <PasswordField
@@ -85,10 +135,15 @@ export function LoginForm() {
           placeholder="请输入密码"
           error={errors.password}
         />
-        <CheckboxField name="rememberUsername" label="记住账号" />
+        <CheckboxField
+          name="rememberUsername"
+          label="记住账号"
+          checked={rememberUsername}
+          onCheckedChange={(checked) => setRememberUsername(checked === true)}
+        />
         {notice ? <StatusNotice message={notice} /> : null}
-        <Button variant="brand" className="w-full">
-          登录
+        <Button type="submit" variant="brand" className="w-full" disabled={mutation.isPending}>
+          {mutation.isPending ? "正在登录…" : "登录"}
         </Button>
       </form>
       <div className="mt-7 flex items-center gap-4 text-xs text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
@@ -102,6 +157,8 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
+  const { completeAuthentication } = useAuth();
+  const mutation = useMutation(registerMutationOptions());
   const [errors, setErrors] = useState<Errors>({});
   const [notice, setNotice] = useState("");
 
@@ -109,18 +166,32 @@ export function RegisterForm() {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const nickname = formValue(form, "nickname").trim();
-    const username = formValue(form, "username").trim();
+    const username = normalizedUsername(formValue(form, "username"));
     const password = formValue(form, "password");
     const confirmPassword = formValue(form, "confirmPassword");
     const nextErrors: Errors = {};
     if (!nickname) nextErrors.nickname = "请输入昵称";
-    if (!username) nextErrors.username = "请输入用户名";
+    else if (nickname.length > 40) nextErrors.nickname = "昵称不能超过 40 位";
+    const invalidUsername = usernameError(username);
+    if (invalidUsername) nextErrors.username = invalidUsername;
     if (!isPasswordValid(password))
       nextErrors.password = "密码至少 8 位，并包含字母、数字、符号中的至少两类";
     if (!confirmPassword) nextErrors.confirmPassword = "请再次输入密码";
     else if (confirmPassword !== password) nextErrors.confirmPassword = "两次输入的密码不一致";
     setErrors(nextErrors);
-    setNotice(Object.keys(nextErrors).length ? "" : integrationNotice);
+    setNotice("");
+    if (Object.keys(nextErrors).length) return;
+
+    mutation.mutate(
+      { nickname, username, password },
+      {
+        onSuccess: (result) => completeAuthentication(result.data),
+        onError: (error) => {
+          setErrors(toFieldErrors(error));
+          setNotice(authenticationMessage(error));
+        },
+      },
+    );
   }
 
   return (
@@ -140,7 +211,7 @@ export function RegisterForm() {
           name="username"
           label="用户名"
           autoComplete="username"
-          placeholder="设置唯一用户名"
+          placeholder="3 至 32 位小写字母、数字或下划线"
           error={errors.username}
         />
         <PasswordField
@@ -160,8 +231,8 @@ export function RegisterForm() {
           error={errors.confirmPassword}
         />
         {notice ? <StatusNotice message={notice} /> : null}
-        <Button variant="brand" className="w-full">
-          创建账号
+        <Button type="submit" variant="brand" className="w-full" disabled={mutation.isPending}>
+          {mutation.isPending ? "正在创建…" : "创建账号"}
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -173,106 +244,6 @@ export function RegisterForm() {
           直接登录
         </Link>
       </p>
-    </>
-  );
-}
-
-export function ForcedPasswordChangeForm() {
-  const [errors, setErrors] = useState<Errors>({});
-  const [notice, setNotice] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const rules = [
-    { label: "不少于 8 位", met: newPassword.length >= 8 },
-    { label: "包含至少两类字符", met: passwordCategories(newPassword) >= 2 },
-  ];
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const currentPassword = formValue(form, "currentPassword");
-    const confirmPassword = formValue(form, "confirmPassword");
-    const nextErrors: Errors = {};
-    if (!currentPassword) nextErrors.currentPassword = "请输入当前临时密码";
-    if (!isPasswordValid(newPassword))
-      nextErrors.newPassword = "新密码至少 8 位，并包含字母、数字、符号中的至少两类";
-    if (!confirmPassword) nextErrors.confirmPassword = "请再次输入新密码";
-    else if (confirmPassword !== newPassword) nextErrors.confirmPassword = "两次输入的新密码不一致";
-    setErrors(nextErrors);
-    setNotice(Object.keys(nextErrors).length ? "" : integrationNotice);
-  }
-
-  return (
-    <>
-      <div className="mb-8 inline-flex size-11 items-center justify-center rounded-md bg-sidebar text-accent-foreground">
-        <LockKeyhole aria-hidden="true" className="size-5" />
-      </div>
-      <FormHeader
-        title="请先修改临时密码"
-        description="为了保护账号安全，首次使用临时密码登录后，必须先设置新密码。"
-      />
-      <div className="mb-6 rounded-md border border-border bg-sidebar px-4 py-3 text-sm leading-6 text-foreground">
-        当前为临时密码，仅可使用一次。
-      </div>
-      <form className="space-y-4" noValidate onSubmit={handleSubmit}>
-        <PasswordField
-          id="current-password"
-          name="currentPassword"
-          label="当前临时密码"
-          autoComplete="current-password"
-          placeholder="请输入管理员提供的临时密码"
-          error={errors.currentPassword}
-        />
-        <PasswordField
-          id="new-password"
-          name="newPassword"
-          label="新密码"
-          autoComplete="new-password"
-          placeholder="至少 8 位，包含两类字符"
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
-          error={errors.newPassword}
-        />
-        <PasswordField
-          id="confirm-new-password"
-          name="confirmPassword"
-          label="确认新密码"
-          autoComplete="new-password"
-          placeholder="再次输入新密码"
-          error={errors.confirmPassword}
-        />
-        <ul
-          className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground"
-          aria-label="密码要求"
-        >
-          {rules.map((rule) => (
-            <li
-              key={rule.label}
-              className={cn("inline-flex items-center gap-1.5", rule.met && "text-foreground")}
-            >
-              <span
-                className={cn(
-                  "grid size-4 place-items-center rounded-full border border-border",
-                  rule.met && "border-success bg-success text-background",
-                )}
-              >
-                {rule.met ? <Check aria-hidden="true" className="size-3" /> : null}
-              </span>
-              {rule.label}
-            </li>
-          ))}
-        </ul>
-        {notice ? <StatusNotice message={notice} /> : null}
-        <Button variant="brand" className="w-full">
-          修改密码并继续
-        </Button>
-      </form>
-      <Link
-        className="mx-auto mt-5 flex min-h-11 w-fit items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        href="/login"
-      >
-        <LogOut aria-hidden="true" className="size-4" />
-        退出当前账号
-      </Link>
     </>
   );
 }

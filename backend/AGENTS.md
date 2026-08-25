@@ -3,6 +3,7 @@
 - 运行环境固定为 Python 3.12，依赖只能通过 `uv add` / `uv remove` 维护。
 - FastAPI 路由只负责 HTTP 适配，不在路由函数中堆放业务规则。
 - 新业务按模块组织；禁止建立全局巨型 `services.py` 或提前创建空模块。
+- 数据库模型通过可组合 SQLAlchemy Mixin 复用主键、创建/更新时间、创建/修改人和软删除字段；禁止逐表重复声明公共字段，也禁止为追加式事件或关联表强加无意义字段。
 - 配置统一通过 Pydantic Settings 注入；禁止读取散落的环境变量或写死秘密。
 - API 错误遵循 RFC 9457，日志必须带 `request_id`，不得记录请求正文、凭据或用户业务内容。
 - 日志统一通过 `core.logging.get_logger(__name__)` 获取；事件名使用固定 `snake_case`，不得封装另一套日志级别函数、记录原始异常消息或重复写 HTTP access log。

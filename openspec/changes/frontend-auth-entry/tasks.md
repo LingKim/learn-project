@@ -7,4 +7,5 @@
 - [x] 用 shadcn 官方 registry 的 `Input`、`Checkbox`、`Label` 替换基础控件复刻版
 - [x] 增加认证页面组件测试
 - [x] 执行 Oxfmt、Oxlint、TypeScript 和 Vitest 非 build 验证
-- [ ] 后端认证 OpenAPI 就绪后接入真实提交、会话和强制改密路由守卫
+- [x] 按最新 PRD 删除首次登录强制改密路由、表单和测试
+- [x] 后端认证 OpenAPI 就绪后接入注册、登录、会话恢复、退出和路由守卫

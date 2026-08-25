@@ -7,6 +7,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from xuemian_ai.core.config import get_settings
 from xuemian_ai.infrastructure.database import Base
+from xuemian_ai.persistence import models as persistence_models
+
+_ = persistence_models
 
 config = context.config
 if config.config_file_name is not None:

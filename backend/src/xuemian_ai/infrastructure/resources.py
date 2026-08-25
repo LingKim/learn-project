@@ -3,22 +3,25 @@ from dataclasses import dataclass
 import httpx
 from redis.asyncio import Redis
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from xuemian_ai.core.config import Settings
-from xuemian_ai.infrastructure.database import create_database_engine
+from xuemian_ai.infrastructure.database import create_database_engine, create_session_factory
 
 
 @dataclass(slots=True)
 class Infrastructure:
     database: AsyncEngine
+    sessions: async_sessionmaker[AsyncSession]
     redis: Redis
     http: httpx.AsyncClient
 
     @classmethod
     def create(cls, settings: Settings) -> "Infrastructure":
+        database = create_database_engine(settings.database_url.get_secret_value())
         return cls(
-            database=create_database_engine(settings.database_url.get_secret_value()),
+            database=database,
+            sessions=create_session_factory(database),
             redis=Redis.from_url(settings.redis_url.get_secret_value(), decode_responses=True),
             http=httpx.AsyncClient(
                 timeout=settings.dependency_timeout_seconds,

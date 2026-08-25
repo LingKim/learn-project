@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses } from './types.gen';
+import type { AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -27,3 +27,46 @@ export const healthLive = <ThrowOnError extends boolean = false>(options?: Optio
  * Ready
  */
 export const healthReady = <ThrowOnError extends boolean = false>(options?: Options<HealthReadyData, ThrowOnError>): RequestResult<HealthReadyResponses, HealthReadyErrors, ThrowOnError> => (options?.client ?? client).get<HealthReadyResponses, HealthReadyErrors, ThrowOnError>({ url: '/api/v1/health/ready', ...options });
+
+/**
+ * Register
+ */
+export const authRegister = <ThrowOnError extends boolean = false>(options: Options<AuthRegisterData, ThrowOnError>): RequestResult<AuthRegisterResponses, AuthRegisterErrors, ThrowOnError> => (options.client ?? client).post<AuthRegisterResponses, AuthRegisterErrors, ThrowOnError>({
+    url: '/api/v1/auth/register',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Login
+ */
+export const authLogin = <ThrowOnError extends boolean = false>(options: Options<AuthLoginData, ThrowOnError>): RequestResult<AuthLoginResponses, AuthLoginErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginResponses, AuthLoginErrors, ThrowOnError>({
+    url: '/api/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Refresh
+ */
+export const authRefresh = <ThrowOnError extends boolean = false>(options?: Options<AuthRefreshData, ThrowOnError>): RequestResult<AuthRefreshResponses, AuthRefreshErrors, ThrowOnError> => (options?.client ?? client).post<AuthRefreshResponses, AuthRefreshErrors, ThrowOnError>({ url: '/api/v1/auth/refresh', ...options });
+
+/**
+ * Me
+ */
+export const authMe = <ThrowOnError extends boolean = false>(options?: Options<AuthMeData, ThrowOnError>): RequestResult<AuthMeResponses, AuthMeErrors, ThrowOnError> => (options?.client ?? client).get<AuthMeResponses, AuthMeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/auth/me',
+    ...options
+});
+
+/**
+ * Logout
+ */
+export const authLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutData, ThrowOnError>): RequestResult<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError> => (options?.client ?? client).post<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError>({ url: '/api/v1/auth/logout', ...options });

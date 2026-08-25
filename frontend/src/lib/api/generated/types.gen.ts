@@ -5,6 +5,73 @@ export type ClientOptions = {
 };
 
 /**
+ * ApiResponse[AuthPayload]
+ */
+export type ApiResponseAuthPayload = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AuthPayload;
+};
+
+/**
+ * ApiResponse[NoneType]
+ */
+export type ApiResponseNoneType = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: null;
+};
+
+/**
+ * ApiResponse[UserView]
+ */
+export type ApiResponseUserView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: UserView;
+};
+
+/**
+ * AuthPayload
+ */
+export type AuthPayload = {
+    /**
+     * Access Token
+     */
+    access_token: string;
+    /**
+     * Token Type
+     */
+    token_type?: string;
+    /**
+     * Expires In
+     */
+    expires_in: number;
+    user: UserView;
+};
+
+/**
  * DependencyCheck
  */
 export type DependencyCheck = {
@@ -30,6 +97,20 @@ export type LiveResponse = {
      * Service
      */
     service?: string;
+};
+
+/**
+ * LoginRequest
+ */
+export type LoginRequest = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
 };
 
 /**
@@ -96,6 +177,50 @@ export type ReadyResponse = {
     checks: {
         [key: string]: DependencyCheck;
     };
+};
+
+/**
+ * RegisterRequest
+ */
+export type RegisterRequest = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Nickname
+     */
+    nickname: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * UserView
+ */
+export type UserView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Nickname
+     */
+    nickname: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Status
+     */
+    status: string;
 };
 
 /**
@@ -208,6 +333,10 @@ export type HealthLiveErrors = {
      */
     422: ProblemDetails;
     /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
      * 服务内部错误
      */
     500: ProblemDetails;
@@ -273,6 +402,10 @@ export type HealthReadyErrors = {
      */
     422: ProblemDetails;
     /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
      * 服务内部错误
      */
     500: ProblemDetails;
@@ -300,3 +433,354 @@ export type HealthReadyResponses = {
 };
 
 export type HealthReadyResponse = HealthReadyResponses[keyof HealthReadyResponses];
+
+export type AuthRegisterData = {
+    body: RegisterRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/register';
+};
+
+export type AuthRegisterErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AuthRegisterError = AuthRegisterErrors[keyof AuthRegisterErrors];
+
+export type AuthRegisterResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseAuthPayload;
+};
+
+export type AuthRegisterResponse = AuthRegisterResponses[keyof AuthRegisterResponses];
+
+export type AuthLoginData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login';
+};
+
+export type AuthLoginErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AuthLoginError = AuthLoginErrors[keyof AuthLoginErrors];
+
+export type AuthLoginResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAuthPayload;
+};
+
+export type AuthLoginResponse = AuthLoginResponses[keyof AuthLoginResponses];
+
+export type AuthRefreshData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/refresh';
+};
+
+export type AuthRefreshErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AuthRefreshError = AuthRefreshErrors[keyof AuthRefreshErrors];
+
+export type AuthRefreshResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAuthPayload;
+};
+
+export type AuthRefreshResponse = AuthRefreshResponses[keyof AuthRefreshResponses];
+
+export type AuthMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/me';
+};
+
+export type AuthMeErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AuthMeError = AuthMeErrors[keyof AuthMeErrors];
+
+export type AuthMeResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserView;
+};
+
+export type AuthMeResponse = AuthMeResponses[keyof AuthMeResponses];
+
+export type AuthLogoutData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/logout';
+};
+
+export type AuthLogoutErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AuthLogoutError = AuthLogoutErrors[keyof AuthLogoutErrors];
+
+export type AuthLogoutResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseNoneType;
+};
+
+export type AuthLogoutResponse = AuthLogoutResponses[keyof AuthLogoutResponses];

@@ -96,6 +96,24 @@ class ValidationAppError(AppError):
         )
 
 
+class TooManyRequestsError(AppError):
+    def __init__(
+        self,
+        message: str = "请求过于频繁，请稍后重试",
+        *,
+        retry_after: int,
+        error_key: str | None = None,
+    ) -> None:
+        super().__init__(
+            message,
+            status_code=ApiStatusCode.TOO_MANY_REQUESTS,
+            title="请求过于频繁",
+            error_type="https://xuemian.ai/problems/rate-limited",
+            error_key=error_key,
+            headers={"Retry-After": str(retry_after)},
+        )
+
+
 class UpstreamServiceError(AppError):
     def __init__(
         self,

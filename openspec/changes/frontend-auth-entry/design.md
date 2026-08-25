@@ -4,7 +4,7 @@
 
 - `/login`：用户名、密码、记住账号；可跳转注册。
 - `/register`：昵称、用户名、密码、确认密码；可返回登录。
-- `/first-login/change-password`：当前临时密码、新密码、确认密码；可退出并返回登录。
+- `/first-login/change-password`：最新 PRD 已取消该能力，必须删除路由、页面、表单与测试，不保留不可达入口。
 - `src/features/auth` 持有认证页面壳、表单和纯校验规则；输入框、复选框、字段错误和密码输入等基础控件统一放在 `src/components/ui`，App Router 页面只负责元数据和装配。
 - `Input`、`Checkbox`、`Label` 以 shadcn 官方 `new-york-v4` registry 为事实源；项目仅通过 `InputField`、`CheckboxField`、`PasswordField` 组合它们，不复刻官方基础组件。
 
@@ -19,7 +19,7 @@
 - 用户名和昵称只校验必填，不擅自增加 PRD 未确认的字符集规则。
 - 密码至少 8 位，并至少包含字母、数字、符号三类中的两类；确认密码必须一致。
 - 错误与状态使用 `aria-live`，输入框关联字段错误，密码显隐按钮有可访问名称。
-- 当前没有认证 OpenAPI 时，校验通过后明确提示“认证接口尚未接入”，不跳转到不存在的业务页面。
+- 当前没有认证 OpenAPI 时，校验通过后明确提示“认证接口尚未接入”，不跳转到不存在的业务页面；后端契约就绪后由 `implement-authentication` 统一替换为真实提交和会话恢复。
 
 ## 契约与隐私
 

@@ -3,7 +3,9 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from xuemian_ai.api.auth import router as auth_router
 from xuemian_ai.api.health import router as health_router
 from xuemian_ai.core.config import get_settings
 from xuemian_ai.core.logging import configure_logging, get_logger
@@ -38,8 +40,16 @@ def create_app() -> FastAPI:
         responses=PROBLEM_RESPONSES,
     )
     application.middleware("http")(request_context_middleware)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    )
     register_problem_handlers(application)
     application.include_router(health_router, prefix=settings.api_v1_prefix)
+    application.include_router(auth_router, prefix=settings.api_v1_prefix)
     return application
 
 
