@@ -1,18 +1,29 @@
 import { healthReady } from "@/lib/api/generated/sdk.gen";
 import type { ReadyResponse } from "@/lib/api/generated/types.gen";
+import { API_BASE_URL } from "@/lib/api/protocol";
+import { toApiError } from "@/lib/api/errors";
 
-export const systemHealthQueryKey = ["system", "health", "ready"] as const;
+export type { DependencyCheck, ReadyResponse } from "@/lib/api/generated/types.gen";
+
+function isReadyResponse(value: unknown): value is ReadyResponse {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "status" in value &&
+    (value.status === "ready" || value.status === "degraded") &&
+    "checks" in value &&
+    typeof value.checks === "object" &&
+    value.checks !== null
+  );
+}
 
 export async function getSystemHealth(): Promise<ReadyResponse> {
-  const result = await healthReady({ baseUrl: "/api/backend" });
+  const result = await healthReady({ baseUrl: API_BASE_URL });
   if (result.data) {
     return result.data;
   }
-  if (result.error) {
-    if ("checks" in result.error) {
-      return result.error;
-    }
-    throw new Error(result.error.message);
+  if (isReadyResponse(result.error)) {
+    return result.error;
   }
-  throw new Error("health_response_unavailable");
+  throw toApiError(result.error, result.response);
 }

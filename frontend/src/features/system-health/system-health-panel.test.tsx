@@ -2,28 +2,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { healthReady } from "@/lib/api/generated/sdk.gen";
-
+import { getSystemHealth } from "./api";
 import { SystemHealthPanel } from "./system-health-panel";
 
-vi.mock("@/lib/api/generated/sdk.gen", () => ({
-  healthReady: vi.fn(),
+vi.mock("./api", () => ({
+  getSystemHealth: vi.fn(),
 }));
 
 describe("SystemHealthPanel", () => {
   it("shows every dependency when the backend reports ready", async () => {
-    vi.mocked(healthReady).mockResolvedValue({
-      data: {
-        status: "ready",
-        checks: {
-          postgresql: { status: "up", code: "ok" },
-          redis: { status: "up", code: "ok" },
-          rustfs: { status: "up", code: "ok" },
-        },
+    vi.mocked(getSystemHealth).mockResolvedValue({
+      status: "ready",
+      checks: {
+        postgresql: { status: "up", code: "ok" },
+        redis: { status: "up", code: "ok" },
+        rustfs: { status: "up", code: "ok" },
       },
-      error: undefined,
-      request: new Request("http://localhost/api/backend/api/v1/health/ready"),
-      response: new Response(),
     });
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -42,18 +36,13 @@ describe("SystemHealthPanel", () => {
   });
 
   it("shows degraded dependencies from the readiness 503 response", async () => {
-    vi.mocked(healthReady).mockResolvedValue({
-      data: undefined,
-      error: {
-        status: "degraded",
-        checks: {
-          postgresql: { status: "up", code: "ok" },
-          redis: { status: "down", code: "redis_unavailable" },
-          rustfs: { status: "up", code: "ok" },
-        },
+    vi.mocked(getSystemHealth).mockResolvedValue({
+      status: "degraded",
+      checks: {
+        postgresql: { status: "up", code: "ok" },
+        redis: { status: "down", code: "redis_unavailable" },
+        rustfs: { status: "up", code: "ok" },
       },
-      request: new Request("http://localhost/api/backend/api/v1/health/ready"),
-      response: new Response(null, { status: 503 }),
     });
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },

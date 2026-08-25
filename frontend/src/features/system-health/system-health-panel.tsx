@@ -5,9 +5,9 @@ import { Database, HardDrive, RefreshCw, Server } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { DependencyCheck, ReadyResponse } from "@/lib/api/generated/types.gen";
 
-import { getSystemHealth, systemHealthQueryKey } from "./api";
+import type { DependencyCheck } from "./api";
+import { systemHealthQueryOptions } from "./queries";
 
 const services = [
   { key: "postgresql", label: "PostgreSQL", detail: "业务数据", icon: Database },
@@ -30,12 +30,7 @@ function lastUpdatedText(updatedAt: number) {
 }
 
 export function SystemHealthPanel() {
-  const query = useQuery<ReadyResponse>({
-    queryKey: systemHealthQueryKey,
-    queryFn: getSystemHealth,
-    refetchInterval: 30_000,
-    retry: false,
-  });
+  const query = useQuery(systemHealthQueryOptions());
 
   const isReady = query.data?.status === "ready";
 
