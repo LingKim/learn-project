@@ -20,6 +20,96 @@ export type ApiResponseAuthPayload = {
 };
 
 /**
+ * ApiResponse[DeleteResult]
+ */
+export type ApiResponseDeleteResult = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: DeleteResult;
+};
+
+/**
+ * ApiResponse[DeletionImpactView]
+ */
+export type ApiResponseDeletionImpactView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: DeletionImpactView;
+};
+
+/**
+ * ApiResponse[DownloadUrlView]
+ */
+export type ApiResponseDownloadUrlView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: DownloadUrlView;
+};
+
+/**
+ * ApiResponse[FilePolicyView]
+ */
+export type ApiResponseFilePolicyView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: FilePolicyView;
+};
+
+/**
+ * ApiResponse[KnowledgeBaseView]
+ */
+export type ApiResponseKnowledgeBaseView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: KnowledgeBaseView;
+};
+
+/**
+ * ApiResponse[KnowledgeFileView]
+ */
+export type ApiResponseKnowledgeFileView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: KnowledgeFileView;
+};
+
+/**
  * ApiResponse[NoneType]
  */
 export type ApiResponseNoneType = {
@@ -38,6 +128,36 @@ export type ApiResponseNoneType = {
 };
 
 /**
+ * ApiResponse[UploadPlan]
+ */
+export type ApiResponseUploadPlan = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: UploadPlan;
+};
+
+/**
+ * ApiResponse[UploadSessionView]
+ */
+export type ApiResponseUploadSessionView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: UploadSessionView;
+};
+
+/**
  * ApiResponse[UserView]
  */
 export type ApiResponseUserView = {
@@ -50,6 +170,42 @@ export type ApiResponseUserView = {
      */
     message: string;
     data: UserView;
+};
+
+/**
+ * ApiResponse[list[FilePolicyView]]
+ */
+export type ApiResponseListFilePolicyView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<FilePolicyView>;
+};
+
+/**
+ * ApiResponse[list[SignedPart]]
+ */
+export type ApiResponseListSignedPart = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<SignedPart>;
 };
 
 /**
@@ -72,6 +228,82 @@ export type AuthPayload = {
 };
 
 /**
+ * CompleteUploadRequest
+ */
+export type CompleteUploadRequest = {
+    /**
+     * Parts
+     */
+    parts?: Array<UploadPart>;
+};
+
+/**
+ * DeleteRequest
+ */
+export type DeleteRequest = {
+    /**
+     * Confirmation Token
+     */
+    confirmation_token: string;
+    /**
+     * Mode
+     */
+    mode?: 'SOURCE_ONLY' | 'CASCADE';
+};
+
+/**
+ * DeleteResult
+ */
+export type DeleteResult = {
+    /**
+     * Target Id
+     */
+    target_id: string;
+    /**
+     * Status
+     */
+    status?: 'deleted';
+};
+
+/**
+ * DeletionImpactView
+ */
+export type DeletionImpactView = {
+    /**
+     * Target Id
+     */
+    target_id: string;
+    /**
+     * Conversations
+     */
+    conversations?: number;
+    /**
+     * Questions
+     */
+    questions?: number;
+    /**
+     * Reports
+     */
+    reports?: number;
+    /**
+     * Notes
+     */
+    notes?: number;
+    /**
+     * Weaknesses
+     */
+    weaknesses?: number;
+    /**
+     * Confirmation Token
+     */
+    confirmation_token: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+};
+
+/**
  * DependencyCheck
  */
 export type DependencyCheck = {
@@ -83,6 +315,216 @@ export type DependencyCheck = {
      * Code
      */
     code: string;
+};
+
+/**
+ * DownloadUrlView
+ */
+export type DownloadUrlView = {
+    /**
+     * Url
+     */
+    url: string;
+    /**
+     * Expires In
+     */
+    expires_in: number;
+};
+
+/**
+ * DuplicateResolutionRequest
+ */
+export type DuplicateResolutionRequest = {
+    /**
+     * Action
+     */
+    action: 'LINK' | 'MOVE' | 'CANCEL';
+};
+
+/**
+ * FilePolicyDraftRequest
+ */
+export type FilePolicyDraftRequest = {
+    /**
+     * Rules
+     */
+    rules: {
+        [key: string]: unknown;
+    };
+    /**
+     * Base Version Id
+     */
+    base_version_id?: string | null;
+};
+
+/**
+ * FilePolicyPublishRequest
+ */
+export type FilePolicyPublishRequest = {
+    /**
+     * Base Version Id
+     */
+    base_version_id?: string | null;
+};
+
+/**
+ * FilePolicyUpdateRequest
+ */
+export type FilePolicyUpdateRequest = {
+    /**
+     * Rules
+     */
+    rules: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * FilePolicyView
+ */
+export type FilePolicyView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Rules
+     */
+    rules: {
+        [key: string]: unknown;
+    };
+    /**
+     * Base Version Id
+     */
+    base_version_id: string | null;
+    /**
+     * Published By
+     */
+    published_by: string | null;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * KnowledgeBaseCreate
+ */
+export type KnowledgeBaseCreate = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * KnowledgeBaseUpdate
+ */
+export type KnowledgeBaseUpdate = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * KnowledgeBaseView
+ */
+export type KnowledgeBaseView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Is Default
+     */
+    is_default: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * KnowledgeFileMove
+ */
+export type KnowledgeFileMove = {
+    /**
+     * Target Knowledge Base Id
+     */
+    target_knowledge_base_id: string;
+};
+
+/**
+ * KnowledgeFileUpdate
+ */
+export type KnowledgeFileUpdate = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+};
+
+/**
+ * KnowledgeFileView
+ */
+export type KnowledgeFileView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Detected Mime
+     */
+    detected_mime: string;
+    /**
+     * Byte Size
+     */
+    byte_size: number;
+    /**
+     * Processing Status
+     */
+    processing_status: string;
+    /**
+     * Validation Status
+     */
+    validation_status: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -111,6 +553,66 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * PageMeta
+ */
+export type PageMeta = {
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Total Pages
+     */
+    total_pages: number;
+};
+
+/**
+ * PageResponse[KnowledgeBaseView]
+ */
+export type PageResponseKnowledgeBaseView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<KnowledgeBaseView>;
+    meta: PageMeta;
+};
+
+/**
+ * PageResponse[KnowledgeFileView]
+ */
+export type PageResponseKnowledgeFileView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<KnowledgeFileView>;
+    meta: PageMeta;
 };
 
 /**
@@ -198,6 +700,150 @@ export type RegisterRequest = {
 };
 
 /**
+ * SignPartsRequest
+ */
+export type SignPartsRequest = {
+    /**
+     * Part Numbers
+     */
+    part_numbers: Array<number>;
+};
+
+/**
+ * SignedPart
+ */
+export type SignedPart = {
+    /**
+     * Part Number
+     */
+    part_number: number;
+    /**
+     * Upload Url
+     */
+    upload_url: string;
+};
+
+/**
+ * UploadPart
+ */
+export type UploadPart = {
+    /**
+     * Part Number
+     */
+    part_number: number;
+    /**
+     * Etag
+     */
+    etag: string;
+};
+
+/**
+ * UploadPlan
+ */
+export type UploadPlan = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Upload Mode
+     */
+    upload_mode: 'single' | 'multipart' | 'reuse';
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Upload Url
+     */
+    upload_url?: string | null;
+    /**
+     * Part Size
+     */
+    part_size?: number | null;
+    /**
+     * Parts
+     */
+    parts?: Array<SignedPart>;
+    /**
+     * Duplicate File Asset Id
+     */
+    duplicate_file_asset_id?: string | null;
+};
+
+/**
+ * UploadSessionCreate
+ */
+export type UploadSessionCreate = {
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Size
+     */
+    size: number;
+    /**
+     * Declared Mime
+     */
+    declared_mime?: string | null;
+    /**
+     * Client Sha256
+     */
+    client_sha256?: string | null;
+    /**
+     * Client Md5
+     */
+    client_md5?: string | null;
+};
+
+/**
+ * UploadSessionView
+ */
+export type UploadSessionView = {
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Upload Mode
+     */
+    upload_mode: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Size
+     */
+    size: number;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Failure Code
+     */
+    failure_code?: string | null;
+    /**
+     * Knowledge File Id
+     */
+    knowledge_file_id?: string | null;
+    /**
+     * Duplicate File Asset Id
+     */
+    duplicate_file_asset_id?: string | null;
+};
+
+/**
  * UserView
  */
 export type UserView = {
@@ -253,28 +899,6 @@ export type ApiResponse = {
      * Data
      */
     data: unknown;
-};
-
-/**
- * PageMeta
- */
-export type PageMeta = {
-    /**
-     * Page
-     */
-    page: number;
-    /**
-     * Page Size
-     */
-    page_size: number;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Total Pages
-     */
-    total_pages: number;
 };
 
 /**
@@ -784,3 +1408,1742 @@ export type AuthLogoutResponses = {
 };
 
 export type AuthLogoutResponse = AuthLogoutResponses[keyof AuthLogoutResponses];
+
+export type KnowledgeBasesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/knowledge-bases';
+};
+
+export type KnowledgeBasesListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesListError = KnowledgeBasesListErrors[keyof KnowledgeBasesListErrors];
+
+export type KnowledgeBasesListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseKnowledgeBaseView;
+};
+
+export type KnowledgeBasesListResponse = KnowledgeBasesListResponses[keyof KnowledgeBasesListResponses];
+
+export type KnowledgeBasesCreateData = {
+    body: KnowledgeBaseCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/knowledge-bases';
+};
+
+export type KnowledgeBasesCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesCreateError = KnowledgeBasesCreateErrors[keyof KnowledgeBasesCreateErrors];
+
+export type KnowledgeBasesCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeBaseView;
+};
+
+export type KnowledgeBasesCreateResponse = KnowledgeBasesCreateResponses[keyof KnowledgeBasesCreateResponses];
+
+export type KnowledgeBasesDeleteData = {
+    body: DeleteRequest;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}';
+};
+
+export type KnowledgeBasesDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesDeleteError = KnowledgeBasesDeleteErrors[keyof KnowledgeBasesDeleteErrors];
+
+export type KnowledgeBasesDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDeleteResult;
+};
+
+export type KnowledgeBasesDeleteResponse = KnowledgeBasesDeleteResponses[keyof KnowledgeBasesDeleteResponses];
+
+export type KnowledgeBasesUpdateData = {
+    body: KnowledgeBaseUpdate;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}';
+};
+
+export type KnowledgeBasesUpdateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesUpdateError = KnowledgeBasesUpdateErrors[keyof KnowledgeBasesUpdateErrors];
+
+export type KnowledgeBasesUpdateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeBaseView;
+};
+
+export type KnowledgeBasesUpdateResponse = KnowledgeBasesUpdateResponses[keyof KnowledgeBasesUpdateResponses];
+
+export type KnowledgeBasesDeletionImpactData = {
+    body?: never;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+    };
+    query?: {
+        /**
+         * Mode
+         */
+        mode?: string;
+    };
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/deletion-impact';
+};
+
+export type KnowledgeBasesDeletionImpactErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesDeletionImpactError = KnowledgeBasesDeletionImpactErrors[keyof KnowledgeBasesDeletionImpactErrors];
+
+export type KnowledgeBasesDeletionImpactResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDeletionImpactView;
+};
+
+export type KnowledgeBasesDeletionImpactResponse = KnowledgeBasesDeletionImpactResponses[keyof KnowledgeBasesDeletionImpactResponses];
+
+export type FileUploadSessionsCreateData = {
+    body: UploadSessionCreate;
+    headers: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/file-upload-sessions';
+};
+
+export type FileUploadSessionsCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsCreateError = FileUploadSessionsCreateErrors[keyof FileUploadSessionsCreateErrors];
+
+export type FileUploadSessionsCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadPlan;
+};
+
+export type FileUploadSessionsCreateResponse = FileUploadSessionsCreateResponses[keyof FileUploadSessionsCreateResponses];
+
+export type FileUploadSessionsSignPartsData = {
+    body: SignPartsRequest;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}/sign-parts';
+};
+
+export type FileUploadSessionsSignPartsErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsSignPartsError = FileUploadSessionsSignPartsErrors[keyof FileUploadSessionsSignPartsErrors];
+
+export type FileUploadSessionsSignPartsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseListSignedPart;
+};
+
+export type FileUploadSessionsSignPartsResponse = FileUploadSessionsSignPartsResponses[keyof FileUploadSessionsSignPartsResponses];
+
+export type FileUploadSessionsRenewData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}/renew-upload-url';
+};
+
+export type FileUploadSessionsRenewErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsRenewError = FileUploadSessionsRenewErrors[keyof FileUploadSessionsRenewErrors];
+
+export type FileUploadSessionsRenewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadPlan;
+};
+
+export type FileUploadSessionsRenewResponse = FileUploadSessionsRenewResponses[keyof FileUploadSessionsRenewResponses];
+
+export type FileUploadSessionsCompleteData = {
+    body: CompleteUploadRequest;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}/complete';
+};
+
+export type FileUploadSessionsCompleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsCompleteError = FileUploadSessionsCompleteErrors[keyof FileUploadSessionsCompleteErrors];
+
+export type FileUploadSessionsCompleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadSessionView;
+};
+
+export type FileUploadSessionsCompleteResponse = FileUploadSessionsCompleteResponses[keyof FileUploadSessionsCompleteResponses];
+
+export type FileUploadSessionsCancelData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}';
+};
+
+export type FileUploadSessionsCancelErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsCancelError = FileUploadSessionsCancelErrors[keyof FileUploadSessionsCancelErrors];
+
+export type FileUploadSessionsCancelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadSessionView;
+};
+
+export type FileUploadSessionsCancelResponse = FileUploadSessionsCancelResponses[keyof FileUploadSessionsCancelResponses];
+
+export type FileUploadSessionsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}';
+};
+
+export type FileUploadSessionsGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsGetError = FileUploadSessionsGetErrors[keyof FileUploadSessionsGetErrors];
+
+export type FileUploadSessionsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadSessionView;
+};
+
+export type FileUploadSessionsGetResponse = FileUploadSessionsGetResponses[keyof FileUploadSessionsGetResponses];
+
+export type FileUploadSessionsResolveDuplicateData = {
+    body: DuplicateResolutionRequest;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/file-upload-sessions/{session_id}/duplicate-resolution';
+};
+
+export type FileUploadSessionsResolveDuplicateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FileUploadSessionsResolveDuplicateError = FileUploadSessionsResolveDuplicateErrors[keyof FileUploadSessionsResolveDuplicateErrors];
+
+export type FileUploadSessionsResolveDuplicateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUploadSessionView;
+};
+
+export type FileUploadSessionsResolveDuplicateResponse = FileUploadSessionsResolveDuplicateResponses[keyof FileUploadSessionsResolveDuplicateResponses];
+
+export type KnowledgeBaseFilesListData = {
+    body?: never;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Search
+         */
+        search?: string | null;
+        /**
+         * Status
+         */
+        status?: string | null;
+    };
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files';
+};
+
+export type KnowledgeBaseFilesListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesListError = KnowledgeBaseFilesListErrors[keyof KnowledgeBaseFilesListErrors];
+
+export type KnowledgeBaseFilesListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseKnowledgeFileView;
+};
+
+export type KnowledgeBaseFilesListResponse = KnowledgeBaseFilesListResponses[keyof KnowledgeBaseFilesListResponses];
+
+export type KnowledgeBaseFilesDeleteData = {
+    body: DeleteRequest;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+        /**
+         * Knowledge File Id
+         */
+        knowledge_file_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}';
+};
+
+export type KnowledgeBaseFilesDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesDeleteError = KnowledgeBaseFilesDeleteErrors[keyof KnowledgeBaseFilesDeleteErrors];
+
+export type KnowledgeBaseFilesDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDeleteResult;
+};
+
+export type KnowledgeBaseFilesDeleteResponse = KnowledgeBaseFilesDeleteResponses[keyof KnowledgeBaseFilesDeleteResponses];
+
+export type KnowledgeBaseFilesUpdateData = {
+    body: KnowledgeFileUpdate;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+        /**
+         * Knowledge File Id
+         */
+        knowledge_file_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}';
+};
+
+export type KnowledgeBaseFilesUpdateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesUpdateError = KnowledgeBaseFilesUpdateErrors[keyof KnowledgeBaseFilesUpdateErrors];
+
+export type KnowledgeBaseFilesUpdateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeFileView;
+};
+
+export type KnowledgeBaseFilesUpdateResponse = KnowledgeBaseFilesUpdateResponses[keyof KnowledgeBaseFilesUpdateResponses];
+
+export type KnowledgeBaseFilesMoveData = {
+    body: KnowledgeFileMove;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+        /**
+         * Knowledge File Id
+         */
+        knowledge_file_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/move';
+};
+
+export type KnowledgeBaseFilesMoveErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesMoveError = KnowledgeBaseFilesMoveErrors[keyof KnowledgeBaseFilesMoveErrors];
+
+export type KnowledgeBaseFilesMoveResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeFileView;
+};
+
+export type KnowledgeBaseFilesMoveResponse = KnowledgeBaseFilesMoveResponses[keyof KnowledgeBaseFilesMoveResponses];
+
+export type KnowledgeBaseFilesDownloadUrlData = {
+    body?: never;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+        /**
+         * Knowledge File Id
+         */
+        knowledge_file_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/download-url';
+};
+
+export type KnowledgeBaseFilesDownloadUrlErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesDownloadUrlError = KnowledgeBaseFilesDownloadUrlErrors[keyof KnowledgeBaseFilesDownloadUrlErrors];
+
+export type KnowledgeBaseFilesDownloadUrlResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDownloadUrlView;
+};
+
+export type KnowledgeBaseFilesDownloadUrlResponse = KnowledgeBaseFilesDownloadUrlResponses[keyof KnowledgeBaseFilesDownloadUrlResponses];
+
+export type KnowledgeBaseFilesDeletionImpactData = {
+    body?: never;
+    path: {
+        /**
+         * Knowledge Base Id
+         */
+        knowledge_base_id: string;
+        /**
+         * Knowledge File Id
+         */
+        knowledge_file_id: string;
+    };
+    query?: {
+        /**
+         * Mode
+         */
+        mode?: string;
+    };
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/deletion-impact';
+};
+
+export type KnowledgeBaseFilesDeletionImpactErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBaseFilesDeletionImpactError = KnowledgeBaseFilesDeletionImpactErrors[keyof KnowledgeBaseFilesDeletionImpactErrors];
+
+export type KnowledgeBaseFilesDeletionImpactResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDeletionImpactView;
+};
+
+export type KnowledgeBaseFilesDeletionImpactResponse = KnowledgeBaseFilesDeletionImpactResponses[keyof KnowledgeBaseFilesDeletionImpactResponses];
+
+export type FilePoliciesEffectiveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/file-policies/effective';
+};
+
+export type FilePoliciesEffectiveErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type FilePoliciesEffectiveError = FilePoliciesEffectiveErrors[keyof FilePoliciesEffectiveErrors];
+
+export type FilePoliciesEffectiveResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseFilePolicyView;
+};
+
+export type FilePoliciesEffectiveResponse = FilePoliciesEffectiveResponses[keyof FilePoliciesEffectiveResponses];
+
+export type AdminFilePolicyVersionsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/file-policy-versions';
+};
+
+export type AdminFilePolicyVersionsListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AdminFilePolicyVersionsListError = AdminFilePolicyVersionsListErrors[keyof AdminFilePolicyVersionsListErrors];
+
+export type AdminFilePolicyVersionsListResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseListFilePolicyView;
+};
+
+export type AdminFilePolicyVersionsListResponse = AdminFilePolicyVersionsListResponses[keyof AdminFilePolicyVersionsListResponses];
+
+export type AdminFilePolicyVersionsCreateData = {
+    body: FilePolicyDraftRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/file-policy-versions';
+};
+
+export type AdminFilePolicyVersionsCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AdminFilePolicyVersionsCreateError = AdminFilePolicyVersionsCreateErrors[keyof AdminFilePolicyVersionsCreateErrors];
+
+export type AdminFilePolicyVersionsCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseFilePolicyView;
+};
+
+export type AdminFilePolicyVersionsCreateResponse = AdminFilePolicyVersionsCreateResponses[keyof AdminFilePolicyVersionsCreateResponses];
+
+export type AdminFilePolicyVersionsUpdateData = {
+    body: FilePolicyUpdateRequest;
+    path: {
+        /**
+         * Policy Id
+         */
+        policy_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/file-policy-versions/{policy_id}';
+};
+
+export type AdminFilePolicyVersionsUpdateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AdminFilePolicyVersionsUpdateError = AdminFilePolicyVersionsUpdateErrors[keyof AdminFilePolicyVersionsUpdateErrors];
+
+export type AdminFilePolicyVersionsUpdateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseFilePolicyView;
+};
+
+export type AdminFilePolicyVersionsUpdateResponse = AdminFilePolicyVersionsUpdateResponses[keyof AdminFilePolicyVersionsUpdateResponses];
+
+export type AdminFilePolicyVersionsPublishData = {
+    body: FilePolicyPublishRequest;
+    path: {
+        /**
+         * Policy Id
+         */
+        policy_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/file-policy-versions/{policy_id}/publish';
+};
+
+export type AdminFilePolicyVersionsPublishErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AdminFilePolicyVersionsPublishError = AdminFilePolicyVersionsPublishErrors[keyof AdminFilePolicyVersionsPublishErrors];
+
+export type AdminFilePolicyVersionsPublishResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseFilePolicyView;
+};
+
+export type AdminFilePolicyVersionsPublishResponse = AdminFilePolicyVersionsPublishResponses[keyof AdminFilePolicyVersionsPublishResponses];

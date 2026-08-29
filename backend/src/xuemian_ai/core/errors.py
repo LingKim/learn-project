@@ -96,6 +96,17 @@ class ValidationAppError(AppError):
         )
 
 
+class PayloadTooLargeError(AppError):
+    def __init__(self, message: str = "文件大小超过限制", *, error_key: str | None = None) -> None:
+        super().__init__(
+            message,
+            status_code=ApiStatusCode.PAYLOAD_TOO_LARGE,
+            title="请求内容过大",
+            error_type="https://xuemian.ai/problems/payload-too-large",
+            error_key=error_key,
+        )
+
+
 class TooManyRequestsError(AppError):
     def __init__(
         self,

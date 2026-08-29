@@ -35,6 +35,8 @@ services:
       DATABASE_URL: postgresql+asyncpg://${APP_DB_USER}:${APP_DB_PASSWORD}@host.docker.internal:5432/${APP_DB_NAME}
       REDIS_URL: redis://host.docker.internal:6379/0
       RUSTFS_HEALTH_URL: http://rustfs:9000/health
+      RUSTFS_INTERNAL_ENDPOINT: http://rustfs:9000
+      RUSTFS_PUBLIC_ENDPOINT: http://localhost:9000
       ENVIRONMENT: development
       LOG_FORMAT: json
       LOG_LEVEL: INFO
@@ -57,6 +59,52 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+
+  file-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["uv", "run", "--no-sync", "xuemian-ai-file-worker"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${APP_DB_USER}:${APP_DB_PASSWORD}@host.docker.internal:5432/${APP_DB_NAME}
+      REDIS_URL: redis://host.docker.internal:6379/0
+      RUSTFS_HEALTH_URL: http://rustfs:9000/health
+      RUSTFS_INTERNAL_ENDPOINT: http://rustfs:9000
+      RUSTFS_PUBLIC_ENDPOINT: http://localhost:9000
+      ENVIRONMENT: development
+      LOG_FORMAT: json
+      LOG_LEVEL: INFO
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      rustfs:
+        condition: service_healthy
+
+  file-scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["uv", "run", "--no-sync", "xuemian-ai-file-scheduler"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${APP_DB_USER}:${APP_DB_PASSWORD}@host.docker.internal:5432/${APP_DB_NAME}
+      REDIS_URL: redis://host.docker.internal:6379/0
+      RUSTFS_HEALTH_URL: http://rustfs:9000/health
+      RUSTFS_INTERNAL_ENDPOINT: http://rustfs:9000
+      RUSTFS_PUBLIC_ENDPOINT: http://localhost:9000
+      ENVIRONMENT: development
+      LOG_FORMAT: json
+      LOG_LEVEL: INFO
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      rustfs:
+        condition: service_healthy
 
   frontend:
     build:

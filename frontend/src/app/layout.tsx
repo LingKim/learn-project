@@ -8,8 +8,8 @@ import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "系统状态 · 学面通AI",
-  description: "学面通AI工程基础服务状态",
+  title: "学面通AI",
+  description: "学习资料、知识库与面试训练工作台",
 };
 
 export const viewport: Viewport = {

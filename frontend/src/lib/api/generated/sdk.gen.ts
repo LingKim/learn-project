@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses } from './types.gen';
+import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -70,3 +70,262 @@ export const authMe = <ThrowOnError extends boolean = false>(options?: Options<A
  * Logout
  */
 export const authLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutData, ThrowOnError>): RequestResult<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError> => (options?.client ?? client).post<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError>({ url: '/api/v1/auth/logout', ...options });
+
+/**
+ * List Knowledge Bases
+ */
+export const knowledgeBasesList = <ThrowOnError extends boolean = false>(options?: Options<KnowledgeBasesListData, ThrowOnError>): RequestResult<KnowledgeBasesListResponses, KnowledgeBasesListErrors, ThrowOnError> => (options?.client ?? client).get<KnowledgeBasesListResponses, KnowledgeBasesListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases',
+    ...options
+});
+
+/**
+ * Create Knowledge Base
+ */
+export const knowledgeBasesCreate = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBasesCreateData, ThrowOnError>): RequestResult<KnowledgeBasesCreateResponses, KnowledgeBasesCreateErrors, ThrowOnError> => (options.client ?? client).post<KnowledgeBasesCreateResponses, KnowledgeBasesCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Knowledge Base
+ */
+export const knowledgeBasesDelete = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBasesDeleteData, ThrowOnError>): RequestResult<KnowledgeBasesDeleteResponses, KnowledgeBasesDeleteErrors, ThrowOnError> => (options.client ?? client).delete<KnowledgeBasesDeleteResponses, KnowledgeBasesDeleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Knowledge Base
+ */
+export const knowledgeBasesUpdate = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBasesUpdateData, ThrowOnError>): RequestResult<KnowledgeBasesUpdateResponses, KnowledgeBasesUpdateErrors, ThrowOnError> => (options.client ?? client).patch<KnowledgeBasesUpdateResponses, KnowledgeBasesUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Knowledge Base Deletion Impact
+ */
+export const knowledgeBasesDeletionImpact = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBasesDeletionImpactData, ThrowOnError>): RequestResult<KnowledgeBasesDeletionImpactResponses, KnowledgeBasesDeletionImpactErrors, ThrowOnError> => (options.client ?? client).get<KnowledgeBasesDeletionImpactResponses, KnowledgeBasesDeletionImpactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/deletion-impact',
+    ...options
+});
+
+/**
+ * Create Upload Session
+ */
+export const fileUploadSessionsCreate = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsCreateData, ThrowOnError>): RequestResult<FileUploadSessionsCreateResponses, FileUploadSessionsCreateErrors, ThrowOnError> => (options.client ?? client).post<FileUploadSessionsCreateResponses, FileUploadSessionsCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/file-upload-sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Sign Upload Parts
+ */
+export const fileUploadSessionsSignParts = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsSignPartsData, ThrowOnError>): RequestResult<FileUploadSessionsSignPartsResponses, FileUploadSessionsSignPartsErrors, ThrowOnError> => (options.client ?? client).post<FileUploadSessionsSignPartsResponses, FileUploadSessionsSignPartsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}/sign-parts',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Renew Upload Url
+ */
+export const fileUploadSessionsRenew = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsRenewData, ThrowOnError>): RequestResult<FileUploadSessionsRenewResponses, FileUploadSessionsRenewErrors, ThrowOnError> => (options.client ?? client).post<FileUploadSessionsRenewResponses, FileUploadSessionsRenewErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}/renew-upload-url',
+    ...options
+});
+
+/**
+ * Complete Upload
+ */
+export const fileUploadSessionsComplete = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsCompleteData, ThrowOnError>): RequestResult<FileUploadSessionsCompleteResponses, FileUploadSessionsCompleteErrors, ThrowOnError> => (options.client ?? client).post<FileUploadSessionsCompleteResponses, FileUploadSessionsCompleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}/complete',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Cancel Upload Session
+ */
+export const fileUploadSessionsCancel = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsCancelData, ThrowOnError>): RequestResult<FileUploadSessionsCancelResponses, FileUploadSessionsCancelErrors, ThrowOnError> => (options.client ?? client).delete<FileUploadSessionsCancelResponses, FileUploadSessionsCancelErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}',
+    ...options
+});
+
+/**
+ * Get Upload Session
+ */
+export const fileUploadSessionsGet = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsGetData, ThrowOnError>): RequestResult<FileUploadSessionsGetResponses, FileUploadSessionsGetErrors, ThrowOnError> => (options.client ?? client).get<FileUploadSessionsGetResponses, FileUploadSessionsGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}',
+    ...options
+});
+
+/**
+ * Resolve Duplicate
+ */
+export const fileUploadSessionsResolveDuplicate = <ThrowOnError extends boolean = false>(options: Options<FileUploadSessionsResolveDuplicateData, ThrowOnError>): RequestResult<FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsResolveDuplicateErrors, ThrowOnError> => (options.client ?? client).post<FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsResolveDuplicateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-upload-sessions/{session_id}/duplicate-resolution',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Knowledge Files
+ */
+export const knowledgeBaseFilesList = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesListData, ThrowOnError>): RequestResult<KnowledgeBaseFilesListResponses, KnowledgeBaseFilesListErrors, ThrowOnError> => (options.client ?? client).get<KnowledgeBaseFilesListResponses, KnowledgeBaseFilesListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files',
+    ...options
+});
+
+/**
+ * Delete Knowledge File
+ */
+export const knowledgeBaseFilesDelete = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesDeleteData, ThrowOnError>): RequestResult<KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeleteErrors, ThrowOnError> => (options.client ?? client).delete<KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Rename Knowledge File
+ */
+export const knowledgeBaseFilesUpdate = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesUpdateData, ThrowOnError>): RequestResult<KnowledgeBaseFilesUpdateResponses, KnowledgeBaseFilesUpdateErrors, ThrowOnError> => (options.client ?? client).patch<KnowledgeBaseFilesUpdateResponses, KnowledgeBaseFilesUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Move Knowledge File
+ */
+export const knowledgeBaseFilesMove = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesMoveData, ThrowOnError>): RequestResult<KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesMoveErrors, ThrowOnError> => (options.client ?? client).post<KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesMoveErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/move',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Download Url
+ */
+export const knowledgeBaseFilesDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesDownloadUrlData, ThrowOnError>): RequestResult<KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesDownloadUrlErrors, ThrowOnError> => (options.client ?? client).get<KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesDownloadUrlErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/download-url',
+    ...options
+});
+
+/**
+ * File Deletion Impact
+ */
+export const knowledgeBaseFilesDeletionImpact = <ThrowOnError extends boolean = false>(options: Options<KnowledgeBaseFilesDeletionImpactData, ThrowOnError>): RequestResult<KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDeletionImpactErrors, ThrowOnError> => (options.client ?? client).get<KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDeletionImpactErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{knowledge_base_id}/files/{knowledge_file_id}/deletion-impact',
+    ...options
+});
+
+/**
+ * Effective File Policy
+ */
+export const filePoliciesEffective = <ThrowOnError extends boolean = false>(options?: Options<FilePoliciesEffectiveData, ThrowOnError>): RequestResult<FilePoliciesEffectiveResponses, FilePoliciesEffectiveErrors, ThrowOnError> => (options?.client ?? client).get<FilePoliciesEffectiveResponses, FilePoliciesEffectiveErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/file-policies/effective',
+    ...options
+});
+
+/**
+ * List File Policy Versions
+ */
+export const adminFilePolicyVersionsList = <ThrowOnError extends boolean = false>(options?: Options<AdminFilePolicyVersionsListData, ThrowOnError>): RequestResult<AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsListErrors, ThrowOnError> => (options?.client ?? client).get<AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/file-policy-versions',
+    ...options
+});
+
+/**
+ * Create File Policy Version
+ */
+export const adminFilePolicyVersionsCreate = <ThrowOnError extends boolean = false>(options: Options<AdminFilePolicyVersionsCreateData, ThrowOnError>): RequestResult<AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsCreateErrors, ThrowOnError> => (options.client ?? client).post<AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/file-policy-versions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update File Policy Version
+ */
+export const adminFilePolicyVersionsUpdate = <ThrowOnError extends boolean = false>(options: Options<AdminFilePolicyVersionsUpdateData, ThrowOnError>): RequestResult<AdminFilePolicyVersionsUpdateResponses, AdminFilePolicyVersionsUpdateErrors, ThrowOnError> => (options.client ?? client).patch<AdminFilePolicyVersionsUpdateResponses, AdminFilePolicyVersionsUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/file-policy-versions/{policy_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Publish File Policy Version
+ */
+export const adminFilePolicyVersionsPublish = <ThrowOnError extends boolean = false>(options: Options<AdminFilePolicyVersionsPublishData, ThrowOnError>): RequestResult<AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsPublishErrors, ThrowOnError> => (options.client ?? client).post<AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsPublishErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/file-policy-versions/{policy_id}/publish',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});

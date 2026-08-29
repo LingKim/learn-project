@@ -62,13 +62,18 @@ async def run_readiness_checks(
         _probe("redis", infrastructure.check_redis, settings.dependency_timeout_seconds),
         _probe(
             "rustfs",
-            lambda: infrastructure.check_rustfs(str(settings.rustfs_health_url)),
+            lambda: _check_rustfs(infrastructure, settings),
             settings.dependency_timeout_seconds,
         ),
     )
     checks = dict(results)
     is_ready = all(check.status == "up" for check in checks.values())
     return ReadyResponse(status="ready" if is_ready else "degraded", checks=checks)
+
+
+async def _check_rustfs(infrastructure: Infrastructure, settings: Settings) -> None:
+    await infrastructure.check_rustfs(str(settings.rustfs_health_url))
+    await infrastructure.check_rustfs_buckets(settings.rustfs_buckets)
 
 
 @router.get("/live", operation_id="health_live", response_model=LiveResponse)

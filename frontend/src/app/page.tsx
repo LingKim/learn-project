@@ -1,4 +1,5 @@
-import { ArrowUpRight, BookOpenText } from "lucide-react";
+import { ArrowUpRight, BookOpenText, Library } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { AccountControl } from "@/features/auth/account-control";
@@ -48,6 +49,13 @@ export default function Home() {
               </div>
 
               <div className="relative mt-14 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                <Link
+                  href="/content"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 font-semibold text-primary-foreground transition-colors hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_10%)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                >
+                  <Library aria-hidden="true" className="size-4" />
+                  进入内容库
+                </Link>
                 <span className="inline-flex items-center gap-2">
                   <span className="size-2 rounded-full bg-primary" />
                   OpenAPI 驱动契约

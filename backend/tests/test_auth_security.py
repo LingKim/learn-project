@@ -103,3 +103,18 @@ def test_settings_rejects_shared_authentication_secret() -> None:
             auth_refresh_digest_secret=_DIGEST_SECRET,
             auth_fingerprint_secret=_FINGERPRINT_SECRET,
         )
+
+
+def test_settings_parse_multiple_allowed_origins() -> None:
+    settings = Settings(
+        auth_access_secret=_ACCESS_SECRET,
+        auth_refresh_secret=_REFRESH_SECRET,
+        auth_refresh_digest_secret=_DIGEST_SECRET,
+        auth_fingerprint_secret=_FINGERPRINT_SECRET,
+        auth_allowed_origins="http://localhost:3000, http://127.0.0.1:3000",
+    )
+
+    assert settings.allowed_origins == [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]

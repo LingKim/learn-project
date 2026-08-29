@@ -1,10 +1,13 @@
-.PHONY: init-env bootstrap-db preflight install dev down logs contract format check test compose-config
+.PHONY: init-env bootstrap-db bootstrap-storage preflight install dev down logs contract format check test compose-config
 
 init-env:
 	./scripts/init-env.sh
 
 bootstrap-db:
 	./scripts/bootstrap-db.sh
+
+bootstrap-storage:
+	cd backend && uv run xuemian-ai-init-storage
 
 preflight:
 	./scripts/preflight.sh

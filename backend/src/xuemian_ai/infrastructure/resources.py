@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from xuemian_ai.core.config import Settings
+from xuemian_ai.file_management.storage import ObjectStorage
 from xuemian_ai.infrastructure.database import create_database_engine, create_session_factory
 
 
@@ -15,6 +16,7 @@ class Infrastructure:
     sessions: async_sessionmaker[AsyncSession]
     redis: Redis
     http: httpx.AsyncClient
+    object_storage: ObjectStorage
 
     @classmethod
     def create(cls, settings: Settings) -> "Infrastructure":
@@ -27,6 +29,7 @@ class Infrastructure:
                 timeout=settings.dependency_timeout_seconds,
                 trust_env=False,
             ),
+            object_storage=ObjectStorage(settings),
         )
 
     async def close(self) -> None:
@@ -44,3 +47,6 @@ class Infrastructure:
     async def check_rustfs(self, health_url: str) -> None:
         response = await self.http.get(health_url)
         response.raise_for_status()
+
+    async def check_rustfs_buckets(self, buckets: tuple[str, ...]) -> None:
+        await self.object_storage.check_buckets(buckets)
