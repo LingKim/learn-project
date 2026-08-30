@@ -26,7 +26,7 @@ async def test_reference_count_drift_stops_delete_and_enqueues_repair() -> None:
     stored = _stored_object(reference_count=2)
     session = AsyncMock()
     session.add = MagicMock()
-    session.scalar.side_effect = [stored, 0, None]
+    session.scalar.side_effect = [stored, 0, 0, None]
 
     await worker._delete_stored_object(session, stored.id)
 
@@ -60,7 +60,7 @@ async def test_last_reference_delete_writes_tombstone() -> None:
     stored = _stored_object(reference_count=0)
     session = AsyncMock()
     session.add = MagicMock()
-    session.scalar.side_effect = [stored, 0, None]
+    session.scalar.side_effect = [stored, 0, 0, None]
 
     await worker._delete_stored_object(session, stored.id)
 
@@ -76,6 +76,20 @@ async def test_last_reference_delete_writes_tombstone() -> None:
     )
     assert isinstance(tombstone, FileDeletionTombstone)
     assert tombstone.stored_object_id == stored.id
+
+
+async def test_profile_reference_stops_avatar_object_delete() -> None:
+    worker = object.__new__(FileTaskWorker)
+    worker._storage = AsyncMock()  # type: ignore[attr-defined]
+    stored = _stored_object(reference_count=0)
+    session = AsyncMock()
+    session.add = MagicMock()
+    session.scalar.side_effect = [stored, 0, 1]
+
+    await worker._delete_stored_object(session, stored.id)
+
+    worker._storage.delete_object.assert_not_awaited()  # type: ignore[attr-defined]
+    assert stored.status == "available"
 
 
 async def test_daily_retention_issues_only_technical_metadata_deletes() -> None:

@@ -9,11 +9,11 @@
   → 创建处理任务
   → 下载受控原件
   → 提取正文和来源结构
-  → 结构感知分块
-  → qwen3.7-text-embedding
+  → LlamaIndex 受控节点转换与结构感知分块
+  → LangChain 模型适配 → qwen3.7-text-embedding
   → PostgreSQL 全文索引 + pgvector
   → 原子发布解析版本
-  → 混合召回
+  → LlamaIndex Retriever 组合混合召回
   → qwen3-rerank
   → 返回来源片段
 ```
@@ -26,7 +26,16 @@
 - 宿主已提供 `pgvector 0.8.2` 扩展文件，当前项目数据库尚未安装扩展。
 - Alembic 迁移显式执行 `CREATE EXTENSION IF NOT EXISTS vector`。权限不足时迁移失败并给出管理员操作说明，应用启动不得自动创建扩展。
 - PDF 继续使用 `pypdf`；DOCX 引入专用 OOXML 解析依赖，避免自行不完整解释 WordprocessingML；Markdown 引入支持 AST/块级结构的解析依赖；TXT 使用现有 UTF-8 解码边界。
-- 千问文本 Embedding 优先使用 OpenAI 兼容接口；Rerank 使用 DashScope HTTP 接口。调用封装在独立 provider 中，不让领域服务依赖厂商响应结构。
+- LlamaIndex 用于把项目解析器产出的受控结构转换为带稳定来源元数据的节点，并承载索引与 Retriever 组合抽象；不使用其默认文件扫描、默认持久化目录或框架内权限过滤代替项目边界。
+- 千问文本 Embedding 通过 LangChain 的模型适配层接入 OpenAI 兼容接口；Rerank 使用独立 DashScope provider。两者都位于项目 provider 接口之后，不让领域服务依赖框架对象或厂商响应结构。
+- 本变更不创建生成式 Agent 图。LangGraph 在后续需要多节点业务编排的 OpenSpec 中落地；本变更的持久化 `BackgroundTask` 继续是解析任务事实源。
+
+### 2.1 框架与领域边界
+
+- LangChain 对外暴露项目定义的 Embedding provider 协议，不把 `Document`、Message 或回调对象写入领域模型。
+- LlamaIndex 节点 ID 由项目稳定 chunk 身份派生，节点元数据只携带执行所需的非秘密引用；正文最终写入并读取自 `DocumentChunk`。
+- PostgreSQL 查询必须在进入 LlamaIndex Retriever 组合前完成用户、知识库、文件和活动版本过滤。LlamaIndex 负责组合已授权候选，不负责补救越权查询。
+- 框架版本、节点转换策略和 Retriever 组合策略进入处理或检索策略版本，并纳入 Trace 和固定评测。
 
 ## 3. 领域模型
 
@@ -115,6 +124,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 
 ## 5. 分块策略
 
+- 项目解析器先产出受控结构块，再由 LlamaIndex transformation 管线转换为节点；不得把原始对象存储目录交给通用目录读取器扫描。
 - 优先使用标题、段落、列表、表格和代码块边界。
 - 超长结构单元才按可配置目标长度二次切分，并保留可配置少量重叠。
 - 不把表头与全部数据行分离；代码块尽量完整保留。
@@ -124,6 +134,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 ## 6. Embedding 与向量索引
 
 - 正式模型为 `qwen3.7-text-embedding`，维度 1024，距离为 Cosine。
+- 正式 provider 通过 LangChain 模型适配调用千问，领域服务只依赖项目定义的异步 Embedding 协议；确定性测试 provider 不依赖 LangChain 网络调用。
 - 单次批量不超过服务官方上限 20，并同时受可配置 token、超时和并发限制。
 - 单元和集成测试使用确定性测试 provider；真实 provider 只从环境读取 `DASHSCOPE_API_KEY`。
 - 数据库使用 `vector(1024)`，HNSW 索引使用 Cosine 运算类；上线前以真实数据规模验证索引构建、召回和资源消耗。
@@ -135,7 +146,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 ### 7.1 召回
 
 - 关键词召回使用 PostgreSQL 全文检索，向量召回使用 pgvector Cosine。
-- 两路先各自取得候选，再使用版本化融合策略合并去重。
+- 两路先各自取得已授权候选，再由 LlamaIndex Retriever 组合层使用版本化融合策略合并去重。
 - 所有 SQL 在召回前固定 `user_id`、有效 `KnowledgeBaseFile`、活动解析版本和可选文件集合；不得先全局检索再在应用层过滤。
 - 返回并记录基础混合召回排序，供质量评测和问题定位。
 

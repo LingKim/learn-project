@@ -13,6 +13,12 @@ MIB = 1024 * 1024
 GIB = 1024 * MIB
 
 DEFAULT_RULES: dict[str, object] = {
+    "avatar": {
+        "extensions": ["jpg", "jpeg", "png", "webp"],
+        "max_bytes": 5 * MIB,
+        "max_dimension": 8192,
+        "max_pixels": 40_000_000,
+    },
     "knowledge_document": {
         "extensions": ["pdf", "docx", "txt", "md"],
         "max_bytes": 50 * MIB,
@@ -60,6 +66,11 @@ DEFAULT_RULES: dict[str, object] = {
 }
 
 HARD_LIMITS: dict[str, object] = {
+    "avatar": {
+        "max_bytes": 10 * MIB,
+        "max_dimension": 12000,
+        "max_pixels": 60_000_000,
+    },
     "knowledge_document": {
         "max_bytes": 100 * MIB,
         "pdf_max_pages": 1000,

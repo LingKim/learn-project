@@ -6,12 +6,14 @@
 - Git：本轮未经授权，不 commit、不 push。
 - 模型调用：尚未调用千问，未产生模型费用。
 - 数据库：尚未执行迁移，未启用项目数据库的 `vector` 扩展。
+- AI 框架决策：已确认 LangChain、LangGraph、LlamaIndex 的项目级职责；LlamaIndex 与 LangChain 在本变更中的真实接线尚未实现或验证。
 
 ## 已核对事实
 
 - PostgreSQL 版本为 18.1；宿主可用 `pgvector 0.8.2`，当前项目数据库 `installed_version=none`。
 - 当前 `FileCleanupTask` 有持久化领取、租约和 `FOR UPDATE SKIP LOCKED`，但语义、长事务、无续租和无阶段进度使其不适合直接承载解析。
 - PDF 已有 `pypdf`；DOCX 当前只有校验级 ZIP/XML 读取；Markdown 当前按纯文本校验；尚无 pgvector adapter、正式分块器或 Embedding provider。
+- 当前依赖已包含 LangChain、LangGraph，尚未包含 LlamaIndex；本次只更新需求与 OpenSpec，未安装依赖或修改锁文件。
 - `.env` 中 `DASHSCOPE_API_KEY` 已确认非空；检查未输出或保存其值。
 
 ## 千问官方页面核对
@@ -34,6 +36,7 @@
 
 ## 验证边界
 
+- AI 三框架职责已写入 PRD、架构基线和本 OpenSpec，但“文档已更新”不等于 LlamaIndex 已接线或三者已有生产运行证据。
 - 以上文件存在、格式和静态结构已只读核对，不等于解析、Embedding、索引或检索已经通过。
 - 真实模型 smoke 必须只记录状态、耗时、批量、模型 ID 和质量指标，不记录正文、向量、Key 或完整服务响应。
 - 当前没有 OpenSpec CLI 可执行证据；若实施环境仍不存在，需明确报告而不能用目录结构检查冒充 strict validate。

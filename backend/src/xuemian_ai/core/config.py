@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     file_worker_lease_seconds: int = 300
     file_cleanup_batch_size: int = 100
     file_temporary_retention_days: int = 2
+    avatar_processing_timeout_seconds: float = 5.0
     dependency_timeout_seconds: float = 2.0
     auth_access_secret: SecretStr
     auth_refresh_secret: SecretStr
@@ -82,6 +83,8 @@ class Settings(BaseSettings):
             raise ValueError("file worker timing must be positive")
         if self.file_cleanup_batch_size <= 0 or self.file_temporary_retention_days <= 0:
             raise ValueError("file cleanup settings must be positive")
+        if self.avatar_processing_timeout_seconds <= 0:
+            raise ValueError("avatar processing timeout must be positive")
         if self.environment == "production":
             if self.rustfs_public_endpoint.scheme != "https":
                 raise ValueError("production RustFS public endpoint must use HTTPS")

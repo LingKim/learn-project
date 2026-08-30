@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "test:e2e": "../scripts/run-auth-e2e.sh",
     "test:e2e:files": "../scripts/run-file-e2e.sh",
+    "test:e2e:profile": "../scripts/run-profile-e2e.sh",
+    "shadcn": "node scripts/shadcn.mjs",
     "openapi:generate": "openapi-ts -i ../openapi/openapi.json -o src/lib/api/generated",
     "openapi:check": "node scripts/check-openapi-client.mjs",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm openapi:check"
@@ -47,6 +49,7 @@
     "oxfmt": "^0.64.0",
     "oxlint": "^1.79.0",
     "oxlint-tsgolint": "^7.0.2001",
+    "shadcn": "4.19.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.11"

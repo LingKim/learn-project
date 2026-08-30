@@ -1,7 +1,7 @@
 schema: spec-driven
 context: |
   产品：学面通AI，多模态 AI 学习与面试训练平台。
-  技术栈：Next.js + React + TypeScript + TanStack Query；FastAPI + LangChain + LangGraph；Docker。
+  技术栈：Next.js + React + TypeScript + TanStack Query；FastAPI + LangChain + LangGraph + LlamaIndex；Docker。
   工作方式：全程 AI Coding，先规格后实现，用户负责决策和验收。
 rules:
   proposal:
@@ -10,4 +10,3 @@ rules:
     - 说明前后端边界、外部依赖、隐私和失败行为
   tasks:
     - 任务必须可验证，禁止用笼统的“完成开发”作为验收项
-

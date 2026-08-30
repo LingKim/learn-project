@@ -5,7 +5,7 @@
 ## 技术基线
 
 - 前端：Next.js、React、TypeScript、Tailwind CSS、shadcn/ui、TanStack Query、Oxlint、Oxfmt。
-- 后端：Python 3.12、uv、FastAPI、SQLAlchemy、Alembic、LangChain、LangGraph。
+- 后端：Python 3.12、uv、FastAPI、SQLAlchemy、Alembic、LangChain、LangGraph、LlamaIndex。
 - 本地基础设施：复用已运行的 PostgreSQL 与 Redis；Docker Compose 管理 RustFS、backend、frontend。
 
 ## 第一次使用

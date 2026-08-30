@@ -26,6 +26,16 @@
 
 ## 当前验证边界
 
-- 尚未实现数据库迁移、文件 purpose、图片处理器、个人资料 API、前端页面或真实 Prompt 消费。
-- 尚未执行 curl、后端/前端测试、浏览器验收、Next.js build 或 Docker build。
-- 当前环境没有 OpenSpec CLI 可执行证据；本轮只能执行规格结构、Requirement/Scenario 数量、冲突词、尾随空白和 `git diff --check` 检查，不能冒充 strict validate。
+- 已新增 `UserProfile` 模型与 `20260830_01` Alembic 迁移；迁移离线 SQL 已检查，并已从 `ac3e06160525` 实际升级项目当前 PostgreSQL 到 `20260830_01`。
+- 已实现 `GET/PATCH /api/v1/users/me/profile`、头像上传会话/完成、私有读取与删除端点；活动薄弱点在领域尚未实现时稳定返回空集合。
+- 已为现有上传会话和文件策略增加独立 `avatar` purpose；头像经 Pillow 真实解码、静态帧/尺寸/像素/超时限制、EXIF 方向修正、居中裁剪与 512×512 WebP 派生后才切换资料引用，不创建 `KnowledgeBaseFile`。
+- Ruff、mypy、pytest 已通过；pytest 当前为 88 passed。头像单元测试覆盖 JPEG/PNG/WebP、动画 WebP、尺寸上限、方形输出、EXIF 清除和资料引用阻止误删。
+- `scripts/run-profile-backend-smoke.sh` 已在隔离 `_e2e` 数据库与唯一 RustFS bucket 真实通过：未认证 401、空资料、规范化更新、陈旧版本 409、真实 PNG 上传、异步 WebP 转换、私有读取、删除及删除后 404；测试进程和隔离数据已清理。
+- OpenAPI 快照和只读 generated client 已同步，`pnpm openapi:check` 通过。
+- 尚未完成管理员/禁用/软删除账号的真实 curl 矩阵、并发头像切换、对象写入/清理故障注入与最大重试验证；因此相关权限矩阵、清理重试和交付任务保持未勾选。
+- 已新增 `/profile` 受保护路由与“个人资料”导航，前端严格通过 `features/user-profile/api.ts -> queries.ts -> 页面` 接入 generated SDK；头像二进制也由 feature API 以 Bearer Token 获取，页面和 Query 未直接调用 generated SDK 或业务 `fetch`。
+- 页面已覆盖昵称首字默认头像、真实头像预览、上传/更换/删除/处理中、失败保留旧头像，及用户名只读、岗位、年/月经验、岗位等级、技能标签、关注点标签、学习目标、默认语言、活动薄弱点只读空状态；修改密码、删除账号与强制首次引导未混入页面。
+- 前端本轮执行 `pnpm lint`（含 API boundaries）、`pnpm typecheck`、`pnpm test`、`pnpm openapi:check`、`pnpm format:check` 均通过；Vitest 为 14 个测试文件、47 passed，新增覆盖年月换算、空经验、字段校验、头像类型/大小和 Query key/cache。
+- `scripts/run-profile-e2e.sh` 已使用隔离 `_e2e` PostgreSQL、独立 Redis key 和本轮唯一 RustFS buckets 真实通过；Playwright 为 1 passed，覆盖注册、资料保存、刷新恢复、真实 PNG 上传、worker 转 WebP、私有头像读取、版本递增和删除，退出时已清理隔离数据与 buckets。
+- Playwright 页面截图已保存到本地 `output/playwright/user-profile.png` 并完成桌面视觉检查；截图目录按项目规则不入 Git。Pen Prompt 07 仍未发送，47 号 Frame 仍未核验，因此不能把当前实现称为 Pen 像素级还原。
+- 本轮未运行 Next.js build 或 Docker image build，未执行 commit/push；真实 Prompt 消费与 Weakness 领域仍未实现。

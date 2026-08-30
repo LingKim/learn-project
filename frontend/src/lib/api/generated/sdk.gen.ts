@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses } from './types.gen';
+import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, AvatarUploadSessionsCompleteData, AvatarUploadSessionsCompleteErrors, AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCreateData, AvatarUploadSessionsCreateErrors, AvatarUploadSessionsCreateResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses, UserAvatarDeleteData, UserAvatarDeleteErrors, UserAvatarDeleteResponses, UserAvatarGetData, UserAvatarGetErrors, UserAvatarGetResponses, UserProfileGetData, UserProfileGetErrors, UserProfileGetResponses, UserProfileUpdateData, UserProfileUpdateErrors, UserProfileUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -328,4 +328,70 @@ export const adminFilePolicyVersionsPublish = <ThrowOnError extends boolean = fa
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Get User Profile
+ */
+export const userProfileGet = <ThrowOnError extends boolean = false>(options?: Options<UserProfileGetData, ThrowOnError>): RequestResult<UserProfileGetResponses, UserProfileGetErrors, ThrowOnError> => (options?.client ?? client).get<UserProfileGetResponses, UserProfileGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/profile',
+    ...options
+});
+
+/**
+ * Update User Profile
+ */
+export const userProfileUpdate = <ThrowOnError extends boolean = false>(options: Options<UserProfileUpdateData, ThrowOnError>): RequestResult<UserProfileUpdateResponses, UserProfileUpdateErrors, ThrowOnError> => (options.client ?? client).patch<UserProfileUpdateResponses, UserProfileUpdateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/profile',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Avatar Upload Session
+ */
+export const avatarUploadSessionsCreate = <ThrowOnError extends boolean = false>(options: Options<AvatarUploadSessionsCreateData, ThrowOnError>): RequestResult<AvatarUploadSessionsCreateResponses, AvatarUploadSessionsCreateErrors, ThrowOnError> => (options.client ?? client).post<AvatarUploadSessionsCreateResponses, AvatarUploadSessionsCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/avatar-upload-sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Complete Avatar Upload Session
+ */
+export const avatarUploadSessionsComplete = <ThrowOnError extends boolean = false>(options: Options<AvatarUploadSessionsCompleteData, ThrowOnError>): RequestResult<AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCompleteErrors, ThrowOnError> => (options.client ?? client).post<AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCompleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/avatar-upload-sessions/{upload_id}/complete',
+    ...options
+});
+
+/**
+ * Delete User Avatar
+ */
+export const userAvatarDelete = <ThrowOnError extends boolean = false>(options: Options<UserAvatarDeleteData, ThrowOnError>): RequestResult<UserAvatarDeleteResponses, UserAvatarDeleteErrors, ThrowOnError> => (options.client ?? client).delete<UserAvatarDeleteResponses, UserAvatarDeleteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/avatar',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get User Avatar
+ */
+export const userAvatarGet = <ThrowOnError extends boolean = false>(options?: Options<UserAvatarGetData, ThrowOnError>): RequestResult<UserAvatarGetResponses, UserAvatarGetErrors, ThrowOnError> => (options?.client ?? client).get<UserAvatarGetResponses, UserAvatarGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/avatar',
+    ...options
 });

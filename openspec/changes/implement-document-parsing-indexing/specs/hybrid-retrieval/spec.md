@@ -4,7 +4,7 @@
 
 ### Requirement：系统必须使用版本化文本 Embedding
 
-系统 SHALL 通过 provider 接口使用 `qwen3.7-text-embedding` 生成 1024 维向量，并将模型、维度、距离和策略版本固化到处理版本。
+系统 SHALL 通过项目 provider 接口和 LangChain 模型适配使用 `qwen3.7-text-embedding` 生成 1024 维向量，并将模型、维度、距离和策略版本固化到处理版本。
 
 #### Scenario：真实 Embedding
 
@@ -31,6 +31,28 @@
 - **WHEN** 单元或集成测试运行
 - **THEN** 测试使用确定性 provider 返回固定维度向量
 - **AND** 测试不依赖真实 Key、网络、额度或模型漂移
+
+### Requirement：RAG 摄取与检索必须真实使用 LlamaIndex
+
+系统 SHALL 使用 LlamaIndex 承担受控结构到节点的转换、索引抽象与 Retriever 组合，同时保持项目领域模型和 PostgreSQL 为正文、权限、向量与版本事实源。
+
+#### Scenario：文档节点转换
+
+- **WHEN** 项目解析器产出带来源锚点的受控结构块
+- **THEN** LlamaIndex transformation 将其转换为稳定节点并保留页码、段落和标题路径
+- **AND** 系统不使用通用目录扫描器读取未授权文件或目录
+
+#### Scenario：组合已授权候选
+
+- **WHEN** 关键词与向量查询已经在 SQL 中固定用户、知识库、文件和活动版本范围
+- **THEN** LlamaIndex Retriever 组合层融合并去重这些已授权候选
+- **AND** 不先执行跨范围全局检索再在应用层过滤
+
+#### Scenario：框架持久化边界
+
+- **WHEN** worker 发布处理版本或检索服务读取活动索引
+- **THEN** 正文、分块、向量、发布指针和 Trace 来自项目 PostgreSQL 模型
+- **AND** LlamaIndex 默认文档存储、默认向量存储或内存状态不成为业务事实源
 
 ### Requirement：混合召回必须在数据库查询前固定权限范围
 

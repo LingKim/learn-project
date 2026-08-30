@@ -174,6 +174,15 @@ class ObjectStorage:
             CopySource={"Bucket": source_bucket, "Key": source_key},
         )
 
+    async def put_bytes(self, bucket: str, key: str, content: bytes, content_type: str) -> None:
+        await asyncio.to_thread(
+            self._internal.put_object,
+            Bucket=bucket,
+            Key=key,
+            Body=content,
+            ContentType=content_type,
+        )
+
     async def delete_object(self, bucket: str, key: str) -> None:
         await asyncio.to_thread(self._internal.delete_object, Bucket=bucket, Key=key)
 

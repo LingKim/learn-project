@@ -10,6 +10,14 @@
 4. 本机 PostgreSQL 与 Redis 是外部依赖，项目 Compose 不管理其生命周期。
 5. 管理员、日志和健康检查均不得暴露用户业务正文或秘密。
 
+## AI 框架职责
+
+- LangChain 负责模型、Prompt、Tool、结构化输出和厂商适配。
+- LangGraph 负责显式、可恢复的业务工作流和多 Agent 状态机。
+- LlamaIndex 负责文档摄取、节点转换、索引抽象、Retriever 和 RAG 检索组合。
+- 三者是项目级技术底座，不要求每个 AI 功能同时调用三者；仅安装、导入或保留演示代码不算真实落地。
+- PostgreSQL、pgvector、项目领域模型、权限过滤、任务状态、版本发布和审计 Trace 是业务事实源，框架状态不得替代或绕过这些边界。
+
 ## 后端日志
 
 - 统一使用 structlog，并通过 ProcessorFormatter 接入 Uvicorn、标准库和第三方日志。

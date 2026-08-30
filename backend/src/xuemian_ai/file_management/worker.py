@@ -21,6 +21,8 @@ from xuemian_ai.file_management.models import (
 from xuemian_ai.file_management.service import verify_upload_task
 from xuemian_ai.file_management.storage import ObjectStorage
 from xuemian_ai.infrastructure.database import create_database_engine, create_session_factory
+from xuemian_ai.profiles.models import UserProfile
+from xuemian_ai.profiles.service import process_avatar_upload_task
 
 _logger = get_logger(__name__)
 
@@ -96,6 +98,10 @@ class FileTaskWorker:
             return task.id
 
     async def _execute(self, session: AsyncSession, task: FileCleanupTask) -> None:
+        if task.task_type == "process_avatar":
+            upload_id = UUID(str(task.payload["upload_session_id"]))
+            await process_avatar_upload_task(session, self._storage, self._settings, upload_id)
+            return
         if task.task_type == "verify_upload":
             upload_id = UUID(str(task.payload["upload_session_id"]))
             await verify_upload_task(session, self._storage, self._settings, upload_id)
@@ -149,6 +155,18 @@ class FileTaskWorker:
             )
             or 0
         )
+        profile_refs = int(
+            await session.scalar(
+                select(func.count())
+                .select_from(UserProfile)
+                .join(FileAsset, FileAsset.id == UserProfile.avatar_file_asset_id)
+                .where(FileAsset.stored_object_id == stored.id)
+            )
+            or 0
+        )
+        if profile_refs > 0:
+            stored.status = "available"
+            return
         if stored.reference_count != active_refs:
             stored.status = "available"
             await self._insert_task_if_missing(

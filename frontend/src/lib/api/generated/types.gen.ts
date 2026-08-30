@@ -5,6 +5,40 @@ export type ClientOptions = {
 };
 
 /**
+ * ActiveWeaknessView
+ */
+export type ActiveWeaknessView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Domain
+     */
+    domain?: string | null;
+    /**
+     * Severity
+     */
+    severity: string;
+    /**
+     * Mastery Status
+     */
+    mastery_status: string;
+    /**
+     * Source Summary
+     */
+    source_summary: string;
+    /**
+     * Last Verified At
+     */
+    last_verified_at?: string | null;
+};
+
+/**
  * ApiResponse[AuthPayload]
  */
 export type ApiResponseAuthPayload = {
@@ -17,6 +51,36 @@ export type ApiResponseAuthPayload = {
      */
     message: string;
     data: AuthPayload;
+};
+
+/**
+ * ApiResponse[AvatarUploadCompleteView]
+ */
+export type ApiResponseAvatarUploadCompleteView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AvatarUploadCompleteView;
+};
+
+/**
+ * ApiResponse[AvatarUploadPlan]
+ */
+export type ApiResponseAvatarUploadPlan = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AvatarUploadPlan;
 };
 
 /**
@@ -158,6 +222,21 @@ export type ApiResponseUploadSessionView = {
 };
 
 /**
+ * ApiResponse[UserProfileView]
+ */
+export type ApiResponseUserProfileView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: UserProfileView;
+};
+
+/**
  * ApiResponse[UserView]
  */
 export type ApiResponseUserView = {
@@ -225,6 +304,82 @@ export type AuthPayload = {
      */
     expires_in: number;
     user: UserView;
+};
+
+/**
+ * AvatarDeleteRequest
+ */
+export type AvatarDeleteRequest = {
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * AvatarUploadCompleteView
+ */
+export type AvatarUploadCompleteView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Failure Code
+     */
+    failure_code: string | null;
+    /**
+     * Profile Version
+     */
+    profile_version?: number | null;
+};
+
+/**
+ * AvatarUploadCreate
+ */
+export type AvatarUploadCreate = {
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Size
+     */
+    size: number;
+    /**
+     * Declared Mime
+     */
+    declared_mime: 'image/jpeg' | 'image/png' | 'image/webp';
+    /**
+     * Profile Version
+     */
+    profile_version: number;
+};
+
+/**
+ * AvatarUploadPlan
+ */
+export type AvatarUploadPlan = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Upload Url
+     */
+    upload_url: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Status
+     */
+    status: string;
 };
 
 /**
@@ -841,6 +996,110 @@ export type UploadSessionView = {
      * Duplicate File Asset Id
      */
     duplicate_file_asset_id?: string | null;
+};
+
+/**
+ * UserProfilePatch
+ */
+export type UserProfilePatch = {
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Nickname
+     */
+    nickname?: string | null;
+    /**
+     * Target Job
+     */
+    target_job?: string | null;
+    /**
+     * Experience Months
+     */
+    experience_months?: number | null;
+    /**
+     * Target Level
+     */
+    target_level?: 'intern' | 'junior' | 'intermediate' | 'senior' | 'expert' | null;
+    /**
+     * Target Skills
+     */
+    target_skills?: Array<string> | null;
+    /**
+     * Focus Topics
+     */
+    focus_topics?: Array<string> | null;
+    /**
+     * Learning Goal
+     */
+    learning_goal?: string | null;
+    /**
+     * Preferred Language
+     */
+    preferred_language?: 'zh-CN' | 'en-US' | null;
+};
+
+/**
+ * UserProfileView
+ */
+export type UserProfileView = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Nickname
+     */
+    nickname: string;
+    /**
+     * Target Job
+     */
+    target_job: string | null;
+    /**
+     * Experience Months
+     */
+    experience_months: number | null;
+    /**
+     * Experience Display
+     */
+    experience_display: string | null;
+    /**
+     * Target Level
+     */
+    target_level: 'intern' | 'junior' | 'intermediate' | 'senior' | 'expert' | null;
+    /**
+     * Target Skills
+     */
+    target_skills: Array<string> | null;
+    /**
+     * Focus Topics
+     */
+    focus_topics: Array<string> | null;
+    /**
+     * Learning Goal
+     */
+    learning_goal: string | null;
+    /**
+     * Preferred Language
+     */
+    preferred_language: 'zh-CN' | 'en-US' | null;
+    /**
+     * Avatar Set
+     */
+    avatar_set: boolean;
+    /**
+     * Avatar Url
+     */
+    avatar_url: string | null;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Active Weaknesses
+     */
+    active_weaknesses: Array<ActiveWeaknessView>;
 };
 
 /**
@@ -3147,3 +3406,426 @@ export type AdminFilePolicyVersionsPublishResponses = {
 };
 
 export type AdminFilePolicyVersionsPublishResponse = AdminFilePolicyVersionsPublishResponses[keyof AdminFilePolicyVersionsPublishResponses];
+
+export type UserProfileGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/profile';
+};
+
+export type UserProfileGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type UserProfileGetError = UserProfileGetErrors[keyof UserProfileGetErrors];
+
+export type UserProfileGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserProfileView;
+};
+
+export type UserProfileGetResponse = UserProfileGetResponses[keyof UserProfileGetResponses];
+
+export type UserProfileUpdateData = {
+    body: UserProfilePatch;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/profile';
+};
+
+export type UserProfileUpdateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type UserProfileUpdateError = UserProfileUpdateErrors[keyof UserProfileUpdateErrors];
+
+export type UserProfileUpdateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserProfileView;
+};
+
+export type UserProfileUpdateResponse = UserProfileUpdateResponses[keyof UserProfileUpdateResponses];
+
+export type AvatarUploadSessionsCreateData = {
+    body: AvatarUploadCreate;
+    headers: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/avatar-upload-sessions';
+};
+
+export type AvatarUploadSessionsCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AvatarUploadSessionsCreateError = AvatarUploadSessionsCreateErrors[keyof AvatarUploadSessionsCreateErrors];
+
+export type AvatarUploadSessionsCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAvatarUploadPlan;
+};
+
+export type AvatarUploadSessionsCreateResponse = AvatarUploadSessionsCreateResponses[keyof AvatarUploadSessionsCreateResponses];
+
+export type AvatarUploadSessionsCompleteData = {
+    body?: never;
+    path: {
+        /**
+         * Upload Id
+         */
+        upload_id: string;
+    };
+    query?: never;
+    url: '/api/v1/users/me/avatar-upload-sessions/{upload_id}/complete';
+};
+
+export type AvatarUploadSessionsCompleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AvatarUploadSessionsCompleteError = AvatarUploadSessionsCompleteErrors[keyof AvatarUploadSessionsCompleteErrors];
+
+export type AvatarUploadSessionsCompleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAvatarUploadCompleteView;
+};
+
+export type AvatarUploadSessionsCompleteResponse = AvatarUploadSessionsCompleteResponses[keyof AvatarUploadSessionsCompleteResponses];
+
+export type UserAvatarDeleteData = {
+    body: AvatarDeleteRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/avatar';
+};
+
+export type UserAvatarDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type UserAvatarDeleteError = UserAvatarDeleteErrors[keyof UserAvatarDeleteErrors];
+
+export type UserAvatarDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserProfileView;
+};
+
+export type UserAvatarDeleteResponse = UserAvatarDeleteResponses[keyof UserAvatarDeleteResponses];
+
+export type UserAvatarGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/avatar';
+};
+
+export type UserAvatarGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type UserAvatarGetError = UserAvatarGetErrors[keyof UserAvatarGetErrors];
+
+export type UserAvatarGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};

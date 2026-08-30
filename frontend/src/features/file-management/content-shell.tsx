@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenText, Library, Sparkles } from "lucide-react";
+import { BookOpenText, Library, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/", label: "工程状态", icon: Sparkles },
   { href: "/content", label: "内容库", icon: Library },
+  { href: "/profile", label: "个人资料", icon: UserRound },
 ] as const;
 
 export function ContentShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -31,7 +32,7 @@ export function ContentShell({ children }: Readonly<{ children: ReactNode }>) {
             </Link>
             <nav aria-label="主要导航" className="flex items-center gap-1">
               {navigation.map(({ href, label, icon: Icon }) => {
-                const active = href === "/content" ? pathname.startsWith(href) : pathname === href;
+                const active = href === "/" ? pathname === href : pathname.startsWith(href);
                 return (
                   <Link
                     key={href}

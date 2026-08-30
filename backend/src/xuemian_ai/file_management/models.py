@@ -89,6 +89,9 @@ class UploadSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
             f"status IN ({_quoted(UPLOAD_STATUSES)})", name="ck_file_upload_sessions_status"
         ),
         CheckConstraint("upload_mode IN ('single', 'multipart', 'reuse')", name="ck_upload_mode"),
+        CheckConstraint(
+            "purpose IN ('knowledge_document', 'avatar')", name="ck_file_upload_purpose"
+        ),
         UniqueConstraint("owner_user_id", "idempotency_key", name="uq_upload_owner_idempotency"),
         Index("ix_file_upload_sessions_owner_status", "owner_user_id", "status"),
         Index("ix_file_upload_sessions_expires_at", "expires_at"),
@@ -97,10 +100,16 @@ class UploadSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
     owner_user_id: Mapped[UUID] = mapped_column(
         PostgreSQLUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    knowledge_base_id: Mapped[UUID] = mapped_column(
+    knowledge_base_id: Mapped[UUID | None] = mapped_column(
         PostgreSQLUUID(as_uuid=True),
         ForeignKey("knowledge_bases.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    purpose: Mapped[str] = mapped_column(
+        String(32),
         nullable=False,
+        default="knowledge_document",
+        server_default="knowledge_document",
     )
     policy_version_id: Mapped[UUID] = mapped_column(
         PostgreSQLUUID(as_uuid=True),
@@ -124,6 +133,17 @@ class UploadSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
     result_knowledge_file_id: Mapped[UUID | None] = mapped_column(
         PostgreSQLUUID(as_uuid=True), nullable=True
     )
+    result_file_asset_id: Mapped[UUID | None] = mapped_column(
+        PostgreSQLUUID(as_uuid=True),
+        ForeignKey(
+            "file_assets.id",
+            ondelete="SET NULL",
+            use_alter=True,
+            name="fk_file_upload_sessions_result_file_asset_id",
+        ),
+        nullable=True,
+    )
+    requested_profile_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
     duplicate_file_asset_id: Mapped[UUID | None] = mapped_column(
         PostgreSQLUUID(as_uuid=True), nullable=True
     )

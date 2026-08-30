@@ -345,6 +345,8 @@ class FileManagementService:
         )
         if asset is None:
             raise ConflictError("重复候选已失效", error_key="FILE_UPLOAD_STATE_CONFLICT")
+        if upload.knowledge_base_id is None:
+            raise ConflictError("上传用途不匹配", error_key="FILE_UPLOAD_STATE_CONFLICT")
         existing_target = await self._active_binding(upload.knowledge_base_id, asset.id)
         if existing_target is not None:
             raise ConflictError("该知识库已存在相同文件", error_key="FILE_ALREADY_ATTACHED")
@@ -1017,6 +1019,8 @@ async def verify_upload_task(
         return
     if upload.status != "verifying" or not upload.temporary_object_key:
         raise ValueError("FILE_UPLOAD_STATE_CONFLICT")
+    if upload.purpose != "knowledge_document" or upload.knowledge_base_id is None:
+        raise ValueError("FILE_UPLOAD_PURPOSE_CONFLICT")
     rules = upload.policy_snapshot
     try:
         payload = await storage.read_and_hash(

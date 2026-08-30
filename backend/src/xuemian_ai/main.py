@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from xuemian_ai.api.auth import router as auth_router
 from xuemian_ai.api.files import router as files_router
 from xuemian_ai.api.health import router as health_router
+from xuemian_ai.api.profiles import router as profiles_router
 from xuemian_ai.core.config import get_settings
 from xuemian_ai.core.logging import configure_logging, get_logger
 from xuemian_ai.core.problem_details import PROBLEM_RESPONSES, register_problem_handlers
@@ -71,6 +72,7 @@ def create_app() -> FastAPI:
     application.include_router(health_router, prefix=settings.api_v1_prefix)
     application.include_router(auth_router, prefix=settings.api_v1_prefix)
     application.include_router(files_router, prefix=settings.api_v1_prefix)
+    application.include_router(profiles_router, prefix=settings.api_v1_prefix)
     return application
 
 
