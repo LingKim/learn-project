@@ -16,7 +16,7 @@
 - LangGraph 负责显式、可恢复的业务工作流和多 Agent 状态机。
 - LlamaIndex 负责文档摄取、节点转换、索引抽象、Retriever 和 RAG 检索组合。
 - 三者是项目级技术底座，不要求每个 AI 功能同时调用三者；仅安装、导入或保留演示代码不算真实落地。
-- PostgreSQL、pgvector、项目领域模型、权限过滤、任务状态、版本发布和审计 Trace 是业务事实源，框架状态不得替代或绕过这些边界。
+- PostgreSQL 与项目领域模型是正文、分块元数据、权限、任务状态、版本发布和审计 Trace 的业务事实源；Qdrant 是可重建的向量索引存储，只保存向量和最小过滤标识，框架状态不得替代或绕过这些边界。
 
 ## 后端日志
 
@@ -29,5 +29,5 @@
 ## 当前边界
 
 - 本期只有系统健康纵切，不代表 PRD 业务里程碑已经开始实现。
-- PostgreSQL 暂不启用 pgvector；进入内容库与 RAG 开发前必须补充对应 OpenSpec。
+- 项目不启用 PostgreSQL `pgvector`；内容库与 RAG 使用 Qdrant，具体双库一致性、权限过滤和清理边界由 `implement-document-parsing-indexing` OpenSpec 定义。
 - GitHub Actions、生产发布、云端域名与 TLS 不在本期范围内。

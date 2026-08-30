@@ -34,7 +34,7 @@
 
 ### Requirement：RAG 摄取与检索必须真实使用 LlamaIndex
 
-系统 SHALL 使用 LlamaIndex 承担受控结构到节点的转换、索引抽象与 Retriever 组合，同时保持项目领域模型和 PostgreSQL 为正文、权限、向量与版本事实源。
+系统 SHALL 使用 LlamaIndex 承担受控结构到节点的转换、索引抽象与 Retriever 组合；项目领域模型和 PostgreSQL SHALL 作为正文、分块元数据、权限、任务、活动版本和 Trace 的事实源，Qdrant SHALL 只保存可重建向量点与索引。
 
 #### Scenario：文档节点转换
 
@@ -44,24 +44,24 @@
 
 #### Scenario：组合已授权候选
 
-- **WHEN** 关键词与向量查询已经在 SQL 中固定用户、知识库、文件和活动版本范围
+- **WHEN** PostgreSQL 已解析当前用户、知识库、文件和活动版本允许范围，且 Qdrant 向量查询已使用相同范围的 payload filter
 - **THEN** LlamaIndex Retriever 组合层融合并去重这些已授权候选
 - **AND** 不先执行跨范围全局检索再在应用层过滤
 
 #### Scenario：框架持久化边界
 
 - **WHEN** worker 发布处理版本或检索服务读取活动索引
-- **THEN** 正文、分块、向量、发布指针和 Trace 来自项目 PostgreSQL 模型
+- **THEN** 正文、分块来源、权限、发布指针和 Trace 来自项目 PostgreSQL 模型，向量点来自对应 Qdrant collection
 - **AND** LlamaIndex 默认文档存储、默认向量存储或内存状态不成为业务事实源
 
 ### Requirement：混合召回必须在数据库查询前固定权限范围
 
-系统 SHALL 使用 PostgreSQL 全文检索和 pgvector Cosine 分别召回候选，并在 SQL 中预先限定当前用户、单个有效知识库、活动处理版本和可选文件集合。
+系统 SHALL 使用 PostgreSQL 全文检索和 Qdrant Cosine 分别召回候选。PostgreSQL SHALL 先解析当前用户、单个有效知识库、活动处理版本和可选文件集合，关键词 SQL 与 Qdrant payload filter SHALL 使用同一允许范围，Qdrant 命中 SHALL 在返回正文前再次通过 PostgreSQL 当前关系复核。
 
 #### Scenario：知识库内检索
 
 - **WHEN** 已认证用户在自己的知识库提交查询
-- **THEN** 关键词和向量召回都只扫描该用户在该知识库中的有效文件关联
+- **THEN** 关键词查询限定到该知识库的有效关联，Qdrant 查询按 `user_id`、活动 `processing_version_id` 和可选文件范围过滤
 - **AND** 结果不包含已删除、未发布、失败或其他知识库的分块
 
 #### Scenario：限定多个文件
@@ -70,11 +70,58 @@
 - **THEN** 两路召回都限定到该子集
 - **AND** 包含无权或不属于该知识库的文件时返回不泄露响应
 
+#### Scenario：并发删除或版本切换
+
+- **WHEN** Qdrant 已返回候选，但对应知识库关联被删除、文件被移动或活动处理版本在正文加载前切换
+- **THEN** PostgreSQL 返回前复核丢弃已经失效的候选
+- **AND** 系统不得返回陈旧正文或已撤销来源
+
 #### Scenario：管理员检索用户资料
 
 - **WHEN** 管理员凭角色尝试检索普通用户知识库
 - **THEN** 系统拒绝访问
 - **AND** 管理权限不得绕过用户资料所有权
+
+### Requirement：Qdrant point 必须最小化且可重建
+
+系统 SHALL 使用稳定 chunk UUID 作为幂等 point 身份，使用版本化 collection/profile 保存 1024 维 Cosine 向量，并只在 payload 保存执行权限过滤和一致性校验所需的最小标识；`user_id` SHALL 使用 tenant payload index，高频 UUID 过滤字段 SHALL 在导入前建立 payload index。
+
+#### Scenario：写入向量 point
+
+- **WHEN** worker 为一个草稿处理版本写入 Qdrant
+- **THEN** point payload 只包含用户、文件资产、处理版本、分块和 profile/schema 等不可读标识
+- **AND** payload 不包含正文、标题、文件名、知识库名、对象存储地址、Query、Key 或模型响应
+- **AND** 重试相同 chunk 使用相同 point ID 和 `wait=true` 并保持幂等
+
+#### Scenario：不兼容 Embedding profile
+
+- **WHEN** 模型、维度、距离或向量语义发生不兼容变化
+- **THEN** 系统创建新的不可变 profile 和独立 Qdrant collection
+- **AND** 不在同一 collection 混写不兼容向量
+- **AND** 历史文件不会被静默全量重建
+
+#### Scenario：collection alias 切换
+
+- **WHEN** 一个新 profile collection 已完成受控迁移、权限隔离和质量门禁，需要执行蓝绿切换
+- **THEN** 系统可以使用 Qdrant alias 原子切换整个 collection
+- **AND** alias 不承担单文件、单用户或单处理版本发布
+- **AND** 系统不宣称 alias 与 PostgreSQL profile 状态跨库原子
+
+### Requirement：Qdrant 故障不得静默改变检索策略
+
+系统 SHALL 将 Qdrant 不可用、鉴权失败和 collection schema 不兼容映射为稳定脱敏错误；激活策略要求混合检索时不得静默退化为 BM25-only。
+
+#### Scenario：向量召回不可用
+
+- **WHEN** Qdrant 请求在重试边界后仍失败，且当前策略要求向量召回
+- **THEN** 检索接口返回明确服务错误并记录脱敏 Trace 状态
+- **AND** 不把 BM25-only 结果冒充为完整混合检索
+
+#### Scenario：显式降级策略
+
+- **WHEN** 独立 BM25-only 策略已经通过评测并被明确发布
+- **THEN** 系统可以按该策略执行关键词检索
+- **AND** 响应与 Trace 明确标识没有执行向量召回
 
 ### Requirement：融合排序必须可复现并可评测
 
