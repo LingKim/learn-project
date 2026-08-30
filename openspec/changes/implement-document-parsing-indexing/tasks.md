@@ -1,0 +1,65 @@
+# Tasks：实现文档解析、索引与可验证检索
+
+## 1. 规格与依赖
+
+- [x] 更新 PRD 至 v0.8，固化解析、模型、图片、检索 Trace、反馈授权和管理员诊断边界
+- [x] 完成 Proposal、Design、三份增量 Specification 与初始 evidence
+- [x] 核对千问当前官方 Embedding/Rerank API、价格与限流，记录可漂移字段而不写入秘密
+- [ ] 通过包管理器增加 DOCX、Markdown、pgvector 和必要分块依赖，更新锁文件
+
+## 2. 数据库与任务骨架
+
+- [ ] 创建显式启用 `vector` 扩展及解析、分块、通用任务表的 Alembic 迁移
+- [ ] 实现 `BackgroundTask` 领取、短事务、租约续期、lease token、取消和重试分类
+- [ ] 实现 `DocumentProcessingVersion`、`DocumentChunk`、活动版本唯一约束和 HNSW Cosine 索引
+- [ ] 实现 `RetrievalTrace`、阶段诊断事件、30 天默认保留和质量工单合法延长钩子
+- [ ] 验证干净隔离数据库 upgrade/downgrade/upgrade 和 pgvector 权限失败行为
+
+## 3. 文档解析与分块
+
+- [ ] 实现 PDF 文本层、页码、图片计数、扫描/低正文失败和噪声边界
+- [ ] 实现 DOCX 标题、段落、列表、表格、图片计数与不支持结构边界
+- [ ] 实现 TXT 段落解析与 Markdown AST、代码块、表格、alt 文本和外部图片禁止抓取
+- [ ] 实现结构感知分块、稳定来源锚点、内容摘要和策略版本
+- [ ] 增加四类解析器、复杂结构、确定性失败和资源限制测试
+
+## 4. Embedding、索引与版本发布
+
+- [ ] 实现确定性测试 Embedding provider 和千问 `qwen3.7-text-embedding` provider
+- [ ] 实现 AI 处理确认记录、后端发送前门禁和前端一次性确认交互
+- [ ] 实现 1024 维批量 Embedding、并发/超时/限流、脱敏日志和错误分类
+- [ ] 实现草稿解析版本、分块/向量写入、原子发布与旧租约拒绝提交
+- [ ] 实现首次解析、重新解析、失败保留旧版、取消清理草稿和策略升级边界
+- [ ] 实现同用户跨知识库复用、移动不重建、删除后立即退出检索与最后引用清理
+
+## 5. 混合检索与 Rerank
+
+- [ ] 实现 PostgreSQL 全文检索和 pgvector Cosine 召回
+- [ ] 实现版本化融合、去重和知识库/文件/用户 SQL 前置过滤
+- [ ] 实现确定性测试 Rerank provider 和千问 `qwen3-rerank` provider
+- [ ] 实现基础混合排序与 Rerank 后排序分开记录，Rerank 必需策略失败时不静默降级
+- [ ] 实现各阶段候选 ID/排名/分数、策略版本、耗时和错误的脱敏 Trace，禁止记录 Query/片段正文或高基数 Prometheus label
+- [ ] 实现受保护检索 API、`trace_id`、稳定响应模型、分页/Top-N 边界和 RFC 9457 错误
+
+## 6. 前端联调
+
+- [ ] 导出 OpenAPI 并重新生成只读前端 client
+- [ ] 在 file-management feature API、query/mutation options 中接入任务查询、取消、重试、重新解析和检索契约
+- [ ] 更新内容库文件状态、真实阶段、分块计数、图片未识别提示和安全失败原因
+- [ ] 增加前端 API、Query、状态组件和交互测试；不新增问答或向量调试页面
+
+## 7. 自动化与真实验证
+
+- [ ] 建立不含用户原件的四类合成固定夹具和检索 golden set
+- [ ] 验证 `Recall@5 ≥ 90%`、来源定位完整率 100%、越权结果为 0，并分别报告混合与 Rerank 后指标
+- [ ] 执行 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融，报告 Recall@K、MRR、nDCG、无答案判断、P95 延迟和错误率
+- [ ] 使用隔离数据库和确定性 provider 验证取消、重试、并发 worker、租约过期、原子切换、移动和删除矩阵
+- [ ] 使用真实 PostgreSQL/RustFS/千问及用户指定 PDF、DOCX、Markdown 和生成 TXT 执行脱敏 smoke
+- [ ] 真实后端 curl 门禁通过后执行前端隔离 Playwright E2E，并清理临时数据、任务、向量和测试服务
+
+## 8. 自审与交付
+
+- [ ] 运行 Ruff、mypy、pytest、Oxfmt、Oxlint、TypeScript、Vitest、OpenAPI 和 API 边界检查
+- [ ] 自审秘密、正文日志、Trace 旁路、高基数 label、管理员越权、Markdown 外部资源、模型版本漂移、未跟踪文件和 migration 回滚
+- [ ] 更新 evidence 与 Tasks 真实状态，明确未运行 Next.js build/Docker build 和未覆盖边界
+- [ ] 用户人工验收后再根据当轮明确授权决定是否 commit、push
