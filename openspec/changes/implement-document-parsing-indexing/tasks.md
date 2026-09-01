@@ -7,7 +7,10 @@
 - [x] 核对千问当前官方 Embedding/Rerank API、价格与限流，记录可漂移字段而不写入秘密
 - [x] 更新 PRD 至 v0.11，确认 LangChain、LangGraph、LlamaIndex 的项目级真实使用要求与职责边界
 - [x] 更新 PRD 至 v0.12，将向量存储决策由 pgvector 修订为 Qdrant，并补充权限过滤、双库发布、清理与恢复边界
-- [ ] 通过包管理器增加 LlamaIndex、LangChain 千问兼容适配、DOCX、Markdown、Qdrant client 和必要分块依赖，更新锁文件
+- [x] 更新 PRD 至 v0.13，将首期范围修订为 PDF 页面级 OCR，继续排除 DOCX/Markdown 内嵌图片与通用视觉理解
+- [x] 确认 PDF 原生文字提取与 OCR 前页面渲染统一使用 `pypdfium2`（PDFium），不在业务解析链路继续使用 `pypdf`
+- [ ] 完成 OCR 引擎与页面渲染选型，锁定语言包、版本、部署方式、默认页数/像素/时限、并发和质量阈值，并记录隐私、许可证、资源与降级边界
+- [ ] 通过包管理器增加 LlamaIndex、LangChain 千问兼容适配、DOCX、Markdown、Qdrant client、`pypdfium2`、OCR 识别和必要分块依赖，更新锁文件
 
 ## 2. 数据库与任务骨架
 
@@ -21,11 +24,13 @@
 ## 3. 文档解析与分块
 
 - [ ] 实现项目解析结构到 LlamaIndex 节点的受控 transformation，稳定映射节点 ID、来源锚点和策略版本
-- [ ] 实现 PDF 文本层、页码、图片计数、扫描/低正文失败和噪声边界
+- [ ] 将现有 PDF 上传结构校验从 `pypdf` 迁移到 `pypdfium2` 或独立安全校验边界，以损坏、加密、嵌入附件、页数和资源限制回归测试证明门禁未降低后再移除 `pypdf`
+- [ ] 实现 PDF 逐页文字层提取、待 OCR 页面判定、页面级 OCR、原页序合并、来源/质量标记、图片计数和噪声边界
+- [ ] 实现 OCR 页数/像素/DPI/并发/时限门禁、中间文件清理，以及空结果、低质量、资源超限和短暂运行时失败分类
 - [ ] 实现 DOCX 标题、段落、列表、表格、图片计数与不支持结构边界
 - [ ] 实现 TXT 段落解析与 Markdown AST、代码块、表格、alt 文本和外部图片禁止抓取
 - [ ] 实现结构感知分块、稳定来源锚点、内容摘要和策略版本
-- [ ] 增加四类解析器、复杂结构、确定性失败和资源限制测试
+- [ ] 增加四类解析器、纯扫描 PDF、混合 PDF、重复文本防护、OCR 中间数据清理、确定性失败和资源限制测试
 
 ## 4. Embedding、索引与版本发布
 
@@ -49,12 +54,12 @@
 
 - [ ] 导出 OpenAPI 并重新生成只读前端 client
 - [ ] 在 file-management feature API、query/mutation options 中接入任务查询、取消、重试、重新解析和检索契约
-- [ ] 更新内容库文件状态、真实阶段、分块计数、图片未识别提示和安全失败原因
+- [ ] 更新内容库文件状态、真实阶段、OCR 页数、分块计数、图片未识别提示和安全失败原因
 - [ ] 增加前端 API、Query、状态组件和交互测试；不新增问答或向量调试页面
 
 ## 7. 自动化与真实验证
 
-- [ ] 建立不含用户原件的四类合成固定夹具和检索 golden set
+- [ ] 建立不含用户原件的四类合成固定夹具和检索 golden set；PDF 夹具同时覆盖原生文字层、纯扫描和混合页面
 - [ ] 验证 `Recall@5 ≥ 90%`、来源定位完整率 100%、越权结果为 0，并分别报告混合与 Rerank 后指标
 - [ ] 执行 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融，报告 Recall@K、MRR、nDCG、无答案判断、P95 延迟和错误率
 - [ ] 保持 PostgreSQL 全文检索为首期关键词基线；Qdrant BM25/sparse/hybrid 的中文 tokenizer 与租户 IDF 另立 OpenSpec 后再评估
@@ -67,6 +72,6 @@
 ## 8. 自审与交付
 
 - [ ] 运行 Ruff、mypy、pytest、Oxfmt、Oxlint、TypeScript、Vitest、OpenAPI 和 API 边界检查
-- [ ] 自审秘密、正文日志、Trace 旁路、高基数 label、管理员越权、Markdown 外部资源、模型版本漂移、未跟踪文件和 migration 回滚
+- [ ] 自审秘密、正文/OCR 页面日志、OCR 中间文件残留、Trace 旁路、高基数 label、管理员越权、Markdown 外部资源、模型版本漂移、未跟踪文件和 migration 回滚
 - [ ] 更新 evidence 与 Tasks 真实状态，明确未运行 Next.js build/Docker build 和未覆盖边界
 - [ ] 用户人工验收后再根据当轮明确授权决定是否 commit、push

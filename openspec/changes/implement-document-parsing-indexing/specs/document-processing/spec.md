@@ -26,14 +26,34 @@
 
 - **WHEN** PDF 页面包含可提取正文和内嵌图片
 - **THEN** 系统提取正文并保留 1-based 页码
-- **AND** 记录图片数量并提示图片未识别
-- **AND** 不把图片内容声明为已解析
+- **AND** 标记页面来源为 `native_text`，不对该页无差别重复 OCR
+- **AND** 记录仍未识别的内嵌图片数量，不把图片语义声明为已解析
 
 #### Scenario：解析扫描 PDF
 
 - **WHEN** PDF 无有效文字层，或正文低于阈值且页面以图片为主
-- **THEN** 任务确定性失败并返回 `DOCUMENT_OCR_REQUIRED`
-- **AND** 文件不得进入可用状态或自动重试
+- **THEN** 系统只对待识别页面执行 OCR，按原页序生成正文并保留 1-based 页码
+- **AND** 页面来源标记为 `ocr`，记录 OCR provider、策略版本和归一化质量信号
+- **AND** 达到质量门禁的结果可以继续分块和索引
+
+#### Scenario：解析混合 PDF
+
+- **WHEN** 同一 PDF 同时包含可靠文字层页面和扫描页面
+- **THEN** 系统分别使用原生提取和页面级 OCR，并按原页序合并结果
+- **AND** 同一页只保留一个最终正文来源，不产生原生文本与 OCR 重复分块
+
+#### Scenario：OCR 结果不可用
+
+- **WHEN** OCR 后仍无有效正文、质量低于门禁或超出明确资源上限
+- **THEN** 任务确定性失败并分别返回 `DOCUMENT_OCR_NO_TEXT`、`DOCUMENT_OCR_LOW_CONFIDENCE` 或 `DOCUMENT_OCR_LIMIT_EXCEEDED`
+- **AND** 文件不得进入可用状态，不得把乱码或不完整草稿写入活动版本
+- **AND** 确定性失败不自动重试
+
+#### Scenario：清理 OCR 中间数据
+
+- **WHEN** PDF OCR 成功、失败或被协作取消
+- **THEN** 页面渲染图和 OCR 中间文件被清理
+- **AND** 普通日志、Trace 和长期对象存储不保留页面图像或 OCR 正文副本
 
 #### Scenario：解析 DOCX
 

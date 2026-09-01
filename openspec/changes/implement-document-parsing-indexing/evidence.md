@@ -2,17 +2,18 @@
 
 ## 当前状态
 
-- 状态：需求共识与 OpenSpec 已完成，尚未开始实现。
+- 状态：PDF 页面级 OCR 的产品范围与 OpenSpec 行为已修订，OCR 引擎和资源参数仍待选型，尚未开始实现。
 - Git：本轮未经授权，不 commit、不 push。
 - 模型调用：尚未调用千问，未产生模型费用。
 - 数据库：尚未执行解析索引迁移；项目已决定不启用 PostgreSQL `vector` 扩展，Qdrant 尚未部署或接线。
 - AI 框架决策：已确认 LangChain、LangGraph、LlamaIndex 的项目级职责；LlamaIndex 与 LangChain 在本变更中的真实接线尚未实现或验证。
+- OCR 决策：2026-09-01 已确认首期增加 PDF 页面级 OCR，继续排除 DOCX/Markdown 内嵌图片和通用视觉理解；PDF 原生文字提取与 OCR 前页面渲染选用 `pypdfium2`（PDFium），OCR 引擎与资源阈值仍待选型。本轮未安装依赖或执行识别。
 
 ## 已核对事实
 
 - PostgreSQL 版本为 18.1；宿主虽可用 `pgvector 0.8.2`，当前项目数据库 `installed_version=none`，并已由产品决策改为不启用。
 - 当前 `FileCleanupTask` 有持久化领取、租约和 `FOR UPDATE SKIP LOCKED`，但语义、长事务、无续租和无阶段进度使其不适合直接承载解析。
-- PDF 已有 `pypdf`；DOCX 当前只有校验级 ZIP/XML 读取；Markdown 当前按纯文本校验；尚无 Qdrant client/adapter、正式分块器或 Embedding provider。
+- 当前后端依赖和上传校验仍使用 `pypdf`，尚未安装或验证 `pypdfium2`；DOCX 当前只有校验级 ZIP/XML 读取；Markdown 当前按纯文本校验；尚无 Qdrant client/adapter、正式分块器或 Embedding provider。
 - 当前依赖已包含 LangChain、LangGraph，尚未包含 LlamaIndex；本次只更新需求与 OpenSpec，未安装依赖或修改锁文件。
 - `.env` 中 `DASHSCOPE_API_KEY` 已确认非空；检查未输出或保存其值。
 

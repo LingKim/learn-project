@@ -8,7 +8,8 @@
 服务端校验成功
   → 创建处理任务
   → 下载受控原件
-  → 提取正文和来源结构
+  → 提取原生正文并识别待 OCR 页面
+  → 按需执行 PDF 页面级 OCR
   → LlamaIndex 受控节点转换与结构感知分块
   → LangChain 模型适配 → qwen3.7-text-embedding
   → PostgreSQL 全文索引 + Qdrant 隔离向量写入
@@ -27,7 +28,7 @@
 - Qdrant 是独立运行依赖，保存可重建的向量点与索引。正式环境通过配置注入 HTTPS endpoint 与 API Key；应用启动不得隐式创建、删除或修改 collection schema。
 - 本地开发由项目 Compose 管理锁定版本的单节点 Qdrant 和独立持久化卷；生产部署形态、复制数、存储和备份参数由环境配置，不把单节点开发配置冒充生产高可用。
 - API 与 worker 通过项目 adapter 使用官方 `AsyncQdrantClient`；领域服务不得直接依赖 Qdrant SDK 模型。服务端镜像与 Python client 一起锁版本并验证兼容性，不使用漂移的 `latest`。
-- PDF 继续使用 `pypdf`；DOCX 引入专用 OOXML 解析依赖，避免自行不完整解释 WordprocessingML；Markdown 引入支持 AST/块级结构的解析依赖；TXT 使用现有 UTF-8 解码边界。
+- PDF 统一使用 `pypdfium2`（PDFium）承担原生文字层提取、页面信息读取和 OCR 前页面渲染，不让业务解析链路直接依赖 `pypdf`。页面级 OCR 通过项目 `DocumentOcrProvider` 协议接入；具体 OCR 引擎、语言包、版本、部署方式、默认页数/像素/时限和质量阈值必须在编码前完成选型并锁定，不得由业务服务直接依赖引擎响应结构。现有上传校验中的 `pypdf` 迁移必须用损坏、加密、嵌入附件和资源限制回归测试证明安全门禁未降低后才能移除依赖。DOCX 引入专用 OOXML 解析依赖，避免自行不完整解释 WordprocessingML；Markdown 引入支持 AST/块级结构的解析依赖；TXT 使用现有 UTF-8 解码边界。
 - LlamaIndex 用于把项目解析器产出的受控结构转换为带稳定来源元数据的节点，并承载索引与 Retriever 组合抽象；不使用其默认文件扫描、默认持久化目录或框架内权限过滤代替项目边界。
 - 千问文本 Embedding 通过 LangChain 的模型适配层接入 OpenAI 兼容接口；Rerank 使用独立 DashScope provider。两者都位于项目 provider 接口之后，不让领域服务依赖框架对象或厂商响应结构。
 - 本变更不创建生成式 Agent 图。LangGraph 在后续需要多节点业务编排的 OpenSpec 中落地；本变更的持久化 `BackgroundTask` 继续是解析任务事实源。
@@ -66,6 +67,7 @@
 - 向量索引 profile、Qdrant collection schema 版本
 - Rerank 配置版本
 - 正文字符数、块数、图片数、未识别图片数
+- 原生文本页数、OCR 页数、OCR 低质量页数和 OCR 策略版本
 - `published_at`、失败码、创建和完成时间
 
 一个 FileAsset 最多只有一个已发布活动版本。草稿版本不会进入普通检索。
@@ -119,10 +121,13 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 
 ### 4.1 PDF
 
-- 只解析有文字层的页面，保留 1-based 页码。
-- 检测每页图片及总图片数，但不执行 OCR 或图片描述。
-- 混合型 PDF 可以发布文字结果，并提示未识别图片数量。
-- 全文无有效文本，或有效正文低于可配置最低阈值且页面以图片为主时，确定性失败 `DOCUMENT_OCR_REQUIRED`。
+- 按页优先提取原生文字层并保留 1-based 页码。页面具有达到质量门禁的原生正文时，不执行重复 OCR。
+- 对无有效文字层，或正文低于可配置阈值且页面以扫描图像为主的页面执行 OCR；不能只凭 PDF 图片对象数量判定扫描页。
+- 混合型 PDF 按原页序合并 `native_text` 与 `ocr` 页面结果。同一页只能选择一个最终正文来源，不得把原生文本和 OCR 重复内容同时入库。
+- 每个页面结果记录 `source_kind=native_text|ocr`；OCR 页面同时记录 provider、策略版本和归一化质量信号。分块继承页码与来源，不能把 OCR 文本伪装成原生文字层。
+- OCR 页面渲染受可配置页数、像素、DPI、并发、单页时限和单文件总时限约束；原始渲染图和 OCR 中间文件只用于当前草稿处理，成功、失败或取消后均须清理，不写普通日志或长期对象存储。
+- OCR 后全文仍无有效正文时确定性失败 `DOCUMENT_OCR_NO_TEXT`；质量低于门禁时失败 `DOCUMENT_OCR_LOW_CONFIDENCE`；超出明确资源上限时失败 `DOCUMENT_OCR_LIMIT_EXCEEDED`。这些失败不得发布乱码或静默降级为可用。
+- 检测仍未识别的内嵌图片并单独计数。完成页面 OCR 不表示已经理解图表、照片或示意图。
 - 不将空白页、页眉页脚噪声或重复水印单独生成有效分块；具体去噪规则版本化。
 
 ### 4.2 DOCX
@@ -210,12 +215,13 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 1. `waiting`
 2. `downloading`
 3. `extracting`
-4. `chunking`
-5. `embedding`
-6. `indexing`
-7. `publishing`
+4. `ocr`（存在待 OCR 页面时）
+5. `chunking`
+6. `embedding`
+7. `indexing`
+8. `publishing`
 
-无法准确计算进度时只返回阶段。Embedding 等可计数阶段返回已处理块数和总块数，不计算虚假线性百分比。
+无待 OCR 页面时跳过 `ocr`。OCR 和 Embedding 等可计数阶段分别返回已处理页数/总页数、已处理块数/总块数；无法准确计算进度时只返回阶段，不计算虚假线性百分比。
 
 ### 8.2 执行模型
 
@@ -230,8 +236,8 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 
 - `pending` 立即取消；处理中写入 `cancel_requested`，worker 在安全检查点停止；`publishing` 开始后拒绝取消。
 - 取消清理本次草稿，原始文件保留；首次解析回到待解析，重新解析继续使用旧活动版本。
-- 损坏、空正文、扫描 PDF、结构不支持和内容超限不自动重试。
-- 存储、PostgreSQL/Qdrant 连接、Embedding 限流、超时和可重试服务错误最多自动重试 3 次。
+- 损坏、OCR 后空正文、OCR 低质量、结构不支持和内容超限不自动重试。
+- 存储、PostgreSQL/Qdrant 连接、OCR 运行时短暂不可用、Embedding 限流、超时和可重试服务错误最多自动重试 3 次。
 - 鉴权或配置错误直接最终失败并脱敏告警。
 - 手动重试创建新任务/尝试，不覆盖历史记录。
 
@@ -257,7 +263,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 
 普通 JSON 响应继续使用现有 `ApiResponse`/`PageResponse`、状态码枚举和 RFC 9457 Problem Details。OpenAPI 更新后重新生成只读前端 client。
 
-前端继续遵循：组件 → query/mutation options → feature `api.ts` → 共享协议层 → generated SDK。内容库页面增加真实阶段、图片未识别数量、失败原因、取消、重试和重新解析；不新增问答页面、分块调试页或向量管理页。
+前端继续遵循：组件 → query/mutation options → feature `api.ts` → 共享协议层 → generated SDK。内容库页面增加真实阶段、PDF OCR 页数、图片未识别数量、OCR 低质量或资源超限等安全失败原因、取消、重试和重新解析；不新增问答页面、分块调试页或向量管理页。
 
 ## 11. 安全与隐私
 

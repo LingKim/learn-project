@@ -36,7 +36,7 @@
 
 ### Requirement：任务必须展示真实阶段和可计算进度
 
-系统 SHALL 使用等待、下载、提取、分块、Embedding、索引、发布等真实阶段；只有能够准确计数时才返回已完成单元与总单元。
+系统 SHALL 使用等待、下载、提取、按需 OCR、分块、Embedding、索引、发布等真实阶段；只有能够准确计数时才返回已完成单元与总单元。
 
 #### Scenario：提取阶段总量未知
 
@@ -49,6 +49,12 @@
 - **WHEN** 总分块数已知且 worker 正在生成向量
 - **THEN** API 返回已处理分块数和总分块数
 - **AND** 页面可显示真实计数
+
+#### Scenario：页面级 OCR
+
+- **WHEN** PDF 已识别出需要 OCR 的页面集合
+- **THEN** API 返回已处理 OCR 页数和待 OCR 总页数
+- **AND** 无待 OCR 页面时跳过 OCR 阶段，不显示虚假进度
 
 ### Requirement：取消必须在安全边界执行
 
@@ -79,9 +85,15 @@
 
 #### Scenario：确定性解析失败
 
-- **WHEN** 文档损坏、扫描、空正文、结构不支持或内容超限
+- **WHEN** 文档损坏、OCR 后空正文、OCR 低质量、结构不支持或内容超限
 - **THEN** 任务直接失败且 `retryable=false`
 - **AND** 不自动重复消耗资源
+
+#### Scenario：OCR 运行时短暂失败
+
+- **WHEN** OCR worker 或其受控运行依赖短暂不可用或超时
+- **THEN** 系统按基础设施重试策略退避重试
+- **AND** 日志不包含页面图像、OCR 正文或中间文件路径
 
 #### Scenario：Embedding 限流
 
