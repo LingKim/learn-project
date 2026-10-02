@@ -61,7 +61,7 @@
 
 - [ ] 建立不含用户原件的四类合成固定夹具和检索 golden set；PDF 夹具同时覆盖原生文字层、纯扫描和混合页面
 - [ ] 验证 `Recall@5 ≥ 90%`、来源定位完整率 100%、越权结果为 0，并分别报告混合与 Rerank 后指标
-- [ ] 执行 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融，报告 Recall@K、MRR、nDCG、无答案判断、P95 延迟和错误率
+- [ ] 执行 FTS-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融，报告 Recall@K、MRR、nDCG、无答案判断、P95 延迟和错误率
 - [x] 保持 PostgreSQL 全文检索为首期关键词基线；Qdrant BM25/sparse/hybrid 的中文 tokenizer 与租户 IDF 另立 OpenSpec 后再评估
 - [ ] 使用隔离 PostgreSQL、隔离 Qdrant 和确定性 provider 验证取消、重试、并发 worker、租约过期、原子切换、移动、删除、孤儿点与缺失点修复矩阵
 - [ ] 增加架构边界测试，证明 LangChain 与 LlamaIndex 进入真实链路且不会接管领域持久化、绕过 PostgreSQL 授权范围/Qdrant payload filter 或扫描非授权目录
@@ -82,7 +82,7 @@
 
 - [x] OCR 固定采用用户指定 `qwen3.5-ocr`，真实合成图片识别成功，输出置信度保持 null
 - [x] 真实千问合成文件上传 → 原生提取/扫描页 OCR → Embedding → Qdrant → 混合召回 → Rerank → 证据与 Trace 通过，覆盖四种文件格式及三种 PDF 模式
-- [x] 隔离迁移 upgrade/downgrade/upgrade 通过，业务库未迁移
+- [x] 隔离迁移 upgrade/downgrade/upgrade 通过；2026-10-02 获授权后业务库已迁移至 20261002_02
 - [x] 七项真实 PostgreSQL/Qdrant 集成场景通过，含并发、缺失与多余点修复；仅测试隔离资源
 - [x] 浏览器注册、AI 说明默认未选/按钮禁用、确认、TXT 上传和完成状态核验；截图接口超时，重新解析点击被遮挡，未记为通过
 - [ ] 固定中文/同义/无答案 golden set、Recall@5/MRR/nDCG 与消融性能报告
@@ -90,7 +90,12 @@
 - [ ] Qdrant 持久化重启、snapshot/alias 恢复演练
 - [ ] 外部用户原件 smoke、供应商数据地域/留存条款确认与人工验收
 
-保留独立 pypdf 上传安全校验门禁，PDFium 只负责业务提取和渲染。未勾选的复合任务存在未覆盖子项，不表示完全未实现。没有生成式问答或管理员正文查看入口。
+保留独立 pypdf 上传安全校验门禁，PDFium 只负责业务提取和渲染。未勾选的复合任务存在未覆盖子项，不表示完全未实现。生成式问答由 implement-learning-quick-answer 独立交付；仍无管理员正文查看入口。
 
 - [x] 修正公式/箭头/弯引号被 ASCII 白名单误判的 OCR 质量门禁，加入先红后绿回归及噪声拒绝测试；真实失败页重放通过，更新已部署 document-worker
 - [ ] 用户重新解析该 PDF 后完成全文件索引验收（本次未自动修改用户任务）
+
+### 后续评测证据
+
+- [x] 8 份合成 TXT、16 个中文精确/同义问题的 FTS/Vector/Hybrid/No-Rerank/Full 离线候选重放，来源定位完整；详见 `../implement-learning-quick-answer/retrieval-evaluation.md`。
+- [ ] 四格式完整 golden set 和独立消融性能实验；检索层无答案正确率仍为 0，不把生成层三个拒答样例冒充检索门禁达标。

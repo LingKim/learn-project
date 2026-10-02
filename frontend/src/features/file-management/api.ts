@@ -19,6 +19,7 @@ import {
   knowledgeBaseFilesMove,
   knowledgeBaseFilesUpdate,
   knowledgeBasesCreate,
+  knowledgeBasesStatistics,
   knowledgeBasesDelete,
   knowledgeBasesDeletionImpact,
   knowledgeBasesList,
@@ -39,6 +40,7 @@ import type {
   KnowledgeBaseCreate,
   KnowledgeBaseUpdate,
   KnowledgeBaseView,
+  KnowledgeBaseStatistics,
   KnowledgeFileMove,
   KnowledgeFileUpdate,
   KnowledgeFileView,
@@ -100,7 +102,14 @@ export type KnowledgeFileListInput = {
   pageSize?: number;
   search?: string;
   status?: string;
+  fileFormat?: "pdf" | "docx" | "txt" | "md";
+  sort?: "updated" | "name";
 };
+
+export async function getKnowledgeBaseStatistics(): Promise<KnowledgeBaseStatistics> {
+  const options = await authorizedOptions();
+  return requestQueryData(() => knowledgeBasesStatistics(options));
+}
 
 export async function listKnowledgeBases({
   page = 1,
@@ -236,6 +245,8 @@ export async function listKnowledgeFiles({
   pageSize = 20,
   search,
   status,
+  fileFormat,
+  sort,
 }: KnowledgeFileListInput): Promise<PageData<KnowledgeFileView>> {
   const options = await authorizedOptions();
   return requestPageData(() =>
@@ -247,6 +258,8 @@ export async function listKnowledgeFiles({
         page_size: pageSize,
         search: search || undefined,
         status: status || undefined,
+        file_format: fileFormat,
+        sort,
       },
     }),
   );

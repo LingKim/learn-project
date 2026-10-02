@@ -23,9 +23,12 @@ from xuemian_ai.file_management.models import (
     UploadSession,
 )
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
+from xuemian_ai.learning.models import LearningConversation, LearningTurn
 from xuemian_ai.profiles.models import UserProfile
 
 __all__ = [
+    "LearningConversation",
+    "LearningTurn",
     "AIProcessingConsent",
     "BackgroundTask",
     "ProcessingAttempt",

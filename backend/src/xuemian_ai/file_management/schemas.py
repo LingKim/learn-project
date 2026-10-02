@@ -33,6 +33,14 @@ class KnowledgeBaseView(BaseModel):
     updated_at: datetime
 
 
+class KnowledgeBaseStatistics(BaseModel):
+    knowledge_base_count: int
+    available_file_count: int
+    processing_file_count: int
+    latest_updated_name: str | None = None
+    file_counts: dict[UUID, int] = Field(default_factory=dict)
+
+
 class UploadSessionCreate(BaseModel):
     filename: str
     size: int = Field(gt=0)

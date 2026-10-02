@@ -177,7 +177,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 - 两路先各自取得已授权候选，再由 LlamaIndex Retriever 组合层使用版本化融合策略合并去重。
 - PostgreSQL 先固定 `user_id`、有效 `KnowledgeBaseFile`、活动解析版本和可选文件集合；关键词 SQL 使用同一范围，向量查询把允许的 `user_id`、`processing_version_id` 和可选 `file_asset_id` 转成 Qdrant payload filter。
 - Qdrant 只返回 point/chunk ID 与分数。系统回 PostgreSQL 通过当前有效关联和活动版本重新加载正文；并发删除、移动或版本切换导致复核失败时丢弃候选并按策略补查，不返回陈旧结果。
-- Qdrant 不可用时，如果激活策略要求混合检索，接口明确失败；只有显式发布并通过评测的降级策略才能返回 BM25-only，禁止静默改变策略。
+- Qdrant 不可用时，如果激活策略要求混合检索，接口明确失败；只有显式发布并通过评测的降级策略才能返回 FTS-only，禁止静默改变策略。
 - 返回并记录基础混合召回排序，供质量评测和问题定位。
 
 ### 7.2 重排
@@ -198,7 +198,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 
 固定评测集对同一 Query 运行：
 
-1. BM25-only；
+1. FTS-only；
 2. Vector-only；
 3. Hybrid-only；
 4. Hybrid + Rerank；
@@ -283,7 +283,7 @@ Trace 不存文档正文、片段正文、向量、模型完整响应、预签�
 1. 解析器、结构块、锚点、状态机、版本切换和 provider 适配器单元测试。
 2. 隔离 PostgreSQL 与隔离 Qdrant 集成测试，覆盖 collection/schema 初始化、payload index、租约续期、并发领取、旧租约提交、取消、重试、删除和跨用户隔离。
 3. 确定性 Embedding/Rerank provider 完成四类合成文档的端到端自动化验证。
-4. 固定评测集分别测量关键词、向量、混合和 Rerank 后指标，并执行 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融。
+4. 固定评测集分别测量关键词、向量、混合和 Rerank 后指标，并执行 FTS-only、Vector-only、Hybrid-only、无 Rerank 和完整策略消融。
 5. 使用 `.env` 中真实 Key、隔离 Qdrant collection 和外部测试文件执行千问 smoke；测试数据、point、collection 和任务精确清理。
 6. 后端真实 curl 门禁通过后更新 OpenAPI、生成前端 client，再做内容库页面联调和隔离 Playwright E2E。
 7. 执行 Qdrant 中断、鉴权失败、schema 不兼容、部分 upsert、发布失败、孤儿/缺失 point 对账和快照恢复后重建矩阵。

@@ -4,10 +4,16 @@ import {
   fileUploadSessionsCreate,
   knowledgeBaseFilesList,
   knowledgeBasesList,
+  knowledgeBasesStatistics,
 } from "@/lib/api/generated/sdk.gen";
 import { authenticatedAccessToken } from "@/features/auth/auth-provider";
 
-import { createUploadSession, listKnowledgeBases, listKnowledgeFiles } from "./api";
+import {
+  createUploadSession,
+  listKnowledgeBases,
+  listKnowledgeFiles,
+  getKnowledgeBaseStatistics,
+} from "./api";
 
 vi.mock("@/features/auth/auth-provider", () => ({
   authenticatedAccessToken: vi.fn(),
@@ -17,6 +23,7 @@ vi.mock("@/lib/api/generated/sdk.gen", () => ({
   fileUploadSessionsCreate: vi.fn(),
   knowledgeBaseFilesList: vi.fn(),
   knowledgeBasesList: vi.fn(),
+  knowledgeBasesStatistics: vi.fn(),
 }));
 
 const response = new Response(null, { status: 200 });
@@ -70,6 +77,8 @@ describe("file management api", () => {
       knowledgeBaseId: "base-1",
       search: "事务",
       status: "pending_processing",
+      fileFormat: "pdf",
+      sort: "name",
     });
 
     expect(knowledgeBaseFilesList).toHaveBeenCalledWith(
@@ -80,7 +89,32 @@ describe("file management api", () => {
           page_size: 20,
           search: "事务",
           status: "pending_processing",
+          file_format: "pdf",
+          sort: "name",
         },
+      }),
+    );
+  });
+
+  it("unwraps overview statistics through authenticated shared protocol", async () => {
+    const data = {
+      knowledge_base_count: 2,
+      available_file_count: 5,
+      processing_file_count: 1,
+      file_counts: { "base-1": 4 },
+      latest_updated_name: "资料",
+    };
+    vi.mocked(knowledgeBasesStatistics).mockResolvedValue({
+      data: { code: 200, message: "success", data },
+      error: undefined,
+      request: new Request("http://localhost/api/v1/knowledge-bases/statistics"),
+      response,
+    });
+    await expect(getKnowledgeBaseStatistics()).resolves.toEqual(data);
+    expect(knowledgeBasesStatistics).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: { Authorization: "Bearer access-token" },
+        baseUrl: "/api/backend",
       }),
     );
   });

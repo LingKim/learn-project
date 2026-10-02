@@ -96,3 +96,9 @@ uv run python scripts/qwen_document_smoke.py
 ```
 
 2026-10-02 用户明确授权后，业务库 `xuemian_ai` 已升级到 `20261002_01`，正式 collection `xuemian_qwen_text_1024_v1` 已创建并校验。已启动本机 API、文档 worker、文件 worker 与 scheduler，前端使用 Next dev；运行清单在 `.runtime/processes.json`。部署前业务库备份位于 `.runtime/backups/xuemian_ai-before-document-processing-20261002.dump`（受限权限、Git 忽略）。Next.js build 与 Docker image build 未运行。详见 OpenSpec evidence 中的验证边界。
+
+## 学习快速回答与业务迁移
+
+`LEARNING_ANSWER_MODEL=qwen3.8-flash`，使用既有千问密钥与兼容 API，关闭思考并校验结构化输出和引用。首次生成需独立确认 AI 数据处理说明。模型调用不持有数据库事务，不向外部 LangSmith 自动发送正文追踪。
+
+后端开发可按根 AGENTS.md 直接迁移本项目业务库：`backend/.venv/bin/python backend/scripts/migrate_business_database.py`；脚本先核对目标与版本、备份，再迁移并读回。不要启停外部 PostgreSQL/Redis。隔离验证使用 `backend/.venv/bin/python backend/scripts/run_learning_checks.py --real-models --quality`，只发送合成资料，结束清理本次测试数据库与 collection。

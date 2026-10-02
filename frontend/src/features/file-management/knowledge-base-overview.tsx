@@ -25,6 +25,7 @@ import {
   createKnowledgeBaseMutationOptions,
   deleteKnowledgeBaseMutationOptions,
   knowledgeBaseListQueryOptions,
+  knowledgeBaseStatisticsQueryOptions,
   updateKnowledgeBaseMutationOptions,
 } from "./queries";
 
@@ -47,6 +48,7 @@ export function KnowledgeBaseOverview() {
   const [localError, setLocalError] = useState("");
   const [deleteItem, setDeleteItem] = useState<KnowledgeBaseView | null>(null);
   const [deleteMode, setDeleteMode] = useState<"SOURCE_ONLY" | "CASCADE">("SOURCE_ONLY");
+  const statistics = useQuery(knowledgeBaseStatisticsQueryOptions());
   const listQuery = useQuery(knowledgeBaseListQueryOptions(page, 20));
   const createMutation = useMutation(createKnowledgeBaseMutationOptions(queryClient));
   const updateMutation = useMutation(updateKnowledgeBaseMutationOptions(queryClient));
@@ -79,15 +81,12 @@ export function KnowledgeBaseOverview() {
 
   return (
     <ContentShell>
-      <section className="mx-auto w-full max-w-[90rem] px-4 py-8 sm:px-8 sm:py-10">
-        <div className="flex flex-col gap-5 border-b border-border pb-7 sm:flex-row sm:items-end sm:justify-between">
+      <section className="mx-auto w-full max-w-[1440px] px-5 py-6 lg:px-11">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold tracking-[0.18em] text-accent-foreground uppercase">
-              Content Library
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-[-0.04em]">内容库 / 知识库</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              每位用户始终至少保留一个知识库。资料上传后先进入“已上传·待解析”，不会伪装成已解析可用。
+            <h1 className="text-2xl font-semibold">内容库 / 知识库</h1>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              每位用户始终至少保留一个知识库；资料上传后自动进入解析队列。
             </p>
           </div>
           <Button variant="brand" onClick={() => openNameDialog({ mode: "create" })}>
@@ -95,29 +94,45 @@ export function KnowledgeBaseOverview() {
             创建知识库
           </Button>
         </div>
-
-        <div className="grid gap-3 border-b border-border py-5 sm:grid-cols-3">
-          <div className="py-2 sm:border-r sm:border-border sm:px-4 first:pl-0">
-            <p className="text-xs text-muted-foreground">知识库</p>
-            <p className="mt-1 text-2xl font-bold">{listQuery.data?.meta.total ?? "—"} 个</p>
-          </div>
-          <div className="py-2 sm:border-r sm:border-border sm:px-4">
-            <p className="text-xs text-muted-foreground">当前页</p>
-            <p className="mt-1 text-2xl font-bold">{listQuery.data?.data.length ?? "—"} 个</p>
-          </div>
-          <div className="py-2 sm:px-4">
-            <p className="text-xs text-muted-foreground">保留规则</p>
-            <p className="mt-1 text-base font-bold">至少 1 个有效知识库</p>
-          </div>
+        <div className="mt-4 grid grid-cols-2 border border-border sm:grid-cols-4">
+          {[
+            {
+              label: "知识库",
+              value: statistics.data ? `${statistics.data.knowledge_base_count} 个` : "—",
+            },
+            {
+              label: "可用文件",
+              value: statistics.data ? `${statistics.data.available_file_count} 个` : "—",
+            },
+            {
+              label: "解析中",
+              value: statistics.data ? `${statistics.data.processing_file_count} 个` : "—",
+            },
+            { label: "最近更新", value: statistics.data?.latest_updated_name ?? "—" },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="min-w-0 border-r border-border px-4 py-3 last:border-r-0"
+            >
+              <p className="text-[11px] text-muted-foreground">{item.label}</p>
+              <p className="mt-1 truncate text-[19px] font-semibold">{item.value}</p>
+            </div>
+          ))}
         </div>
-
-        <div className="mt-7 flex items-center justify-between">
-          <h2 className="text-base font-bold">我的知识库</h2>
+        {statistics.isError ? (
+          <p role="alert" className="mt-2 text-xs text-danger">
+            统计读取失败
+            <Button size="sm" variant="ghost" onClick={() => void statistics.refetch()}>
+              重试
+            </Button>
+          </p>
+        ) : null}
+        <div className="mt-4 flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold">我的知识库</h2>
           {listQuery.isFetching ? (
             <span className="text-xs text-muted-foreground">正在刷新…</span>
           ) : null}
         </div>
-
         {listQuery.isPending ? (
           <div
             className="mt-4 border-y border-border py-16 text-center text-sm text-muted-foreground"
@@ -139,32 +154,35 @@ export function KnowledgeBaseOverview() {
             <p className="mt-1 text-sm text-muted-foreground">创建一个知识库后即可上传学习资料。</p>
           </div>
         ) : (
-          <ul className="mt-4 border-t border-border">
+          <ul className="mt-3 border-t border-border">
             {listQuery.data.data.map((item) => (
               <li
                 key={item.id}
-                className="group flex flex-col gap-4 border-b border-border px-3 py-4 transition-colors hover:bg-muted/35 sm:flex-row sm:items-center"
+                className={`group flex flex-col gap-4 border-b border-border ${item.is_default ? "bg-muted/60" : ""} px-3 py-2.5 transition-colors hover:bg-sidebar sm:flex-row sm:items-center`}
               >
                 <Link
                   href={`/content/${item.id}`}
                   className="flex min-w-0 flex-1 items-center gap-4 focus-visible:outline-2 focus-visible:outline-ring"
                 >
                   <span
-                    className={`grid size-10 shrink-0 place-items-center rounded-md ${item.is_default ? "bg-primary/35" : "bg-muted"}`}
+                    className={`grid size-8 shrink-0 place-items-center rounded-md ${item.is_default ? "bg-muted" : "bg-sidebar"}`}
                   >
                     {item.is_default ? (
-                      <FolderOpen className="size-5 text-accent-foreground" />
+                      <FolderOpen className="size-4 text-accent-foreground" />
                     ) : (
-                      <Folder className="size-5 text-accent-foreground" />
+                      <Folder className="size-4 text-accent-foreground" />
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold">{item.name}</span>
+                    <span className="block truncate text-xs font-semibold">{item.name}</span>
                     <span className="mt-1 block text-xs text-muted-foreground">
                       {item.is_default ? "默认知识库 · " : ""}更新于 {formatDate(item.updated_at)}
                     </span>
                   </span>
                 </Link>
+                <span className="text-[11px] text-muted-foreground">
+                  {statistics.data ? `${statistics.data.file_counts?.[item.id] ?? 0} 个文件` : "—"}
+                </span>
                 <div className="flex items-center gap-1 sm:opacity-70 sm:transition-opacity sm:group-hover:opacity-100">
                   <Button
                     type="button"

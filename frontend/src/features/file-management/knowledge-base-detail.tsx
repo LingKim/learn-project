@@ -100,6 +100,8 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search.trim());
+  const [fileFormat, setFileFormat] = useState<"all" | "pdf" | "docx" | "txt" | "md">("all");
+  const [sort, setSort] = useState<"updated" | "name">("updated");
   const [status, setStatus] = useState("all");
   const [fileDialog, setFileDialog] = useState<FileDialogState>(null);
   const [dialogValue, setDialogValue] = useState("");
@@ -115,6 +117,8 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
       20,
       deferredSearch,
       status === "all" ? "" : status,
+      fileFormat === "all" ? undefined : fileFormat,
+      sort,
     ),
   );
   const uploadMutation = useMutation(uploadKnowledgeFileMutationOptions(queryClient));
@@ -184,25 +188,22 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
 
   return (
     <ContentShell>
-      <section className="mx-auto w-full max-w-[90rem] px-4 py-8 sm:px-8 sm:py-10">
+      <section className="mx-auto w-full max-w-[1440px] px-5 py-[22px] lg:px-10">
         <Link
           href="/content"
-          className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+          className="inline-flex min-h-6 items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
         >
           <ArrowLeft className="size-4" />
           返回知识库
         </Link>
-        <AIProcessingNotice />
-        <div className="mt-4 flex flex-col gap-5 border-b border-border pb-7 sm:flex-row sm:items-end sm:justify-between">
+
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-[0.18em] text-accent-foreground uppercase">
-              Knowledge Base
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-[-0.04em]">
+            <h1 className="text-[23px] font-semibold">
               {currentBase?.name ?? (basesQuery.isPending ? "正在加载…" : "知识库详情")}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              支持 PDF、DOCX、TXT、MD；校验通过后自动解析并建立检索索引；扫描 PDF 按页识别文字。
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {filesQuery.data?.meta.total ?? "—"} 个文件 · 解析状态以各文件最新任务为准
             </p>
           </div>
           <div>
@@ -220,11 +221,17 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload />
-              {uploadMutation.isPending ? "正在上传与校验" : "上传资料"}
+              {uploadMutation.isPending ? "正在上传与校验" : "上传文件"}
             </Button>
           </div>
         </div>
 
+        <p className="mt-3 rounded bg-sidebar px-3 py-2 text-[11px] text-muted-foreground">
+          支持 PDF、DOCX、TXT、Markdown；上传并校验通过后自动进入解析队列。
+        </p>
+        <div className="mt-3">
+          <AIProcessingNotice />
+        </div>
         {uploadMutation.isError ? (
           <p
             role="alert"
@@ -234,7 +241,7 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
           </p>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -267,6 +274,40 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
               <SelectItem value="cancelled">已取消</SelectItem>
             </SelectContent>
           </Select>
+          <Select
+            value={fileFormat}
+            onValueChange={(value) => {
+              setFileFormat(value as typeof fileFormat);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-36" aria-label="文件格式">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">格式：全部</SelectItem>
+              {(["pdf", "docx", "txt", "md"] as const).map((value) => (
+                <SelectItem key={value} value={value}>
+                  {value.toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={sort}
+            onValueChange={(value) => {
+              setSort(value as typeof sort);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-36" aria-label="文件排序">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated">最近更新</SelectItem>
+              <SelectItem value="name">文件名排序</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="mt-4 overflow-hidden border border-border bg-surface">
@@ -285,20 +326,22 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
             <div className="py-20 text-center">
               <FileText className="mx-auto size-9 text-muted-foreground" />
               <p className="mt-4 font-semibold">
-                {deferredSearch || status !== "all" ? "没有匹配的文件" : "知识库还是空的"}
+                {deferredSearch || status !== "all" || fileFormat !== "all"
+                  ? "没有匹配的文件"
+                  : "知识库还是空的"}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {deferredSearch || status !== "all"
+                {deferredSearch || status !== "all" || fileFormat !== "all"
                   ? "调整搜索或筛选条件后再试。"
                   : "上传第一份资料，开始积累可检索的内容。"}
               </p>
             </div>
           ) : (
             <Table>
-              <TableHeader className="bg-muted/75">
+              <TableHeader className="bg-sidebar">
                 <TableRow>
                   <TableHead className="min-w-64">文件名</TableHead>
-                  <TableHead>大小</TableHead>
+                  <TableHead>格式</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>更新时间</TableHead>
                   <TableHead className="text-right">操作</TableHead>
@@ -306,22 +349,24 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
               </TableHeader>
               <TableBody>
                 {filesQuery.data.data.map((file) => (
-                  <TableRow key={file.id}>
+                  <TableRow key={file.id} className="text-xs [&>td]:py-2.5">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted">
+                        <span className="grid size-7 shrink-0 place-items-center rounded-md bg-muted">
                           <FileText className="size-4 text-accent-foreground" />
                         </span>
                         <div className="min-w-0">
-                          <p className="max-w-md truncate font-semibold">{file.display_name}</p>
+                          <p className="max-w-md truncate text-xs font-medium">
+                            {file.display_name}
+                          </p>
                           <p className="mt-0.5 text-xs text-muted-foreground">
-                            {file.detected_mime}
+                            {formatBytes(file.byte_size)}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatBytes(file.byte_size)}
+                      {file.display_name.split(".").at(-1)?.toUpperCase() ?? "—"}
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(file)}>{fileStatus(file)}</Badge>

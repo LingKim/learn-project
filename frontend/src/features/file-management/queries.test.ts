@@ -27,7 +27,14 @@ describe("file management query keys", () => {
       20,
       "事务",
       "pending_processing",
+      "",
+      "updated",
     ]);
+    expect(
+      knowledgeFileListQueryOptions("base-1", 1, 20, "", "", "pdf", "name").queryKey,
+    ).not.toEqual(
+      knowledgeFileListQueryOptions("base-1", 1, 20, "", "", "txt", "updated").queryKey,
+    );
     expect(fileManagementKeys.files("base-1")).toEqual([
       "file-management",
       "knowledge-bases",

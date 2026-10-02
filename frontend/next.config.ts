@@ -7,6 +7,7 @@ const backendInternalUrl = (process.env.BACKEND_INTERNAL_URL ?? "http://localhos
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  distDir: process.env.NEXT_TEST_DIST_DIR ?? ".next",
   async rewrites() {
     return [
       {

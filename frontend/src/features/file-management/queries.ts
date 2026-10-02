@@ -16,6 +16,7 @@ import {
   getKnowledgeBaseDeletionImpact,
   getKnowledgeFileDeletionImpact,
   listKnowledgeBases,
+  getKnowledgeBaseStatistics,
   listKnowledgeFiles,
   moveKnowledgeFile,
   updateKnowledgeBase,
@@ -36,6 +37,7 @@ export const fileManagementKeys = {
   processing: (kb: string, file: string) =>
     [...fileManagementKeys.files(kb), file, "processing"] as const,
   knowledgeBases: () => [...fileManagementKeys.all, "knowledge-bases"] as const,
+  statistics: () => [...fileManagementKeys.knowledgeBases(), "statistics"] as const,
   knowledgeBaseList: (page: number, pageSize: number) =>
     [...fileManagementKeys.knowledgeBases(), "list", page, pageSize] as const,
   knowledgeBaseImpact: (knowledgeBaseId: string, mode: DeletionMode) =>
@@ -48,8 +50,19 @@ export const fileManagementKeys = {
     pageSize: number,
     search: string,
     status: string,
+    fileFormat = "",
+    sort = "updated",
   ) =>
-    [...fileManagementKeys.files(knowledgeBaseId), "list", page, pageSize, search, status] as const,
+    [
+      ...fileManagementKeys.files(knowledgeBaseId),
+      "list",
+      page,
+      pageSize,
+      search,
+      status,
+      fileFormat,
+      sort,
+    ] as const,
   fileImpact: (knowledgeBaseId: string, knowledgeFileId: string, mode: DeletionMode) =>
     [
       ...fileManagementKeys.files(knowledgeBaseId),
@@ -66,16 +79,35 @@ export function knowledgeBaseListQueryOptions(page = 1, pageSize = 20) {
   });
 }
 
+export function knowledgeBaseStatisticsQueryOptions() {
+  return queryOptions({
+    queryKey: fileManagementKeys.statistics(),
+    queryFn: getKnowledgeBaseStatistics,
+    refetchInterval: (query) => (query.state.data?.processing_file_count ? 3000 : false),
+  });
+}
+
 export function knowledgeFileListQueryOptions(
   knowledgeBaseId: string,
   page = 1,
   pageSize = 20,
   search = "",
   status = "",
+  fileFormat?: "pdf" | "docx" | "txt" | "md",
+  sort: "updated" | "name" = "updated",
 ) {
   return queryOptions({
-    queryKey: fileManagementKeys.fileList(knowledgeBaseId, page, pageSize, search, status),
-    queryFn: () => listKnowledgeFiles({ knowledgeBaseId, page, pageSize, search, status }),
+    queryKey: fileManagementKeys.fileList(
+      knowledgeBaseId,
+      page,
+      pageSize,
+      search,
+      status,
+      fileFormat,
+      sort,
+    ),
+    queryFn: () =>
+      listKnowledgeFiles({ knowledgeBaseId, page, pageSize, search, status, fileFormat, sort }),
     refetchInterval: (query) =>
       query.state.data?.data.some((file) =>
         ["pending_processing", "processing"].includes(file.processing_status),
@@ -144,7 +176,12 @@ export function uploadKnowledgeFileMutationOptions(queryClient: QueryClient) {
     mutationKey: [...fileManagementKeys.all, "upload"],
     mutationFn: (input: UploadKnowledgeFileInput) => uploadKnowledgeFile(input),
     onSuccess: (_result, input) =>
-      queryClient.invalidateQueries({ queryKey: fileManagementKeys.files(input.knowledgeBaseId) }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: fileManagementKeys.files(input.knowledgeBaseId),
+        }),
+        queryClient.invalidateQueries({ queryKey: fileManagementKeys.statistics() }),
+      ]),
   });
 }
 
@@ -161,7 +198,12 @@ export function updateKnowledgeFileMutationOptions(queryClient: QueryClient) {
       body: KnowledgeFileUpdate;
     }) => updateKnowledgeFile(knowledgeBaseId, knowledgeFileId, body),
     onSuccess: (_result, input) =>
-      queryClient.invalidateQueries({ queryKey: fileManagementKeys.files(input.knowledgeBaseId) }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: fileManagementKeys.files(input.knowledgeBaseId),
+        }),
+        queryClient.invalidateQueries({ queryKey: fileManagementKeys.statistics() }),
+      ]),
   });
 }
 
@@ -177,14 +219,16 @@ export function moveKnowledgeFileMutationOptions(queryClient: QueryClient) {
       knowledgeFileId: string;
       body: KnowledgeFileMove;
     }) => moveKnowledgeFile(knowledgeBaseId, knowledgeFileId, body),
-    onSuccess: (_result, input) => {
-      void queryClient.invalidateQueries({
-        queryKey: fileManagementKeys.files(input.knowledgeBaseId),
-      });
-      return queryClient.invalidateQueries({
-        queryKey: fileManagementKeys.files(input.body.target_knowledge_base_id),
-      });
-    },
+    onSuccess: (_result, input) =>
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: fileManagementKeys.files(input.knowledgeBaseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: fileManagementKeys.files(input.body.target_knowledge_base_id),
+        }),
+        queryClient.invalidateQueries({ queryKey: fileManagementKeys.statistics() }),
+      ]),
   });
 }
 
@@ -201,7 +245,12 @@ export function deleteKnowledgeFileMutationOptions(queryClient: QueryClient) {
       body: DeleteRequest;
     }) => deleteKnowledgeFile(knowledgeBaseId, knowledgeFileId, body),
     onSuccess: (_result, input) =>
-      queryClient.invalidateQueries({ queryKey: fileManagementKeys.files(input.knowledgeBaseId) }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: fileManagementKeys.files(input.knowledgeBaseId),
+        }),
+        queryClient.invalidateQueries({ queryKey: fileManagementKeys.statistics() }),
+      ]),
   });
 }
 

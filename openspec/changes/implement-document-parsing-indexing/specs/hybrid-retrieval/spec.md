@@ -109,17 +109,17 @@
 
 ### Requirement: Qdrant 故障不得静默改变检索策略
 
-系统 SHALL 将 Qdrant 不可用、鉴权失败和 collection schema 不兼容映射为稳定脱敏错误；激活策略要求混合检索时不得静默退化为 BM25-only。
+系统 SHALL 将 Qdrant 不可用、鉴权失败和 collection schema 不兼容映射为稳定脱敏错误；激活策略要求混合检索时不得静默退化为 FTS-only。
 
 #### Scenario: 向量召回不可用
 
 - **WHEN** Qdrant 请求在重试边界后仍失败，且当前策略要求向量召回
 - **THEN** 检索接口返回明确服务错误并记录脱敏 Trace 状态
-- **AND** 不把 BM25-only 结果冒充为完整混合检索
+- **AND** 不把 FTS-only 结果冒充为完整混合检索
 
 #### Scenario: 显式降级策略
 
-- **WHEN** 独立 BM25-only 策略已经通过评测并被明确发布
+- **WHEN** 独立 FTS-only 策略已经通过评测并被明确发布
 - **THEN** 系统可以按该策略执行关键词检索
 - **AND** 响应与 Trace 明确标识没有执行向量召回
 
@@ -204,7 +204,7 @@
 
 ### Requirement: 评测必须支持分阶段消融回放
 
-系统 SHALL 对固定 golden set 支持 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略回放，分别计算质量、无答案判断、延迟和错误指标。
+系统 SHALL 对固定 golden set 支持 FTS-only、Vector-only、Hybrid-only、无 Rerank 和完整策略回放，分别计算质量、无答案判断、延迟和错误指标。
 
 #### Scenario: 执行消融评测
 

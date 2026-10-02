@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request
@@ -22,6 +22,7 @@ from xuemian_ai.file_management.schemas import (
     FilePolicyUpdateRequest,
     FilePolicyView,
     KnowledgeBaseCreate,
+    KnowledgeBaseStatistics,
     KnowledgeBaseUpdate,
     KnowledgeBaseView,
     KnowledgeFileMove,
@@ -77,6 +78,17 @@ async def list_knowledge_bases(
         page_size=page_size,
         total=total,
     )
+
+
+@router.get(
+    "/knowledge-bases/statistics",
+    operation_id="knowledge_bases_statistics",
+    response_model=ApiResponse[KnowledgeBaseStatistics],
+)
+async def knowledge_base_statistics(
+    service: Annotated[FileManagementService, Depends(file_service)],
+) -> ApiResponse[KnowledgeBaseStatistics]:
+    return success_response(await service.knowledge_base_statistics())
 
 
 @router.post(
@@ -262,8 +274,12 @@ async def list_knowledge_files(
     page_size: Annotated[int, Query(ge=1, le=100)] = 20,
     search: Annotated[str | None, Query(max_length=255)] = None,
     status: Annotated[str | None, Query(max_length=32)] = None,
+    file_format: Annotated[Literal["pdf", "docx", "txt", "md"] | None, Query()] = None,
+    sort: Annotated[Literal["updated", "name"], Query()] = "updated",
 ) -> PageResponse[KnowledgeFileView]:
-    items, total = await service.list_files(knowledge_base_id, page, page_size, search, status)
+    items, total = await service.list_files(
+        knowledge_base_id, page, page_size, search, status, file_format, sort
+    )
     return page_response(items, page=page, page_size=page_size, total=total)
 
 

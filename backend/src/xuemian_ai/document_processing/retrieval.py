@@ -24,7 +24,7 @@ from xuemian_ai.document_processing.parsers import ProcessingError
 from xuemian_ai.document_processing.providers import model_providers
 from xuemian_ai.document_processing.schemas import EvidenceChunk, RetrievalRequest, RetrievalResult
 from xuemian_ai.document_processing.service import has_consent
-from xuemian_ai.document_processing.tokenization import tokenize
+from xuemian_ai.document_processing.tokenization import keyword_query
 from xuemian_ai.document_processing.vector_store import VectorStore
 from xuemian_ai.file_management.models import FileAsset, KnowledgeBaseFile
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
@@ -136,7 +136,7 @@ class RetrievalService:
                             hashlib.sha256,
                         ).hexdigest(),
                         query_length=len(query),
-                        strategy_version="fts-jieba/vector/llama-rrf/qwen-rerank-v1",
+                        strategy_version="fts-jieba-or/vector/llama-rrf/qwen-rerank-v2",
                         stages=stages,
                         final_chunk_ids=final_ids,
                         error_code=code,
@@ -237,7 +237,7 @@ class RetrievalService:
             )
             start = time.monotonic()
             async with self.sessions() as session:
-                query = func.plainto_tsquery("simple", tokenize(request.query))
+                query = func.websearch_to_tsquery("simple", keyword_query(request.query))
                 keyword_score = func.ts_rank_cd(DocumentChunk.search_vector, query).label("score")
                 rows = (
                     await session.execute(

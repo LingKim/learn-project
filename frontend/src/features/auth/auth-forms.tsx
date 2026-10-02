@@ -43,10 +43,8 @@ function usernameError(value: string) {
 
 function FormHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className="mb-9">
-      <h2 className="text-3xl font-semibold tracking-[-0.045em] text-foreground sm:text-4xl">
-        {title}
-      </h2>
+    <div className="mb-6">
+      <h2 className="text-[30px] font-semibold text-foreground">{title}</h2>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );

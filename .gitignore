@@ -5,6 +5,7 @@
 
 # Frontend
 frontend/.next/
+frontend/.next-*-e2e/
 frontend/node_modules/
 frontend/coverage/
 output/playwright/

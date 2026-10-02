@@ -37,6 +37,7 @@ from xuemian_ai.file_management.schemas import (
     DeleteResult,
     DeletionImpactView,
     DownloadUrlView,
+    KnowledgeBaseStatistics,
     KnowledgeFileView,
     SignedPart,
     UploadPlan,
@@ -92,6 +93,52 @@ class FileManagementService:
             ).all()
         )
         return items, total
+
+    async def knowledge_base_statistics(self) -> KnowledgeBaseStatistics:
+        bases = list(
+            (
+                await self._session.scalars(
+                    select(KnowledgeBase)
+                    .where(
+                        KnowledgeBase.owner_user_id == self._user.id,
+                        KnowledgeBase.deleted_at.is_(None),
+                    )
+                    .order_by(KnowledgeBase.updated_at.desc(), KnowledgeBase.id)
+                )
+            ).all()
+        )
+        rows = (
+            await self._session.execute(
+                select(
+                    KnowledgeBaseFile.knowledge_base_id,
+                    func.count(),
+                    func.count().filter(
+                        and_(
+                            KnowledgeBaseFile.processing_status == "succeeded",
+                            FileAsset.validation_status == "available",
+                        )
+                    ),
+                    func.count().filter(KnowledgeBaseFile.processing_status == "processing"),
+                )
+                .join(FileAsset, FileAsset.id == KnowledgeBaseFile.file_asset_id)
+                .join(KnowledgeBase, KnowledgeBase.id == KnowledgeBaseFile.knowledge_base_id)
+                .where(
+                    KnowledgeBase.owner_user_id == self._user.id,
+                    KnowledgeBase.deleted_at.is_(None),
+                    KnowledgeBaseFile.deleted_at.is_(None),
+                    FileAsset.deleted_at.is_(None),
+                    FileAsset.owner_user_id == self._user.id,
+                )
+                .group_by(KnowledgeBaseFile.knowledge_base_id)
+            )
+        ).all()
+        return KnowledgeBaseStatistics(
+            knowledge_base_count=len(bases),
+            available_file_count=sum(row[2] for row in rows),
+            processing_file_count=sum(row[3] for row in rows),
+            latest_updated_name=bases[0].name if bases else None,
+            file_counts={row[0]: row[1] for row in rows},
+        )
 
     async def create_knowledge_base(self, name: str) -> KnowledgeBase:
         existing = await self._session.scalar(
@@ -393,6 +440,8 @@ class FileManagementService:
         page_size: int,
         search: str | None,
         status: str | None,
+        file_format: str | None = None,
+        sort: str = "updated",
     ) -> tuple[list[KnowledgeFileView], int]:
         await self._knowledge_base(knowledge_base_id)
         predicate = [
@@ -404,6 +453,8 @@ class FileManagementService:
             predicate.append(KnowledgeBaseFile.display_name.ilike(f"%{search.strip()}%"))
         if status:
             predicate.append(KnowledgeBaseFile.processing_status == status)
+        if file_format:
+            predicate.append(KnowledgeBaseFile.display_name.ilike(f"%.{file_format}"))
         query = select(KnowledgeBaseFile, FileAsset).join(
             FileAsset, FileAsset.id == KnowledgeBaseFile.file_asset_id
         )
@@ -419,7 +470,12 @@ class FileManagementService:
         rows = (
             await self._session.execute(
                 query.where(*predicate)
-                .order_by(KnowledgeBaseFile.created_at.desc())
+                .order_by(
+                    KnowledgeBaseFile.display_name.asc()
+                    if sort == "name"
+                    else KnowledgeBaseFile.updated_at.desc(),
+                    KnowledgeBaseFile.id,
+                )
                 .offset((page - 1) * page_size)
                 .limit(page_size)
             )

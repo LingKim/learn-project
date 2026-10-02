@@ -316,3 +316,84 @@ async def test_concurrent_workers_share_profile_without_double_claim(context) ->
         for task_id in (first[-1], second[-1]):
             task = await session.get(BackgroundTask, task_id)
             assert task.status == "succeeded"
+
+
+async def test_overview_statistics_and_format_pagination_exclude_private_deleted_data(context):
+    from xuemian_ai.file_management.service import FileManagementService
+
+    (user, kb, file, asset, _), _worker = await seed(context)
+    (other, other_kb, _, _, _), _other_worker = await seed(context, b"other owner")
+    settings, sessions, _store = context
+    async with sessions() as session, session.begin():
+        binding = await session.get(KnowledgeBaseFile, file)
+        binding.display_name = "b.PDF"
+        binding.processing_status = "succeeded"
+        # Three active files, one deleted binding and one deleted asset.
+        rows = []
+        for name, status in (
+            ("a.pdf", "processing"),
+            ("notes.txt", "pending_processing"),
+            ("deleted.pdf", "succeeded"),
+            ("deleted-asset.pdf", "succeeded"),
+        ):
+            source = await session.get(FileAsset, asset)
+            copy = FileAsset(
+                owner_user_id=user.id,
+                stored_object_id=source.stored_object_id,
+                purpose="knowledge_document",
+                original_filename=name,
+                detected_mime="text/plain",
+                byte_size=source.byte_size,
+                validation_status="available",
+                policy_version_id=source.policy_version_id,
+            )
+            session.add(copy)
+            await session.flush()
+            row = KnowledgeBaseFile(
+                knowledge_base_id=kb,
+                file_asset_id=copy.id,
+                display_name=name,
+                processing_status=status,
+                resource_version=1,
+            )
+            session.add(row)
+            if name == "deleted.pdf":
+                row.deleted_at = datetime.now(UTC)
+            if name == "deleted-asset.pdf":
+                copy.deleted_at = datetime.now(UTC)
+            rows.append(row)
+        deleted_base = KnowledgeBase(
+            owner_user_id=user.id,
+            name="Deleted base",
+            is_default=False,
+            deleted_at=datetime.now(UTC),
+        )
+        session.add(deleted_base)
+        await session.flush()
+        session.add(
+            KnowledgeBaseFile(
+                knowledge_base_id=deleted_base.id,
+                file_asset_id=asset,
+                display_name="hidden.pdf",
+                processing_status="succeeded",
+                resource_version=1,
+            )
+        )
+        await session.flush()
+        service = FileManagementService(
+            session=session, redis=AsyncMock(), storage=AsyncMock(), settings=settings, user=user
+        )
+        stats = await service.knowledge_base_statistics()
+        assert stats.knowledge_base_count == 1
+        assert stats.file_counts == {kb: 3}
+        assert stats.available_file_count == 1
+        assert stats.processing_file_count == 1
+        assert stats.latest_updated_name == "Synthetic database notes"
+        first, total = await service.list_files(kb, 1, 1, None, None, "pdf", "name")
+        second, second_total = await service.list_files(kb, 2, 1, None, None, "pdf", "name")
+        assert total == second_total == 2
+        assert [first[0].display_name, second[0].display_name] == ["a.pdf", "b.PDF"]
+        filtered, filtered_total = await service.list_files(kb, 1, 20, None, "processing", "pdf")
+        assert filtered_total == 1 and filtered[0].display_name == "a.pdf"
+        with pytest.raises(NotFoundError):
+            await service.list_files(other_kb, 1, 20, None, None)

@@ -71,6 +71,39 @@ export type ActiveWeaknessView = {
 };
 
 /**
+ * AnswerCitation
+ */
+export type AnswerCitation = {
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Available
+     */
+    available: boolean;
+    evidence: EvidenceChunk | null;
+};
+
+/**
+ * AnswerRequest
+ */
+export type AnswerRequest = {
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Language
+     */
+    language?: 'zh' | 'en';
+    /**
+     * Question
+     */
+    question: string;
+};
+
+/**
  * ApiResponse[AIConsentView]
  */
 export type ApiResponseAiConsentView = {
@@ -131,6 +164,36 @@ export type ApiResponseAvatarUploadPlan = {
 };
 
 /**
+ * ApiResponse[ConversationDetail]
+ */
+export type ApiResponseConversationDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ConversationDetail;
+};
+
+/**
+ * ApiResponse[ConversationView]
+ */
+export type ApiResponseConversationView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ConversationView;
+};
+
+/**
  * ApiResponse[DeleteResult]
  */
 export type ApiResponseDeleteResult = {
@@ -188,6 +251,21 @@ export type ApiResponseFilePolicyView = {
      */
     message: string;
     data: FilePolicyView;
+};
+
+/**
+ * ApiResponse[KnowledgeBaseStatistics]
+ */
+export type ApiResponseKnowledgeBaseStatistics = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: KnowledgeBaseStatistics;
 };
 
 /**
@@ -266,6 +344,21 @@ export type ApiResponseRetrievalResult = {
      */
     message: string;
     data: RetrievalResult;
+};
+
+/**
+ * ApiResponse[TurnView]
+ */
+export type ApiResponseTurnView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: TurnView;
 };
 
 /**
@@ -485,6 +578,79 @@ export type CompleteUploadRequest = {
 };
 
 /**
+ * ConversationCreate
+ */
+export type ConversationCreate = {
+    /**
+     * Mode
+     */
+    mode: 'materials' | 'general';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+};
+
+/**
+ * ConversationDetail
+ */
+export type ConversationDetail = {
+    conversation: ConversationView;
+    /**
+     * Turns
+     */
+    turns: Array<TurnView>;
+};
+
+/**
+ * ConversationRename
+ */
+export type ConversationRename = {
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
+ * ConversationView
+ */
+export type ConversationView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Mode
+     */
+    mode: 'materials' | 'general';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id: string | null;
+    /**
+     * File Ids
+     */
+    file_ids: Array<string>;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
  * DeleteRequest
  */
 export type DeleteRequest = {
@@ -647,6 +813,16 @@ export type EvidenceChunk = {
 };
 
 /**
+ * FeedbackRequest
+ */
+export type FeedbackRequest = {
+    /**
+     * Feedback
+     */
+    feedback: 'helpful' | 'unhelpful' | null;
+};
+
+/**
  * FilePolicyDraftRequest
  */
 export type FilePolicyDraftRequest = {
@@ -736,6 +912,34 @@ export type KnowledgeBaseCreate = {
      * Name
      */
     name: string;
+};
+
+/**
+ * KnowledgeBaseStatistics
+ */
+export type KnowledgeBaseStatistics = {
+    /**
+     * Knowledge Base Count
+     */
+    knowledge_base_count: number;
+    /**
+     * Available File Count
+     */
+    available_file_count: number;
+    /**
+     * Processing File Count
+     */
+    processing_file_count: number;
+    /**
+     * Latest Updated Name
+     */
+    latest_updated_name?: string | null;
+    /**
+     * File Counts
+     */
+    file_counts?: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -880,6 +1084,25 @@ export type PageMeta = {
      * Total Pages
      */
     total_pages: number;
+};
+
+/**
+ * PageResponse[ConversationView]
+ */
+export type PageResponseConversationView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<ConversationView>;
+    meta: PageMeta;
 };
 
 /**
@@ -1143,6 +1366,68 @@ export type SignedPart = {
      * Upload Url
      */
     upload_url: string;
+};
+
+/**
+ * TurnView
+ */
+export type TurnView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Language
+     */
+    language: 'zh' | 'en';
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Status
+     */
+    status: 'processing' | 'succeeded' | 'failed';
+    /**
+     * Answer
+     */
+    answer: string | null;
+    /**
+     * Refused
+     */
+    refused: boolean;
+    /**
+     * Source Label
+     */
+    source_label: '用户资料' | '模型通用知识';
+    /**
+     * Citations
+     */
+    citations: Array<AnswerCitation>;
+    /**
+     * Trace Id
+     */
+    trace_id: string | null;
+    /**
+     * Trace Complete
+     */
+    trace_complete: boolean;
+    /**
+     * Error Code
+     */
+    error_code: string | null;
+    /**
+     * Feedback
+     */
+    feedback: 'helpful' | 'unhelpful' | null;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -2082,6 +2367,75 @@ export type KnowledgeBasesCreateResponses = {
 
 export type KnowledgeBasesCreateResponse = KnowledgeBasesCreateResponses[keyof KnowledgeBasesCreateResponses];
 
+export type KnowledgeBasesStatisticsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/knowledge-bases/statistics';
+};
+
+export type KnowledgeBasesStatisticsErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeBasesStatisticsError = KnowledgeBasesStatisticsErrors[keyof KnowledgeBasesStatisticsErrors];
+
+export type KnowledgeBasesStatisticsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeBaseStatistics;
+};
+
+export type KnowledgeBasesStatisticsResponse = KnowledgeBasesStatisticsResponses[keyof KnowledgeBasesStatisticsResponses];
+
 export type KnowledgeBasesDeleteData = {
     body: DeleteRequest;
     path: {
@@ -2858,6 +3212,14 @@ export type KnowledgeBaseFilesListData = {
          * Status
          */
         status?: string | null;
+        /**
+         * File Format
+         */
+        file_format?: 'pdf' | 'docx' | 'txt' | 'md' | null;
+        /**
+         * Sort
+         */
+        sort?: 'updated' | 'name';
     };
     url: '/api/v1/knowledge-bases/{knowledge_base_id}/files';
 };
@@ -4542,3 +4904,662 @@ export type DocumentRetrievalSearchResponses = {
 };
 
 export type DocumentRetrievalSearchResponse = DocumentRetrievalSearchResponses[keyof DocumentRetrievalSearchResponses];
+
+export type LearningConsentGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/consent';
+};
+
+export type LearningConsentGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConsentGetError = LearningConsentGetErrors[keyof LearningConsentGetErrors];
+
+export type LearningConsentGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAiConsentView;
+};
+
+export type LearningConsentGetResponse = LearningConsentGetResponses[keyof LearningConsentGetResponses];
+
+export type LearningConsentConfirmData = {
+    body: AiConsentRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/consent';
+};
+
+export type LearningConsentConfirmErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConsentConfirmError = LearningConsentConfirmErrors[keyof LearningConsentConfirmErrors];
+
+export type LearningConsentConfirmResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAiConsentView;
+};
+
+export type LearningConsentConfirmResponse = LearningConsentConfirmResponses[keyof LearningConsentConfirmResponses];
+
+export type LearningConversationsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/learning/conversations';
+};
+
+export type LearningConversationsListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConversationsListError = LearningConversationsListErrors[keyof LearningConversationsListErrors];
+
+export type LearningConversationsListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseConversationView;
+};
+
+export type LearningConversationsListResponse = LearningConversationsListResponses[keyof LearningConversationsListResponses];
+
+export type LearningConversationsCreateData = {
+    body: ConversationCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/conversations';
+};
+
+export type LearningConversationsCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConversationsCreateError = LearningConversationsCreateErrors[keyof LearningConversationsCreateErrors];
+
+export type LearningConversationsCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseConversationView;
+};
+
+export type LearningConversationsCreateResponse = LearningConversationsCreateResponses[keyof LearningConversationsCreateResponses];
+
+export type LearningConversationsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}';
+};
+
+export type LearningConversationsDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConversationsDeleteError = LearningConversationsDeleteErrors[keyof LearningConversationsDeleteErrors];
+
+export type LearningConversationsDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseNoneType;
+};
+
+export type LearningConversationsDeleteResponse = LearningConversationsDeleteResponses[keyof LearningConversationsDeleteResponses];
+
+export type LearningConversationsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}';
+};
+
+export type LearningConversationsGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConversationsGetError = LearningConversationsGetErrors[keyof LearningConversationsGetErrors];
+
+export type LearningConversationsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseConversationDetail;
+};
+
+export type LearningConversationsGetResponse = LearningConversationsGetResponses[keyof LearningConversationsGetResponses];
+
+export type LearningConversationsRenameData = {
+    body: ConversationRename;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}';
+};
+
+export type LearningConversationsRenameErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningConversationsRenameError = LearningConversationsRenameErrors[keyof LearningConversationsRenameErrors];
+
+export type LearningConversationsRenameResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseConversationView;
+};
+
+export type LearningConversationsRenameResponse = LearningConversationsRenameResponses[keyof LearningConversationsRenameResponses];
+
+export type LearningAnswersCreateData = {
+    body: AnswerRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}/answers';
+};
+
+export type LearningAnswersCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAnswersCreateError = LearningAnswersCreateErrors[keyof LearningAnswersCreateErrors];
+
+export type LearningAnswersCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseTurnView;
+};
+
+export type LearningAnswersCreateResponse = LearningAnswersCreateResponses[keyof LearningAnswersCreateResponses];
+
+export type LearningAnswersFeedbackData = {
+    body: FeedbackRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+        /**
+         * Turn Id
+         */
+        turn_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}/turns/{turn_id}/feedback';
+};
+
+export type LearningAnswersFeedbackErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAnswersFeedbackError = LearningAnswersFeedbackErrors[keyof LearningAnswersFeedbackErrors];
+
+export type LearningAnswersFeedbackResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseTurnView;
+};
+
+export type LearningAnswersFeedbackResponse = LearningAnswersFeedbackResponses[keyof LearningAnswersFeedbackResponses];

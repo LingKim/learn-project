@@ -11,3 +11,9 @@ def tokenize(value: str) -> str:
     return " ".join(
         part for part in jieba.cut(value, HMM=False) if re.search(r"[\w\u4e00-\u9fff]", part)
     )
+
+
+def keyword_query(value: str) -> str:
+    """自然问句的分词采用 OR 召回；固定引号避免用户文本成为查询运算符。"""
+    terms = dict.fromkeys(re.findall(r"\w+", tokenize(value), re.UNICODE))
+    return " OR ".join('"' + term + '"' for term in list(terms)[:128])

@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -21,11 +22,27 @@ export function AccountControl() {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="hidden text-sm text-muted-foreground sm:inline">{user?.nickname}</span>
-      <Button type="button" variant="outline" size="sm" disabled={pending} onClick={handleLogout}>
+    <div className="flex items-center gap-2">
+      <Link
+        href="/profile"
+        aria-label="个人资料"
+        title={user?.nickname ? `个人资料 · ${user.nickname}` : "个人资料"}
+        className="grid size-9 place-items-center rounded-[7px] bg-sidebar text-muted-foreground hover:bg-muted"
+      >
+        <UserRound className="size-4" />
+      </Link>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        aria-label={pending ? "正在退出" : "退出登录"}
+        title="退出登录"
+        disabled={pending}
+        onClick={handleLogout}
+      >
         <LogOut aria-hidden="true" />
-        {pending ? "正在退出" : "退出登录"}
+        <span className="sr-only">{pending ? "正在退出" : "退出登录"}</span>
       </Button>
     </div>
   );

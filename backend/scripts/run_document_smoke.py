@@ -25,6 +25,7 @@ def run() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--real-models", action="store_true")
+    parser.add_argument("--qdrant-url", default="http://127.0.0.1:6335")
     args = parser.parse_args()
     values = {k: v for k, v in dotenv_values(root / ".env").items() if v is not None}
     marker = uuid4().hex[:12]
@@ -43,7 +44,7 @@ def run() -> None:
         "DOCUMENT_PROVIDER": "qwen" if args.real_models else "deterministic",
         "AUTH_ALLOWED_ORIGINS": "http://127.0.0.1:3102",
         "AUTH_REDIS_KEY_PREFIX": "xuemian:test:auth:e2e:" + marker,
-        "QDRANT_URL": "http://127.0.0.1:6335",
+        "QDRANT_URL": args.qdrant_url,
         "QDRANT_COLLECTION": "xuemian-e2e-" + marker,
     }
     for key, suffix in [
@@ -165,9 +166,14 @@ def run() -> None:
             start(
                 ["pnpm", "dev", "--hostname", "127.0.0.1", "--port", "3102"],
                 root / "frontend",
-                {**os.environ, "BACKEND_INTERNAL_URL": "http://127.0.0.1:8092"},
+                {
+                    **os.environ,
+                    "BACKEND_INTERNAL_URL": "http://127.0.0.1:8092",
+                    "NEXT_TEST_DIST_DIR": ".next-learning-e2e",
+                },
                 "frontend",
             )
+            print("SYNTHETIC_BROWSER_USERNAME=doc_" + marker, flush=True)
             print("ISOLATED_BROWSER_URL=http://127.0.0.1:3102", flush=True)
             while all(p.poll() is None for p in processes):
                 time.sleep(1)
