@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AnyHttpUrl, SecretStr, model_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPOSITORY_ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
@@ -41,6 +41,35 @@ class Settings(BaseSettings):
     file_temporary_retention_days: int = 2
     avatar_processing_timeout_seconds: float = 5.0
     dependency_timeout_seconds: float = 2.0
+    dashscope_api_key: SecretStr = SecretStr("")
+    ai_base_url: AnyHttpUrl = AnyHttpUrl("https://maas.qianwenaiapi.com/compatible-mode/v1")
+    ai_rerank_url: AnyHttpUrl = AnyHttpUrl(
+        "https://maas.qianwenaiapi.com/api/v1/services/rerank/text-rerank/text-rerank"
+    )
+    document_provider: Literal["qwen", "deterministic"] = "qwen"
+    document_embedding_model: str = "qwen3.7-text-embedding"
+    document_rerank_model: str = "qwen3-rerank"
+    document_ocr_model: str = "qwen3.5-ocr"
+    document_model_timeout_seconds: float = Field(default=60, gt=0)
+    document_parse_timeout_seconds: float = Field(default=600, gt=0)
+    document_chunk_size: int = Field(default=1200, ge=100, le=8000)
+    document_chunk_overlap: int = Field(default=120, ge=0)
+    document_max_characters: int = Field(default=2_000_000, gt=0)
+    document_max_chunks: int = Field(default=10_000, gt=0)
+    document_ocr_max_pages: int = Field(default=100, gt=0, le=500)
+    document_ocr_max_pixels: int = Field(default=12_000_000, gt=0)
+    document_ocr_dpi: int = Field(default=144, ge=72, le=300)
+    document_worker_lease_seconds: int = Field(default=120, ge=15)
+    document_worker_poll_seconds: float = Field(default=1, gt=0)
+    document_retrieval_min_score: float = Field(default=0.2, ge=0, le=1)
+    document_retrieval_candidates: int = Field(default=40, ge=5, le=100)
+    ai_processing_terms_version: str = "qwen-document-v1"
+    qdrant_url: AnyHttpUrl = AnyHttpUrl("http://localhost:6333")
+    qdrant_api_key: SecretStr = SecretStr("")
+    qdrant_collection: str = Field(
+        default="xuemian_qwen_text_1024_v1", pattern=r"^[A-Za-z0-9_-]{1,128}$"
+    )
+    qdrant_timeout_seconds: float = Field(default=10, gt=0)
     auth_access_secret: SecretStr
     auth_refresh_secret: SecretStr
     auth_refresh_digest_secret: SecretStr
@@ -85,7 +114,13 @@ class Settings(BaseSettings):
             raise ValueError("file cleanup settings must be positive")
         if self.avatar_processing_timeout_seconds <= 0:
             raise ValueError("avatar processing timeout must be positive")
+        if self.document_chunk_overlap >= self.document_chunk_size:
+            raise ValueError("document overlap must be smaller than chunk size")
+        if self.document_provider == "deterministic" and self.environment != "test":
+            raise ValueError("deterministic document provider is only available in test")
         if self.environment == "production":
+            if self.qdrant_url.scheme != "https" or self.ai_base_url.scheme != "https":
+                raise ValueError("production AI and Qdrant endpoints must use HTTPS")
             if self.rustfs_public_endpoint.scheme != "https":
                 raise ValueError("production RustFS public endpoint must use HTTPS")
             storage_secrets = {

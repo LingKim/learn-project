@@ -10,14 +10,21 @@ dependencies = [
     "boto3>=1.43.80",
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
+    "jieba==0.42.1",
     "langchain>=1.3.15",
+    "langchain-openai>=1.0,<2",
     "langgraph>=1.2.11",
+    "llama-index-core==0.14.12",
+    "markdown-it-py==4.0.0",
     "pillow>=12.3.0",
     "pwdlib[argon2]>=0.3.1",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "pyjwt>=2.13.0",
     "pypdf>=6.16.2",
+    "pypdfium2==4.30.0",
+    "python-docx==1.2.0",
+    "qdrant-client==1.15.1",
     "redis>=8.1.0",
     "sqlalchemy[asyncio]>=2.0.52",
     "structlog>=26.1.0",
@@ -25,6 +32,8 @@ dependencies = [
 ]
 
 [project.scripts]
+xuemian-ai-document-worker = "xuemian_ai.document_processing.worker:run"
+xuemian-ai-init-vectors = "xuemian_ai.document_processing.cli:run"
 xuemian-ai-api = "xuemian_ai.main:run"
 xuemian-ai-init-admin = "xuemian_ai.auth.admin_cli:run"
 xuemian-ai-init-storage = "xuemian_ai.file_management.storage_cli:run"

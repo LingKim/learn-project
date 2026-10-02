@@ -1,12 +1,12 @@
 # 学面通AI
 
-学面通AI是面向学习者与求职者的多模态 AI 学习与面试训练平台。当前仓库已完成全栈工程脚手架，尚未开始实现 PRD 业务里程碑。
+学面通AI是面向学习者与求职者的多模态 AI 学习与面试训练平台。当前已实现认证、个人资料、内容库与文件管理。文档解析、页面 OCR、索引及受保护检索已实现并部署到本机开发环境，尚未包含生成式问答。
 
 ## 技术基线
 
 - 前端：Next.js、React、TypeScript、Tailwind CSS、shadcn/ui、TanStack Query、Oxlint、Oxfmt。
 - 后端：Python 3.12、uv、FastAPI、SQLAlchemy、Alembic、LangChain、LangGraph、LlamaIndex。
-- 本地基础设施：复用已运行的 PostgreSQL 与 Redis；Docker Compose 管理 RustFS、backend、frontend。
+- 本地基础设施：复用已运行的 PostgreSQL 与 Redis；Docker Compose 管理 RustFS、Qdrant、backend、document-worker、frontend。
 
 ## 第一次使用
 
@@ -21,7 +21,7 @@ make install
 ## 开发命令
 
 ```bash
-make dev             # 启动 frontend、backend、RustFS；可能触发首次镜像构建
+make dev             # 启动 frontend、backend、RustFS、Qdrant、worker；可能触发首次镜像构建
 make down            # 只停止本项目管理的服务
 make contract        # 校验 OpenAPI 与生成 client 一致
 make check           # 非 build 静态质量门禁
@@ -44,4 +44,6 @@ Redis       localhost:6379
 - `GET /api/v1/health/ready`：并行检查 PostgreSQL、Redis、RustFS。
 - 前端通过 `/api/backend/*` 同源转发访问 FastAPI。
 
-详细产品基线见 `docs/学面通AI-产品需求文档.md`，本期规格见 `openspec/changes/bootstrap-fullstack/`。
+详细产品基线见 `docs/学面通AI-产品需求文档.md`，本期规格与验证记录见 `openspec/changes/implement-document-parsing-indexing/`。
+
+文档解析部署步骤和资源限制见 `backend/README.md`。2026-10-02 已按用户授权将本机 `xuemian_ai` 迁移到 `20261002_01`，初始化正式 Qdrant collection，并启动本机 API、前端及 worker。访问 `http://127.0.0.1:3000`。PostgreSQL/Redis/RustFS/Qdrant 在 Docker；前后端与 worker 使用本机源码开发进程，PID/日志保存在被 Git 忽略的 `.runtime/`。这不是生产镜像部署，机器重启后本机进程需要重新启动。

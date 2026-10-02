@@ -43,6 +43,8 @@ import {
 } from "@/components/ui/table";
 import { toApiError } from "@/lib/api/errors";
 
+import { AIProcessingNotice, DocumentProcessingStatus } from "./processing-status";
+
 import type { KnowledgeFileView } from "./api";
 import { ContentShell } from "./content-shell";
 import { DeleteImpactDialog } from "./delete-impact-dialog";
@@ -190,6 +192,7 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
           <ArrowLeft className="size-4" />
           返回知识库
         </Link>
+        <AIProcessingNotice />
         <div className="mt-4 flex flex-col gap-5 border-b border-border pb-7 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold tracking-[0.18em] text-accent-foreground uppercase">
@@ -199,7 +202,7 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
               {currentBase?.name ?? (basesQuery.isPending ? "正在加载…" : "知识库详情")}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              支持 PDF、DOCX、TXT、MD；上传完成仅代表文件校验通过并等待后续解析。
+              支持 PDF、DOCX、TXT、MD；校验通过后自动解析并建立检索索引；扫描 PDF 按页识别文字。
             </p>
           </div>
           <div>
@@ -322,6 +325,7 @@ export function KnowledgeBaseDetail({ knowledgeBaseId }: { knowledgeBaseId: stri
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(file)}>{fileStatus(file)}</Badge>
+                      <DocumentProcessingStatus knowledgeBaseId={knowledgeBaseId} file={file} />
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(file.updated_at)}

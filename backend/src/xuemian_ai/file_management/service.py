@@ -23,6 +23,7 @@ from xuemian_ai.core.errors import (
     ValidationAppError,
 )
 from xuemian_ai.core.status_codes import ApiStatusCode
+from xuemian_ai.document_processing.service import enqueue_processing, revoke_processing
 from xuemian_ai.file_management.models import (
     FileAsset,
     FileAuditEvent,
@@ -605,6 +606,7 @@ class FileManagementService:
             return
         asset.deleted_at = now
         asset.deleted_by = actor
+        await revoke_processing(self._session, asset)
         stored = cast(
             StoredObject | None,
             await self._session.scalar(
@@ -1159,6 +1161,7 @@ async def verify_upload_task(
     )
     session.add(binding)
     await session.flush()
+    await enqueue_processing(session, asset)
     stored.reference_count += 1
     upload.status = "completed"
     upload.result_knowledge_file_id = binding.id

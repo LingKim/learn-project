@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, AvatarUploadSessionsCompleteData, AvatarUploadSessionsCompleteErrors, AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCreateData, AvatarUploadSessionsCreateErrors, AvatarUploadSessionsCreateResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses, UserAvatarDeleteData, UserAvatarDeleteErrors, UserAvatarDeleteResponses, UserAvatarGetData, UserAvatarGetErrors, UserAvatarGetResponses, UserProfileGetData, UserProfileGetErrors, UserProfileGetResponses, UserProfileUpdateData, UserProfileUpdateErrors, UserProfileUpdateResponses } from './types.gen';
+import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AiProcessingConsentConfirmData, AiProcessingConsentConfirmErrors, AiProcessingConsentConfirmResponses, AiProcessingConsentGetData, AiProcessingConsentGetErrors, AiProcessingConsentGetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, AvatarUploadSessionsCompleteData, AvatarUploadSessionsCompleteErrors, AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCreateData, AvatarUploadSessionsCreateErrors, AvatarUploadSessionsCreateResponses, DocumentProcessingTaskCancelData, DocumentProcessingTaskCancelErrors, DocumentProcessingTaskCancelResponses, DocumentProcessingTaskCreateData, DocumentProcessingTaskCreateErrors, DocumentProcessingTaskCreateResponses, DocumentProcessingTaskGetData, DocumentProcessingTaskGetErrors, DocumentProcessingTaskGetResponses, DocumentRetrievalSearchData, DocumentRetrievalSearchErrors, DocumentRetrievalSearchResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses, UserAvatarDeleteData, UserAvatarDeleteErrors, UserAvatarDeleteResponses, UserAvatarGetData, UserAvatarGetErrors, UserAvatarGetResponses, UserProfileGetData, UserProfileGetErrors, UserProfileGetResponses, UserProfileUpdateData, UserProfileUpdateErrors, UserProfileUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -394,4 +394,66 @@ export const userAvatarGet = <ThrowOnError extends boolean = false>(options?: Op
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/users/me/avatar',
     ...options
+});
+
+/**
+ * Get Consent
+ */
+export const aiProcessingConsentGet = <ThrowOnError extends boolean = false>(options?: Options<AiProcessingConsentGetData, ThrowOnError>): RequestResult<AiProcessingConsentGetResponses, AiProcessingConsentGetErrors, ThrowOnError> => (options?.client ?? client).get<AiProcessingConsentGetResponses, AiProcessingConsentGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/ai-processing-consent',
+    ...options
+});
+
+/**
+ * Confirm Consent
+ */
+export const aiProcessingConsentConfirm = <ThrowOnError extends boolean = false>(options: Options<AiProcessingConsentConfirmData, ThrowOnError>): RequestResult<AiProcessingConsentConfirmResponses, AiProcessingConsentConfirmErrors, ThrowOnError> => (options.client ?? client).post<AiProcessingConsentConfirmResponses, AiProcessingConsentConfirmErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/users/me/ai-processing-consent',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Cancel Task
+ */
+export const documentProcessingTaskCancel = <ThrowOnError extends boolean = false>(options: Options<DocumentProcessingTaskCancelData, ThrowOnError>): RequestResult<DocumentProcessingTaskCancelResponses, DocumentProcessingTaskCancelErrors, ThrowOnError> => (options.client ?? client).delete<DocumentProcessingTaskCancelResponses, DocumentProcessingTaskCancelErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-task',
+    ...options
+});
+
+/**
+ * Get Task
+ */
+export const documentProcessingTaskGet = <ThrowOnError extends boolean = false>(options: Options<DocumentProcessingTaskGetData, ThrowOnError>): RequestResult<DocumentProcessingTaskGetResponses, DocumentProcessingTaskGetErrors, ThrowOnError> => (options.client ?? client).get<DocumentProcessingTaskGetResponses, DocumentProcessingTaskGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-task',
+    ...options
+});
+
+/**
+ * Create Task
+ */
+export const documentProcessingTaskCreate = <ThrowOnError extends boolean = false>(options: Options<DocumentProcessingTaskCreateData, ThrowOnError>): RequestResult<DocumentProcessingTaskCreateResponses, DocumentProcessingTaskCreateErrors, ThrowOnError> => (options.client ?? client).post<DocumentProcessingTaskCreateResponses, DocumentProcessingTaskCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-tasks',
+    ...options
+});
+
+/**
+ * Search
+ */
+export const documentRetrievalSearch = <ThrowOnError extends boolean = false>(options: Options<DocumentRetrievalSearchData, ThrowOnError>): RequestResult<DocumentRetrievalSearchResponses, DocumentRetrievalSearchErrors, ThrowOnError> => (options.client ?? client).post<DocumentRetrievalSearchResponses, DocumentRetrievalSearchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/knowledge-bases/{kb}/retrieval/search',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });

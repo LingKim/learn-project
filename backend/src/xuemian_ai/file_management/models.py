@@ -201,6 +201,9 @@ class FileAsset(
     detected_mime: Mapped[str] = mapped_column(String(128), nullable=False)
     byte_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
     validation_status: Mapped[str] = mapped_column(String(16), nullable=False)
+    processing_generation: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
     validation_failure_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
     policy_version_id: Mapped[UUID] = mapped_column(
         PostgreSQLUUID(as_uuid=True),

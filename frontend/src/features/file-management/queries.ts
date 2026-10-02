@@ -1,6 +1,14 @@
 import { mutationOptions, queryOptions, type QueryClient } from "@tanstack/react-query";
 
 import {
+  getAIProcessingConsent,
+  confirmAIProcessingConsent,
+  getDocumentProcessingTask,
+  startDocumentProcessing,
+  cancelDocumentProcessing,
+  searchDocumentEvidence,
+  type AIConsentRequest,
+  type RetrievalRequest,
   createKnowledgeBase,
   deleteKnowledgeBase,
   deleteKnowledgeFile,
@@ -24,6 +32,9 @@ type DeletionMode = NonNullable<DeleteRequest["mode"]>;
 
 export const fileManagementKeys = {
   all: ["file-management"] as const,
+  consent: () => [...fileManagementKeys.all, "ai-consent"] as const,
+  processing: (kb: string, file: string) =>
+    [...fileManagementKeys.files(kb), file, "processing"] as const,
   knowledgeBases: () => [...fileManagementKeys.all, "knowledge-bases"] as const,
   knowledgeBaseList: (page: number, pageSize: number) =>
     [...fileManagementKeys.knowledgeBases(), "list", page, pageSize] as const,
@@ -65,6 +76,12 @@ export function knowledgeFileListQueryOptions(
   return queryOptions({
     queryKey: fileManagementKeys.fileList(knowledgeBaseId, page, pageSize, search, status),
     queryFn: () => listKnowledgeFiles({ knowledgeBaseId, page, pageSize, search, status }),
+    refetchInterval: (query) =>
+      query.state.data?.data.some((file) =>
+        ["pending_processing", "processing"].includes(file.processing_status),
+      )
+        ? 3000
+        : false,
   });
 }
 
@@ -198,6 +215,50 @@ export function downloadKnowledgeFileMutationOptions() {
       knowledgeBaseId: string;
       knowledgeFileId: string;
     }) => getKnowledgeFileDownloadUrl(knowledgeBaseId, knowledgeFileId),
+    meta: { successToast: false },
+  });
+}
+
+export function aiConsentQueryOptions() {
+  return queryOptions({
+    queryKey: fileManagementKeys.consent(),
+    queryFn: getAIProcessingConsent,
+    staleTime: 300_000,
+  });
+}
+export function confirmAIConsentMutationOptions(queryClient: QueryClient) {
+  return mutationOptions({
+    mutationKey: [...fileManagementKeys.all, "confirm-ai-consent"],
+    mutationFn: (body: AIConsentRequest) => confirmAIProcessingConsent(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: fileManagementKeys.all }),
+  });
+}
+export function processingTaskQueryOptions(kb: string, file: string) {
+  return queryOptions({
+    queryKey: fileManagementKeys.processing(kb, file),
+    queryFn: () => getDocumentProcessingTask(kb, file),
+    refetchInterval: (query) =>
+      query.state.data &&
+      !query.state.data.requires_ai_consent &&
+      ["pending", "processing", "cancel_requested"].includes(query.state.data.status)
+        ? 2000
+        : false,
+  });
+}
+export function processingMutationOptions(queryClient: QueryClient, action: "start" | "cancel") {
+  return mutationOptions({
+    mutationKey: [...fileManagementKeys.all, "processing", action],
+    mutationFn: ({ kb, file }: { kb: string; file: string }) =>
+      action === "start" ? startDocumentProcessing(kb, file) : cancelDocumentProcessing(kb, file),
+    onSuccess: (_data, input) =>
+      queryClient.invalidateQueries({ queryKey: fileManagementKeys.files(input.kb) }),
+  });
+}
+export function documentRetrievalMutationOptions() {
+  return mutationOptions({
+    mutationKey: [...fileManagementKeys.all, "retrieval"],
+    mutationFn: ({ kb, body }: { kb: string; body: RetrievalRequest }) =>
+      searchDocumentEvidence(kb, body),
     meta: { successToast: false },
   });
 }

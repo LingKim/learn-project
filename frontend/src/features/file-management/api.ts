@@ -1,4 +1,10 @@
 import {
+  aiProcessingConsentGet,
+  aiProcessingConsentConfirm,
+  documentProcessingTaskGet,
+  documentProcessingTaskCreate,
+  documentProcessingTaskCancel,
+  documentRetrievalSearch,
   fileUploadSessionsCancel,
   fileUploadSessionsComplete,
   fileUploadSessionsCreate,
@@ -19,6 +25,11 @@ import {
   knowledgeBasesUpdate,
 } from "@/lib/api/generated/sdk.gen";
 import type {
+  AiConsentView as AIConsentView,
+  AiConsentRequest as AIConsentRequest,
+  ProcessingTaskView,
+  RetrievalRequest,
+  RetrievalResult,
   CompleteUploadRequest,
   DeleteRequest,
   DeleteResult,
@@ -63,6 +74,11 @@ async function authorizedOptions() {
 }
 
 export type {
+  AIConsentView,
+  AIConsentRequest,
+  ProcessingTaskView,
+  RetrievalRequest,
+  RetrievalResult,
   DeleteRequest,
   DeleteResult,
   DeletionImpactView,
@@ -315,4 +331,43 @@ export async function putPresignedFile(
   contentType?: string,
 ): Promise<Response> {
   return putPresignedObject(url, body, contentType);
+}
+
+export async function getAIProcessingConsent(): Promise<AIConsentView> {
+  const options = await authorizedOptions();
+  return requestQueryData(() => aiProcessingConsentGet(options));
+}
+export async function confirmAIProcessingConsent(
+  body: AIConsentRequest,
+): Promise<MutationResult<AIConsentView>> {
+  const options = await authorizedOptions();
+  return requestMutation(() => aiProcessingConsentConfirm({ ...options, body }));
+}
+export async function getDocumentProcessingTask(
+  kb: string,
+  file: string,
+): Promise<ProcessingTaskView | null> {
+  const options = await authorizedOptions();
+  return requestQueryData(() => documentProcessingTaskGet({ ...options, path: { kb, file } }));
+}
+export async function startDocumentProcessing(
+  kb: string,
+  file: string,
+): Promise<MutationResult<ProcessingTaskView>> {
+  const options = await authorizedOptions();
+  return requestMutation(() => documentProcessingTaskCreate({ ...options, path: { kb, file } }));
+}
+export async function cancelDocumentProcessing(
+  kb: string,
+  file: string,
+): Promise<MutationResult<ProcessingTaskView | null>> {
+  const options = await authorizedOptions();
+  return requestMutation(() => documentProcessingTaskCancel({ ...options, path: { kb, file } }));
+}
+export async function searchDocumentEvidence(
+  kb: string,
+  body: RetrievalRequest,
+): Promise<RetrievalResult> {
+  const options = await authorizedOptions();
+  return requestQueryData(() => documentRetrievalSearch({ ...options, path: { kb }, body }));
 }

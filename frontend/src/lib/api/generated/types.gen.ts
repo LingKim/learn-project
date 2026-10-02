@@ -5,6 +5,38 @@ export type ClientOptions = {
 };
 
 /**
+ * AIConsentRequest
+ */
+export type AiConsentRequest = {
+    /**
+     * Confirmed
+     */
+    confirmed: true;
+    /**
+     * Terms Version
+     */
+    terms_version: string;
+};
+
+/**
+ * AIConsentView
+ */
+export type AiConsentView = {
+    /**
+     * Confirmed
+     */
+    confirmed: boolean;
+    /**
+     * Terms Version
+     */
+    terms_version: string;
+    /**
+     * Notice
+     */
+    notice: string;
+};
+
+/**
  * ActiveWeaknessView
  */
 export type ActiveWeaknessView = {
@@ -36,6 +68,21 @@ export type ActiveWeaknessView = {
      * Last Verified At
      */
     last_verified_at?: string | null;
+};
+
+/**
+ * ApiResponse[AIConsentView]
+ */
+export type ApiResponseAiConsentView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AiConsentView;
 };
 
 /**
@@ -189,6 +236,51 @@ export type ApiResponseNoneType = {
      * Data
      */
     data: null;
+};
+
+/**
+ * ApiResponse[ProcessingTaskView]
+ */
+export type ApiResponseProcessingTaskView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ProcessingTaskView;
+};
+
+/**
+ * ApiResponse[RetrievalResult]
+ */
+export type ApiResponseRetrievalResult = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: RetrievalResult;
+};
+
+/**
+ * ApiResponse[Union[ProcessingTaskView, NoneType]]
+ */
+export type ApiResponseUnionProcessingTaskViewNoneType = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ProcessingTaskView | null;
 };
 
 /**
@@ -494,6 +586,64 @@ export type DuplicateResolutionRequest = {
      * Action
      */
     action: 'LINK' | 'MOVE' | 'CANCEL';
+};
+
+/**
+ * EvidenceChunk
+ */
+export type EvidenceChunk = {
+    /**
+     * Chunk Id
+     */
+    chunk_id: string;
+    /**
+     * File Id
+     */
+    file_id: string;
+    /**
+     * File Name
+     */
+    file_name: string;
+    /**
+     * Processing Version Id
+     */
+    processing_version_id: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Score
+     */
+    score: number;
+    /**
+     * Source Kind
+     */
+    source_kind: string;
+    /**
+     * Page Start
+     */
+    page_start: number | null;
+    /**
+     * Page End
+     */
+    page_end: number | null;
+    /**
+     * Paragraph Start
+     */
+    paragraph_start: number | null;
+    /**
+     * Paragraph End
+     */
+    paragraph_end: number | null;
+    /**
+     * Heading Path
+     */
+    heading_path: Array<string>;
+    /**
+     * Ocr Confidence
+     */
+    ocr_confidence: number | null;
 };
 
 /**
@@ -821,6 +971,87 @@ export type ProblemDetails = {
 };
 
 /**
+ * ProcessingTaskView
+ */
+export type ProcessingTaskView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Stage
+     */
+    stage: string;
+    /**
+     * Completed Units
+     */
+    completed_units: number | null;
+    /**
+     * Total Units
+     */
+    total_units: number | null;
+    /**
+     * Attempt Count
+     */
+    attempt_count: number;
+    /**
+     * Last Error Code
+     */
+    last_error_code: string | null;
+    /**
+     * Retryable
+     */
+    retryable: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Requires Ai Consent
+     */
+    requires_ai_consent?: boolean;
+    active_version?: ProcessingVersionView | null;
+};
+
+/**
+ * ProcessingVersionView
+ */
+export type ProcessingVersionView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version Number
+     */
+    version_number: number;
+    /**
+     * Chunk Count
+     */
+    chunk_count: number;
+    /**
+     * Image Count
+     */
+    image_count: number;
+    /**
+     * Unrecognized Image Count
+     */
+    unrecognized_image_count: number;
+    /**
+     * Native Page Count
+     */
+    native_page_count: number;
+    /**
+     * Ocr Page Count
+     */
+    ocr_page_count: number;
+};
+
+/**
  * ReadyResponse
  */
 export type ReadyResponse = {
@@ -852,6 +1083,42 @@ export type RegisterRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * RetrievalRequest
+ */
+export type RetrievalRequest = {
+    /**
+     * Query
+     */
+    query: string;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Top N
+     */
+    top_n?: number;
+};
+
+/**
+ * RetrievalResult
+ */
+export type RetrievalResult = {
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Trace Complete
+     */
+    trace_complete: boolean;
+    /**
+     * Evidence
+     */
+    evidence: Array<EvidenceChunk>;
 };
 
 /**
@@ -3829,3 +4096,449 @@ export type UserAvatarGetResponses = {
      */
     200: unknown;
 };
+
+export type AiProcessingConsentGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/ai-processing-consent';
+};
+
+export type AiProcessingConsentGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AiProcessingConsentGetError = AiProcessingConsentGetErrors[keyof AiProcessingConsentGetErrors];
+
+export type AiProcessingConsentGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAiConsentView;
+};
+
+export type AiProcessingConsentGetResponse = AiProcessingConsentGetResponses[keyof AiProcessingConsentGetResponses];
+
+export type AiProcessingConsentConfirmData = {
+    body: AiConsentRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me/ai-processing-consent';
+};
+
+export type AiProcessingConsentConfirmErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type AiProcessingConsentConfirmError = AiProcessingConsentConfirmErrors[keyof AiProcessingConsentConfirmErrors];
+
+export type AiProcessingConsentConfirmResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAiConsentView;
+};
+
+export type AiProcessingConsentConfirmResponse = AiProcessingConsentConfirmResponses[keyof AiProcessingConsentConfirmResponses];
+
+export type DocumentProcessingTaskCancelData = {
+    body?: never;
+    path: {
+        /**
+         * Kb
+         */
+        kb: string;
+        /**
+         * File
+         */
+        file: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-task';
+};
+
+export type DocumentProcessingTaskCancelErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type DocumentProcessingTaskCancelError = DocumentProcessingTaskCancelErrors[keyof DocumentProcessingTaskCancelErrors];
+
+export type DocumentProcessingTaskCancelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUnionProcessingTaskViewNoneType;
+};
+
+export type DocumentProcessingTaskCancelResponse = DocumentProcessingTaskCancelResponses[keyof DocumentProcessingTaskCancelResponses];
+
+export type DocumentProcessingTaskGetData = {
+    body?: never;
+    path: {
+        /**
+         * Kb
+         */
+        kb: string;
+        /**
+         * File
+         */
+        file: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-task';
+};
+
+export type DocumentProcessingTaskGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type DocumentProcessingTaskGetError = DocumentProcessingTaskGetErrors[keyof DocumentProcessingTaskGetErrors];
+
+export type DocumentProcessingTaskGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUnionProcessingTaskViewNoneType;
+};
+
+export type DocumentProcessingTaskGetResponse = DocumentProcessingTaskGetResponses[keyof DocumentProcessingTaskGetResponses];
+
+export type DocumentProcessingTaskCreateData = {
+    body?: never;
+    path: {
+        /**
+         * Kb
+         */
+        kb: string;
+        /**
+         * File
+         */
+        file: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{kb}/files/{file}/processing-tasks';
+};
+
+export type DocumentProcessingTaskCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type DocumentProcessingTaskCreateError = DocumentProcessingTaskCreateErrors[keyof DocumentProcessingTaskCreateErrors];
+
+export type DocumentProcessingTaskCreateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseProcessingTaskView;
+};
+
+export type DocumentProcessingTaskCreateResponse = DocumentProcessingTaskCreateResponses[keyof DocumentProcessingTaskCreateResponses];
+
+export type DocumentRetrievalSearchData = {
+    body: RetrievalRequest;
+    path: {
+        /**
+         * Kb
+         */
+        kb: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-bases/{kb}/retrieval/search';
+};
+
+export type DocumentRetrievalSearchErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type DocumentRetrievalSearchError = DocumentRetrievalSearchErrors[keyof DocumentRetrievalSearchErrors];
+
+export type DocumentRetrievalSearchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRetrievalResult;
+};
+
+export type DocumentRetrievalSearchResponse = DocumentRetrievalSearchResponses[keyof DocumentRetrievalSearchResponses];
