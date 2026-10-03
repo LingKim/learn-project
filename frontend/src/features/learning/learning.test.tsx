@@ -7,14 +7,25 @@ import * as api from "./api";
 
 const profileSource = vi.hoisted(() => ({ profile: vi.fn(), avatar: vi.fn() }));
 const authState = vi.hoisted(() => ({ role: "user" }));
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: navigate }) }));
 vi.mock("@/features/auth/auth-provider", () => ({
   useAuth: () => ({ status: "authenticated", user: { role: authState.role } }),
   authenticatedAccessToken: vi.fn(),
 }));
 vi.mock("@/features/ai-quality/feedback-dialog", () => ({
-  QualityFeedbackDialog: ({ sourceId, traceId }: { sourceId: string; traceId: string }) => (
+  QualityFeedbackDialog: ({
+    sourceId,
+    traceId,
+    onCreated,
+  }: {
+    sourceId: string;
+    traceId: string;
+    onCreated: (id: string) => void;
+  }) => (
     <div role="dialog" data-source={sourceId} data-trace={traceId}>
       合成反馈组件
+      <button onClick={() => onCreated("created-case")}>合成创建完成</button>
     </div>
   ),
 }));
@@ -134,6 +145,8 @@ describe("学习快速回答交互", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveAttribute("data-source", turn.id);
     expect(dialog).toHaveAttribute("data-trace", "trace");
+    fireEvent.click(screen.getByRole("button", { name: "合成创建完成" }));
+    expect(navigate).toHaveBeenCalledWith("/ai-quality/created-case");
   });
   it.each(["general", "incomplete", "admin"])("%s 不显示质量工单入口", async (scope) => {
     const scoped = {

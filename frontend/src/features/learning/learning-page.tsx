@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   MessageCircle,
   Plus,
@@ -77,6 +78,7 @@ export function answerError(code: string | null | undefined) {
 }
 
 export function LearningPage() {
+  const router = useRouter();
   const client = useQueryClient();
   const { user } = useAuth();
   const [qualityFeedback, setQualityFeedback] = useState<{
@@ -1024,6 +1026,7 @@ export function LearningPage() {
           open
           sourceId={qualityFeedback.sourceId}
           traceId={qualityFeedback.traceId}
+          onCreated={(id) => router.push(`/ai-quality/${id}`)}
           onOpenChange={(open) => {
             if (!open) setQualityFeedback(null);
           }}
