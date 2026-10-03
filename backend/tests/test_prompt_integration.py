@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select, text
+from sqlalchemy import delete, select, text
 from test_prompt_contract import SyntheticProvider
 
 from xuemian_ai.accounts.models import User
@@ -54,8 +54,27 @@ async def domain():
         session.add(user)
         await session.flush()
     service = PromptService(sessions, user.id, settings)
-    yield service
-    await engine.dispose()
+    try:
+        yield service
+    finally:
+        # 只清理本夹具的可变练习数据，避免共享 worker 领取遗留队列。
+        # 已发布 Prompt 与合成管理员留作不可变历史，由隔离数据库整体销毁。
+        async with sessions.begin() as session:
+            await session.execute(delete(PracticeRun).where(PracticeRun.owner_user_id == user.id))
+            await session.execute(delete(PracticeSet).where(PracticeSet.owner_user_id == user.id))
+            assert (
+                await session.scalar(
+                    select(PracticeRun.id).where(PracticeRun.owner_user_id == user.id).limit(1)
+                )
+                is None
+            )
+            assert (
+                await session.scalar(
+                    select(PracticeSet.id).where(PracticeSet.owner_user_id == user.id).limit(1)
+                )
+                is None
+            )
+        await engine.dispose()
 
 
 async def seed_published(domain):
@@ -342,6 +361,34 @@ async def test_concurrent_publish_allows_one_and_never_mutates_published_content
                 .values(content="非法修改已发布内容")
             )
     assert (await domain.version(current.active_version_id)).content == published.content
+    from xuemian_ai.prompt_management.models import PromptEvaluationSuite, PromptVersionDependency
+
+    async with domain.sessions() as session:
+        dependency = await session.scalar(
+            select(PromptVersionDependency).where(
+                PromptVersionDependency.root_version_id == current.active_version_id
+            )
+        )
+        suite = await session.scalar(
+            select(PromptEvaluationSuite).where(PromptEvaluationSuite.status == "published")
+        )
+    assert dependency is not None and suite is not None
+    # 数据库必须拒绝依赖与评测夹具篡改，不能只靠编辑接口的状态判断。
+    changes = [
+        update(PromptVersionDependency)
+        .where(PromptVersionDependency.id == dependency.id)
+        .values(dependency_sha256="b" * 64),
+        delete(PromptVersionDependency).where(PromptVersionDependency.id == dependency.id),
+        update(PromptEvaluationSuite)
+        .where(PromptEvaluationSuite.id == suite.id)
+        .values(sha256="b" * 64),
+        delete(PromptEvaluationSuite).where(PromptEvaluationSuite.id == suite.id),
+    ]
+    for statement in changes:
+        with pytest.raises(DBAPIError) as failure:
+            async with domain.sessions.begin() as session:
+                await session.execute(statement)
+        assert failure.value.orig.sqlstate == "23514"
 
 
 async def test_failed_online_evaluation_and_model_change_cannot_publish(domain):
