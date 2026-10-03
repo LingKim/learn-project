@@ -18,7 +18,7 @@ import { CardSources } from "./card-sources";
 import { ExplanationForm } from "./explanation-form";
 import { KnowledgeStatus } from "./knowledge-status";
 import { ReviewHistory } from "./review-history";
-import { userProfileQueryOptions } from "@/features/user-profile/queries";
+import { useAuth } from "@/features/auth/auth-provider";
 import { ApiError } from "@/lib/api/errors";
 import { readKnowledgeRequest, writeKnowledgeRequest } from "./request-recovery";
 import {
@@ -33,12 +33,12 @@ import {
 } from "./queries";
 
 export function ExplanationDetailPage({ id, runId = "" }: { id: string; runId?: string }) {
-  const profile = useQuery(userProfileQueryOptions());
-  const owner = profile.data?.username ?? "";
+  const { user } = useAuth();
+  const owner = user?.username ?? "";
   // 账号和精讲决定恢复、历史选择及编辑快照的归属；路由复用不能把这些状态带到另一份精讲。
   return (
     <ExplanationDetailContent
-      key={JSON.stringify([owner, id])}
+      key={JSON.stringify([user?.id, id])}
       id={id}
       runId={runId}
       owner={owner}
@@ -90,13 +90,18 @@ function ExplanationDetailContent({
   const regenerate = useMutation(regenerateExplanationOptions());
   const remove = useMutation(deleteExplanationOptions(client));
   const card = version ? historical.data : item?.card;
+  function forgetRequest(requestKey: string) {
+    // 同一目标的新请求也可能已经写入指针；旧响应只能清理自己留下的记录。
+    if (readKnowledgeRequest(sessionStorage, owner, id) === requestKey)
+      writeKnowledgeRequest(sessionStorage, owner, id, "");
+    setRecoveryKey((current) => (current === requestKey ? "" : current));
+  }
   useEffect(() => {
     if (owner) setRecoveryKey(readKnowledgeRequest(sessionStorage, owner, id));
   }, [owner, id]);
   useEffect(() => {
     if (!lookup.data || lookup.data.explanation_id !== id) return;
-    writeKnowledgeRequest(sessionStorage, owner, id, "");
-    setRecoveryKey("");
+    forgetRequest(recoveryKey);
     setRunOverride(lookup.data.id);
     setSelectedVersion(null);
     setAdjusting(null);
@@ -128,15 +133,14 @@ function ExplanationDetailContent({
     try {
       result = await regenerate.mutateAsync({ id, body: { ...body, request_key: requestKey } });
     } catch (error) {
+      if (!active.current) throw error;
       if (error instanceof ApiError && (error.status ?? 0) >= 400) {
-        writeKnowledgeRequest(sessionStorage, owner, id, "");
-        setRecoveryKey("");
+        forgetRequest(requestKey);
       } else setRecoveryKey(requestKey);
       throw error;
     }
-    writeKnowledgeRequest(sessionStorage, owner, id, "");
     if (!active.current) return;
-    setRecoveryKey("");
+    forgetRequest(requestKey);
     client.setQueryData(learningAssetKeys.run(result.data.run.id), result.data.run);
     client.setQueryData<ExplanationDetail>(learningAssetKeys.explanation(id), (old) =>
       old ? { ...old, ...result.data.explanation, run: result.data.run } : old,
@@ -150,6 +154,7 @@ function ExplanationDetailContent({
   async function deleteItem() {
     if (!item) return;
     await remove.mutateAsync({ id, version: item.version });
+    if (!active.current) return;
     router.push("/learning/explanation");
   }
   return (

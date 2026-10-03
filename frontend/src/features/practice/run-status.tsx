@@ -1,10 +1,11 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { RunView } from "./api";
-import { cancelRunOptions, retryRunOptions, practiceKeys, isActiveRun } from "./queries";
+import { cancelRunOptions, retryRunOptions, isActiveRun } from "./queries";
+import { useActiveContext } from "./use-active-context";
 
 const stages: Record<string, string> = {
   pending: "等待处理",
@@ -50,7 +51,7 @@ export function RunStatus({
   onChange: (run: RunView) => void;
   onAdjust: () => void;
 }) {
-  const client = useQueryClient();
+  const isCurrent = useActiveContext(run.id);
   const cancel = useMutation(cancelRunOptions());
   const retry = useMutation(retryRunOptions());
   async function action(kind: "cancel" | "retry") {
@@ -61,8 +62,8 @@ export function RunStatus({
             id: run.id,
             body: { request_key: run.request_key, input_digest: run.input_digest },
           });
-    client.setQueryData(practiceKeys.run(run.id), result.data);
-    onChange(result.data);
+    // 缓存由父页面的上下文保护统一更新；取消响应不能在离开后重新填入旧数据。
+    if (isCurrent()) onChange(result.data);
   }
   const pending = isActiveRun(run);
   if (run.status === "succeeded")

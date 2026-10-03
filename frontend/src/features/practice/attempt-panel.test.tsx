@@ -52,6 +52,58 @@ beforeEach(() => {
   });
 });
 describe("练习保存与提交边界", () => {
+  it("提交等待保存时离开页面，已发保存可结束但不能继续提交或填旧缓存", async () => {
+    let finish!: (value: Awaited<ReturnType<typeof api.savePracticeAnswer>>) => void;
+    vi.mocked(api.savePracticeAnswer).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const { client, onRequest, view } = mount();
+    fireEvent.change(screen.getByLabelText("简答答案"), { target: { value: "合成草稿" } });
+    fireEvent.click(screen.getByRole("button", { name: "提交本题" }));
+    await waitFor(() => expect(api.savePracticeAnswer).toHaveBeenCalled());
+    fireEvent.change(screen.getByLabelText("简答答案"), { target: { value: "等待时的新草稿" } });
+    view.unmount();
+    await act(async () => {
+      finish({
+        data: {
+          ...emptyAttempt,
+          version: 2,
+          answers: [
+            {
+              question_id: textQuestion.question_id,
+              version: 1,
+              answer: { type: "short_answer", text: "合成草稿" },
+            },
+          ],
+        },
+        message: "ok",
+      });
+    });
+    expect(onRequest).not.toHaveBeenCalled();
+    expect(api.submitPracticeAnswer).not.toHaveBeenCalled();
+    expect(client.getQueryData(["practice", "attempts", "attempt"])).toBeUndefined();
+  });
+  it("完成请求发出后离开页面，迟到响应不能调用旧报告跳转", async () => {
+    let finish!: (value: Awaited<ReturnType<typeof api.completePractice>>) => void;
+    vi.mocked(api.completePractice).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const { client, complete, view } = mount();
+    fireEvent.click(screen.getByRole("button", { name: "完成练习并查看报告" }));
+    await waitFor(() => expect(api.completePractice).toHaveBeenCalled());
+    view.unmount();
+    await act(async () => {
+      finish({ data: { ...emptyAttempt, status: "completed" }, message: "ok" });
+    });
+    expect(complete).not.toHaveBeenCalled();
+    expect(client.getQueryData(["practice", "attempts", "attempt"])).toBeUndefined();
+  });
   it("已提交文本题可以切到下一题，按真实版本保存当前位置", async () => {
     const nextQuestion = { ...singleQuestion, question_id: "22222222-2222-4222-8222-222222222222" };
     const attempt: api.AttemptView = {
