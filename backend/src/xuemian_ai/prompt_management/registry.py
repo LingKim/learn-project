@@ -86,8 +86,21 @@ def validate_registry(entries: list[RegistryEntryView] | None = None) -> None:
     if len(indexed) != len(values) or set(indexed) != {GLOBAL_KEY, ROOT_KEY}:
         raise ValueError("prompt registry has duplicate, missing or unknown definitions")
     for key, value in indexed.items():
-        expected = ENTRIES[key]
-        if value.model_dump() != expected.model_dump():
+        expected_role = (
+            ("shared", "global_behavior", "shared")
+            if key == GLOBAL_KEY
+            else ("question_generator", "practice_generate", "task")
+        )
+        expected_dependencies = (
+            [] if key == GLOBAL_KEY else [{"definition_key": GLOBAL_KEY, "slot": "global"}]
+        )
+        if (
+            (value.agent_key, value.scene_key, value.template_kind) != expected_role
+            or value.tools
+            or value.dependencies != expected_dependencies
+            or value.variables != VARIABLES
+            or value.contract_sha256 != CONTRACT_SHA256
+        ):
             raise ValueError("prompt registry does not match the real practice executor contract")
         for dependency in value.dependencies:
             if dependency["definition_key"] not in indexed or dependency["definition_key"] == key:

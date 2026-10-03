@@ -77,6 +77,7 @@ class DefinitionView(StrictModel):
     created_at: datetime
     updated_at: datetime
     contract_sha256: str | None = None
+    registered_contract: dict[str, Any] | None = None
 
 
 class VersionSummary(StrictModel):

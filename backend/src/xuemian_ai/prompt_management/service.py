@@ -3,7 +3,7 @@
 import asyncio
 import difflib
 import hashlib
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
 
@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from xuemian_ai.agent_runs.contracts import canonical_hash
 from xuemian_ai.core.errors import ConflictError, NotFoundError
 from xuemian_ai.core.responses import PageResponse, page_response
-from xuemian_ai.practice.generation import generation_schema
+from xuemian_ai.practice.generation import GeneratedQuestions, generation_schema
 from xuemian_ai.practice.schemas import PracticeConfig
 from xuemian_ai.prompt_management.evaluation import (
     CASES,
@@ -38,8 +38,10 @@ from xuemian_ai.prompt_management.registry import (
     CONTRACT_SHA256,
     ENTRIES,
     GLOBAL_KEY,
+    MODEL_PARAMETERS,
     ROOT_KEY,
     VARIABLES,
+    PracticeInputContext,
     entry,
     model_configuration,
 )
@@ -338,6 +340,14 @@ class PromptService:
     def _definition_view(obj: PromptDefinition) -> DefinitionView:
         view = DefinitionView.model_validate(obj)
         view.contract_sha256 = CONTRACT_SHA256 if obj.definition_key in ENTRIES else None
+        if obj.definition_key in ENTRIES:
+            view.registered_contract = {
+                **entry(obj.definition_key).model_dump(mode="json"),
+                "input_schema": PracticeInputContext.model_json_schema(),
+                "output_schema": GeneratedQuestions.model_json_schema(),
+                "model_policy": {"provider": "dashscope", "parameters": MODEL_PARAMETERS},
+                "dynamic_output_schema": "由practice_generate已确认配置在入队时固定",
+            }
         return view
 
     async def definition(self, id: UUID) -> DefinitionView:
@@ -499,7 +509,7 @@ class PromptService:
                 position=0,
                 sha256=obj.content_sha256,
             ),
-        ]  # type: ignore[arg-type]
+        ]
 
     async def _messages(
         self, session: AsyncSession, obj: PromptVersion, schema: dict[str, Any]
@@ -571,18 +581,28 @@ class PromptService:
         self, id: UUID, provider: EvaluationProvider | None = None
     ) -> EvaluationView:
         async with self.sessions.begin() as session:
+            await self._admin(session)
             obj = await self._version(session, id, True)
             if obj.status != "draft":
                 raise conflict()
             # 同一草稿一次只执行一个评测，跨进程以持久状态约束并发。
             pending = await session.scalar(
-                select(PromptEvaluationRun.id).where(
+                select(PromptEvaluationRun).where(
                     PromptEvaluationRun.prompt_version_id == id,
                     PromptEvaluationRun.status == "processing",
                 )
             )
             if pending:
-                raise conflict("PROMPT_EVALUATION_PROCESSING")
+                if pending.started_at + timedelta(
+                    seconds=self.settings.practice_run_timeout_seconds
+                ) > datetime.now(UTC):
+                    raise conflict("PROMPT_EVALUATION_PROCESSING")
+                pending.status, pending.passed, pending.error_key = (
+                    "failed",
+                    False,
+                    "PROMPT_EVALUATION_TIMEOUT",
+                )
+                pending.ended_at = datetime.now(UTC)
             suite = await self._suite(session)
             assembled = [
                 await self._messages(session, obj, generation_schema(case["config"]))
@@ -610,6 +630,7 @@ class PromptService:
         results: list[dict[str, Any]] = []
         usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
         error_key: str | None = None
+        interrupted = False
         try:
             async with asyncio.timeout(self.settings.practice_run_timeout_seconds):
                 for case, (messages, _) in zip(CASES, assembled, strict=True):
@@ -628,9 +649,9 @@ class PromptService:
                         raw, used = await (
                             provider or QwenEvaluationProvider(self.settings)
                         ).invoke(messages, payload, schema)
-                        assert_case(raw, case)
                         for key in usage:
                             usage[key] += max(0, int(used.get(key, 0)))
+                        assert_case(raw, case)
                         results.append({"case_id": case["id"], "passed": True, "error_key": None})
                     except Exception:
                         results.append(
@@ -643,6 +664,7 @@ class PromptService:
         except TimeoutError:
             error_key = "PROMPT_EVALUATION_TIMEOUT"
         except asyncio.CancelledError:
+            interrupted = True
             error_key = "PROMPT_EVALUATION_INTERRUPTED"
         passed = (
             error_key is None
@@ -667,7 +689,10 @@ class PromptService:
                 datetime.now(UTC),
             )
             await session.flush()
-            return EvaluationView.model_validate(completed)
+            view = EvaluationView.model_validate(completed)
+        if interrupted:
+            raise asyncio.CancelledError
+        return view
 
     async def _eligible(self, session: AsyncSession, obj: PromptVersion) -> bool:
         suite = await self._suite(session)

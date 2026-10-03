@@ -1,7 +1,7 @@
 """入队固定依赖、代码契约和模型参数；执行时只验证不可变快照，不重新选活动版本。"""
 
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,11 @@ from xuemian_ai.agent_runs.models import AgentRun
 from xuemian_ai.core.errors import UpstreamServiceError
 from xuemian_ai.core.status_codes import ApiStatusCode
 from xuemian_ai.practice.models import PracticeRun
-from xuemian_ai.prompt_management.models import PromptDefinition
+from xuemian_ai.prompt_management.models import (
+    PromptDefinition,
+    PromptVersion,
+    PromptVersionDependency,
+)
 from xuemian_ai.prompt_management.registry import CONTRACT_SHA256, ROOT_KEY, model_configuration
 from xuemian_ai.prompt_management.rendering import render
 from xuemian_ai.prompt_management.schemas import Variable
@@ -60,14 +64,30 @@ def context_sources(data: dict[str, Any]) -> list[ContextSourceSnapshot]:
         source = mapping.get(supplied.get(field, "default"))
         if source is None:
             raise unavailable()
+        target = context.get("learning_target") or {}
+        if source == "selected_asset" and target.get("kind") == "weakness":
+            source = "weakness"
+        reference_id = (
+            UUID(str(target["id"]))
+            if source in {"selected_asset", "weakness"} and target.get("id")
+            else None
+        )
+        reference_version = (
+            target.get("version", target.get("card_version"))
+            if reference_id
+            else context.get("profile_version")
+            if source == "profile"
+            else None
+        )
         result.append(
             ContextSourceSnapshot.model_validate(
                 {
                     "field": field,
                     "source": source,
                     "digest": canonical_hash(value),
-                    "reference_version": str(context["profile_version"])
-                    if source == "profile" and context.get("profile_version") is not None
+                    "reference_id": reference_id,
+                    "reference_version": str(reference_version)
+                    if reference_version is not None
                     else None,
                     "disabled": source == "request" and value is None,
                 }
@@ -98,7 +118,7 @@ async def freeze_practice_run(
     # 被停用的共享片段阻止新任务，已入队任务仍由不可变快照复现。
     for part in composition:
         obj = await service._version(session, part.version_id)
-        owner = await service._definition(session, obj.definition_id)
+        owner = await service._definition(session, obj.definition_id, True)
         if owner.runtime_status != "enabled":
             raise unavailable()
     model = model_configuration(settings)
@@ -147,10 +167,43 @@ async def load_practice_prompt(
     root = await service._version(session, snapshot.root_prompt_version_id)
     if root.status not in {"published", "retired"}:
         raise unavailable()
-    actual = await service._composition(session, root)
-    if [part.model_dump(mode="json") for part in actual] != [
-        part.model_dump(mode="json") for part in snapshot.composition
-    ]:
+    # 只投影定义身份，不读取运行开关或active指针；后续停用/发布不影响此任务。
+    rows = (
+        await session.scalars(
+            select(PromptVersionDependency)
+            .where(PromptVersionDependency.root_version_id == root.id)
+            .order_by(PromptVersionDependency.slot, PromptVersionDependency.position)
+        )
+    ).all()
+    actual = []
+    for row in rows:
+        key = await session.scalar(
+            select(PromptDefinition.definition_key)
+            .join(PromptVersion, PromptVersion.definition_id == PromptDefinition.id)
+            .where(PromptVersion.id == row.dependency_version_id)
+        )
+        actual.append(
+            {
+                "version_id": str(row.dependency_version_id),
+                "definition_key": key,
+                "slot": row.slot,
+                "position": row.position,
+                "sha256": row.dependency_sha256,
+            }
+        )
+    key = await session.scalar(
+        select(PromptDefinition.definition_key).where(PromptDefinition.id == root.definition_id)
+    )
+    actual.append(
+        {
+            "version_id": str(root.id),
+            "definition_key": key,
+            "slot": "task",
+            "position": 0,
+            "sha256": root.content_sha256,
+        }
+    )
+    if key != ROOT_KEY or actual != [part.model_dump(mode="json") for part in snapshot.composition]:
         raise unavailable()
     messages = []
     for part in snapshot.composition:

@@ -4,6 +4,7 @@ import json
 import re
 from collections.abc import Mapping
 from typing import Any
+from uuid import UUID
 
 from pydantic import ValidationError
 
@@ -14,7 +15,7 @@ from xuemian_ai.practice.schemas import PracticeConfig
 from xuemian_ai.prompt_management.registry import VARIABLES
 from xuemian_ai.prompt_management.schemas import Variable
 
-TOKEN = re.compile(r"{{\s*([a-z][a-z0-9_]*)\s*}}")
+TOKEN = re.compile(r"(?<!{){{\s*([a-z][a-z0-9_]*)\s*}}(?!})")
 
 
 def invalid() -> ValidationAppError:
@@ -100,6 +101,10 @@ def resolve_fields(
         ("profile", profile or {}),
         ("default", defaults or {}),
     ]
+    allowed = set(PROFILE_FIELDS) | {"version", "id"}
+    for _, layer in layers:
+        if set(layer) - allowed:
+            raise invalid()
     for field in PROFILE_FIELDS:
         for name, layer in layers:
             if field not in layer:
@@ -110,6 +115,9 @@ def resolve_fields(
                 ContextSourceSnapshot.model_validate(
                     {
                         "field": field,
+                        "reference_id": UUID(str(layer["id"]))
+                        if layer.get("id") is not None
+                        else None,
                         "source": name,
                         "digest": canonical_hash(value),
                         "reference_version": str(layer["version"])
