@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from xuemian_ai.accounts.models import User
@@ -93,7 +93,15 @@ class QualityService:
         try:
             async with self.sessions.begin() as session:
                 yield session
-                self._audit(session, action, "allowed", case_id, fields=fields)
+                reason = session.info.get("quality_audit_reason")
+                self._audit(
+                    session,
+                    action,
+                    "denied" if reason else "allowed",
+                    case_id,
+                    reason=reason,
+                    fields=fields,
+                )
         except AppError as exc:
             # 拒绝审计使用独立事务，不能随被拒绝的业务事务一起回滚。
             async with self.sessions.begin() as session:
@@ -110,15 +118,16 @@ class QualityService:
         reason: str | None = None,
         fields: list[str] | None = None,
     ) -> None:
+        audited_case = session.info.get("quality_case")
         session.add(
             DiagnosticAudit(
                 actor_id=self.user.id,
-                case_id=case_id,
+                case_id=case_id or (audited_case.id if audited_case else None),
                 action=action,
                 outcome=outcome,
                 reason_code=reason,
                 fields=fields or [],
-                version=None,
+                version=audited_case.version if audited_case else None,
                 request_id=self.request_id,
                 occurred_at=datetime.now(UTC),
             )
@@ -134,6 +143,7 @@ class QualityService:
         obj = await session.scalar(query.with_for_update())
         if obj is None:
             raise NotFoundError(error_key="QUALITY_CASE_UNAVAILABLE")
+        session.info["quality_case"] = obj
         return obj
 
     def _closed(self, obj: AIQualityCase) -> bool:
@@ -253,7 +263,7 @@ class QualityService:
         )
 
     async def _events(
-        self, session: AsyncSession, obj: AIQualityCase, admin: bool
+        self, session: AsyncSession, obj: AIQualityCase, admin: bool, source_available: bool = True
     ) -> list[EventView]:
         query = select(AIQualityCaseEvent).where(AIQualityCaseEvent.case_id == obj.id)
         if not admin:
@@ -263,9 +273,13 @@ class QualityService:
         )
         result = []
         # 管理员初始详情不含用户补充正文；只有有效基础授权允许解密。
-        body_allowed = not admin or any(
-            grant.status == "active" and "query" in grant.fields
-            for grant in await self._grants(session, obj)
+        body_allowed = (
+            not admin
+            or source_available
+            and any(
+                grant.status == "active" and "query" in grant.fields
+                for grant in await self._grants(session, obj)
+            )
         )
         for row in rows:
             content = None
@@ -293,7 +307,12 @@ class QualityService:
             if body.expected_result:
                 validate_text(body.expected_result)
             # 同一用户的创建操作串行化，覆盖双击和不同 request_key 的同源并发。
-            await session.scalar(select(User).where(User.id == self.user.id).with_for_update())
+            # 只串行化工单创建，不先排他锁 User；读取/撤销采用 Case→User 的锁序，
+            # 先锁 User 再等待已有 Case 会与管理员正文读取形成死锁。
+            await session.execute(
+                text("SELECT pg_advisory_xact_lock(:key)"),
+                {"key": int(fingerprint(f"ai-quality:{self.user.id}")[:15], 16)},
+            )
             fp = fingerprint(body.model_dump(mode="json", exclude={"request_key"}))
             existing = await session.scalar(
                 select(AIQualityCase).where(
@@ -328,7 +347,7 @@ class QualityService:
                     AIQualityCase.created_at >= datetime.now(UTC) - timedelta(hours=1),
                 )
             )
-            if (count or 0) >= 20:
+            if (count or 0) >= self.settings.ai_quality_case_hourly_limit:
                 raise TooManyRequestsError(retry_after=3600, error_key="QUALITY_RATE_LIMITED")
             now, identity = datetime.now(UTC), uuid4()
             cipher = SnapshotCipher(self.settings)
@@ -359,6 +378,7 @@ class QualityService:
                 access_expires_at=now + timedelta(days=30),
             )
             session.add(obj)
+            session.info["quality_case"] = obj
             await session.flush()
             await self._source(session, obj)
             grant = DiagnosticAccessGrant(
@@ -393,6 +413,8 @@ class QualityService:
             return await self._user_detail(session, obj)
 
     async def _user_detail(self, session: AsyncSession, obj: AIQualityCase) -> UserCaseDetail:
+        await session.flush()
+        await session.refresh(obj, ["updated_at"])
         statement = await self._statement(obj)
         return UserCaseDetail(
             **self._view(obj).model_dump(),
@@ -505,8 +527,16 @@ class QualityService:
             select(RetrievalTrace).where(RetrievalTrace.id == obj.trace_id).with_for_update()
         )
         if trace and obj.closed_at:
-            trace.expires_at = min(
-                trace.occurred_at + timedelta(days=180), obj.closed_at + timedelta(days=90)
+            references = list(
+                await session.scalars(
+                    select(AIQualityCase).where(AIQualityCase.trace_id == obj.trace_id)
+                )
+            )
+            upper = trace.occurred_at + timedelta(days=180)
+            # 同一历史结果可有先后工单；关闭一个不能缩短另一个有效工单的元数据保留。
+            trace.expires_at = max(
+                min(upper, item.closed_at + timedelta(days=90)) if item.closed_at else upper
+                for item in references
             )
 
     async def grant_decision(
@@ -571,6 +601,8 @@ class QualityService:
             return await self._admin_detail(session, await self._case(session, case_id, True))
 
     async def _admin_detail(self, session: AsyncSession, obj: AIQualityCase) -> AdminCaseDetail:
+        await session.flush()
+        await session.refresh(obj, ["updated_at"])
         trace, source_error = None, None
         try:
             source = await self._source(session, obj)
@@ -591,7 +623,7 @@ class QualityService:
             **self._view(obj).model_dump(),
             trace=trace,
             source_error=source_error,
-            events=await self._events(session, obj, True),
+            events=await self._events(session, obj, True, source_error is None),
             grants=await self._grants(session, obj),
             replays=[
                 ReplayView.model_validate(
@@ -692,6 +724,8 @@ class QualityService:
             values = SnapshotCipher(self.settings).decrypt(
                 f"grant:{obj.id}:{grant.id}", stored.key_id, stored.ciphertext
             )
+            if not set(request.fields).issubset(values):
+                raise ConflictError(error_key="QUALITY_SNAPSHOT_UNAVAILABLE")
             statement = await self._statement(obj) if "query" in grant.fields else {}
             return SnapshotView(
                 case_id=obj.id,
@@ -711,12 +745,26 @@ class QualityService:
             check_version(obj.version, body.expected_version)
             self._open(obj)
             if body.visibility == "admin":
-                source = await self._source(session, obj)
-                if any(
-                    text and len(text) >= 16 and text in body.content
-                    for text in [source.query, source.final_output]
-                ):
-                    raise ConflictError(error_key="QUALITY_BODY_COPY_FORBIDDEN")
+                try:
+                    source = await self._source(session, obj)
+                except AppError:
+                    source = None
+                if source:
+                    chunks = await validate_chunks(
+                        session,
+                        obj.user_id,
+                        obj.knowledge_base_id,
+                        [c.chunk_id for stage in source.trace.stages for c in stage.candidates],
+                    )
+                    if any(
+                        text and len(text) >= 16 and text in body.content
+                        for text in [
+                            source.query,
+                            source.final_output,
+                            *(chunk.content for chunk in chunks.values()),
+                        ]
+                    ):
+                        raise ConflictError(error_key="QUALITY_BODY_COPY_FORBIDDEN")
             obj.version += 1
             obj.first_response_at = obj.first_response_at or datetime.now(UTC)
             self._event(
@@ -746,15 +794,20 @@ class QualityService:
                                 DiagnosticReplay.status == "succeeded",
                             )
                         )
-                        if replay:
+                        expected_mode = {
+                            "fts_filter": "fts_only",
+                            "vector_recall": "vector_only",
+                            "fusion": "hybrid_only",
+                            "rerank": "without_rerank",
+                        }.get(cast(str, body.resolution_code))
+                        if replay and obj.trace_metadata and replay.mode == expected_mode:
                             trace = TraceMetadata.model_validate(obj.trace_metadata)
                             full = offline_replay(trace, "full", [])
-                            evidence = replay.result["final_chunk_ids"] != full["final_chunk_ids"]
-                    if not evidence and body.deterministic_error_code:
-                        try:
-                            await self._source(session, obj)
-                        except AppError as exc:
-                            evidence = exc.error_key == body.deterministic_error_code
+                            evidence = replay.result["final_chunk_ids"] != [
+                                str(chunk_id) for chunk_id in full["final_chunk_ids"]
+                            ]
+                    # 本期的来源失效/Trace 缺失码只能说明不可回放，不能单独
+                    # 证明解析、索引或某一路算法存在缺陷；不据此伪造技术归因。
                     if not evidence:
                         raise ConflictError(error_key="QUALITY_ATTRIBUTION_UNVERIFIED")
                 obj.resolution_code, obj.resolution_summary = (
@@ -776,6 +829,7 @@ class QualityService:
             return await self._admin_detail(session, obj)
 
     async def replay(self, case_id: UUID, body: ReplayRequest) -> AdminCaseDetail:
+        failure: AppError | None = None
         async with self._tx("replay_create", case_id) as session:
             obj = await self._case(session, case_id, True)
             check_version(obj.version, body.expected_version)
@@ -785,19 +839,39 @@ class QualityService:
             grant = await self._grant(
                 session, obj, body.grant_id, body.expected_grant_version, ["query"]
             )
-            source = await self._source(session, obj)
-            candidates = list(
-                {c.chunk_id for stage in source.trace.stages for c in stage.candidates}
-            )
-            await validate_chunks(session, obj.user_id, obj.knowledge_base_id, candidates)
-            if body.target_chunk_ids and not set(body.target_chunk_ids).issubset(set(candidates)):
-                raise ForbiddenError(error_key="QUALITY_GRANT_SCOPE_FORBIDDEN")
-            result = json.loads(
-                json.dumps(
-                    offline_replay(source.trace, body.mode, body.target_chunk_ids), default=str
+            try:
+                source = await self._source(session, obj)
+                candidates = list(
+                    {c.chunk_id for stage in source.trace.stages for c in stage.candidates}
                 )
-            )
-            result["status"] = "succeeded"
+                await validate_chunks(session, obj.user_id, obj.knowledge_base_id, candidates)
+                if body.target_chunk_ids and not set(body.target_chunk_ids).issubset(
+                    set(candidates)
+                ):
+                    raise ForbiddenError(error_key="QUALITY_GRANT_SCOPE_FORBIDDEN")
+                result = json.loads(
+                    json.dumps(
+                        offline_replay(source.trace, body.mode, body.target_chunk_ids), default=str
+                    )
+                )
+                result["status"] = "succeeded"
+            except AppError as exc:
+                failure = exc
+                result = {
+                    "mode": body.mode,
+                    "status": "failed",
+                    "strategy_version": obj.strategy_version,
+                    "ranking": [],
+                    "final_chunk_ids": [],
+                    "metrics": {"recall": None, "mrr": None, "ndcg": None},
+                    "comparison_kind": "recorded_candidates_offline",
+                    "independent_latency_ms": None,
+                    "causal_claim": False,
+                    "recorded_stage_metadata": [],
+                    "note": "离线对照未执行成功；不可用来源不返回正文，未重新检索或调用模型。",
+                    "error_key": exc.error_key or "TRACE_UNAVAILABLE",
+                }
+                session.info["quality_audit_reason"] = result["error_key"]
             session.add(
                 DiagnosticReplay(
                     case_id=obj.id,
@@ -805,15 +879,20 @@ class QualityService:
                     grant_version=grant.version,
                     actor_id=self.user.id,
                     mode=body.mode,
-                    status="succeeded",
+                    status=result["status"],
                     result=result,
-                    error_key=None,
+                    error_key=result.get("error_key"),
                 )
             )
             obj.status, obj.version = "investigating", obj.version + 1
-            self._event(session, obj, "replay_completed")
+            self._event(session, obj, "replay_failed" if failure else "replay_completed")
             await session.flush()
-            return await self._admin_detail(session, obj)
+            detail = await self._admin_detail(session, obj)
+        if failure:
+            # 先提交无正文失败记录，再返回真实 RFC 9457 错误；不伪装成成功回放。
+            failure.headers = {**(failure.headers or {}), "Cache-Control": "no-store"}
+            raise failure
+        return detail
 
     async def overview(self) -> QualityOverview:
         async with self._tx("quality_overview") as session:
