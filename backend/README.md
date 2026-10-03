@@ -124,3 +124,11 @@ uv run xuemian-ai-practice-worker
 `make knowledge-worker` 运行持久化精讲任务和学习评分 outbox 投影，业务库版本为 `20261003_04`。运行前复用已有 PostgreSQL/Redis 等依赖，不能自行重建外部数据库。配置项为 `.env.example` 中 `KNOWLEDGE_*`；并发默认 2、租约 30 秒、任务上限 180 秒。
 
 新功能迁移通过业务库目标/version 核对、可恢复备份后执行；本轮备份和读回记录见 `openspec/changes/implement-learning-assets/evidence.md`。领域/API/迁移回归可运行 `backend/.venv/bin/python backend/scripts/run_learning_assets_checks.py`，只创建本项目 namespace 的合成测试库，最后自动清理。真实模型测试默认跳过；需显式启用且仅使用合成资料，不得外发用户资料。
+
+## 质量反馈与受管练习提示词（独立分支，未部署）
+
+本批迁移链 `20261003_05 → 06 → 07` 新增 AgentRun、质量工单与提示词领域。只在隔离库验证，本轮未迁移上述业务库。质量正文加密配置为 `.env.example` 的 `DIAGNOSTIC_SNAPSHOT_KEYS` JSON keyring 与 `DIAGNOSTIC_SNAPSHOT_ACTIVE_KEY_ID`；保留旧 key 可读、新 key 写入，未配置有效密钥时拒绝正文保存/读取。密钥仅通过环境/密钥管理注入，不写入源码、日志或交付记录。
+
+在确认目标与备份并获部署授权后，管理员可运行 `.venv/bin/python -m xuemian_ai.prompt_management.cli --admin-user-id <真实管理员UUID>` 初始化实际练习场景草稿。该命令不调用模型、不发布。管理员再在 `/admin/prompts` 校验公共片段及任务模板、显式执行合成评测并发布；评测调用配置中的真实 Qwen provider，需有效密钥。未发布有效活动版本时，新 `practice_generate` 返回 `PROMPT_RUNTIME_UNAVAILABLE`，入队事务不会残留 PracticeRun/AgentRun。旧任务按保存快照执行，停用只影响新任务；其他未纳管场景沿用既有实现。
+
+质量清理由现有文件调度器每日任务接线：撤销/到期/关闭立即拒读，失效正文最长 7 天物理清理。候选回放只比较已记录排序，关键词为 PostgreSQL FTS，不是 BM25，也不证明因果或独立模式延时。完整验证及首期边界见 `../docs/development/quality-prompt-delivery-20261003.md`。

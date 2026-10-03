@@ -71,4 +71,6 @@ knowledge-worker 默认并发 2、30 秒租约、180 秒任务上限；`KNOWLEDG
 
 本轮在三份功能worktree并行修复既有学习行为，再整合至独立 `codex/learn-integration-20261003`：失败重试约束、来源恢复复习版本、答案保存/提交、任务恢复/迟到响应、失效原文缓存和会话间私有缓存隔离。完整提交与验证见 `openspec/changes/fix-learning-workflow-reliability/`。修复尚未合入main或更新本机运行进程，不把构建成功当作部署。
 
-下一批质量诊断台与提示词管理的待批准最小范围、公共契约、文件归属和验收条件见 `docs/development/parallel-next-batch-20261003.md`。须先冻结真实结果/Trace与Prompt运行版本契约，再分开后端与前端worktree实施；本轮只交付具体方案，没有新增这两套功能。
+质量诊断台与提示词管理首期已按用户批准范围，在独立 `codex/learn-quality-prompt-integration` 集成。本人完整资料问答可提交单次授权反馈，入口为 `/ai-quality`；管理员入口为 `/admin/ai-quality`、`/admin/ai-quality/cases` 与 `/admin/prompts`。提示词首期只纳管实际 `question_generator/practice_generate`，发布版本及依赖在任务入队时固定，后续发布或停用不改变已启动任务。公共契约与文件归属见 `docs/development/quality-prompt-contract-20261003.md`，统一交付及验证边界见 `docs/development/quality-prompt-delivery-20261003.md`。
+
+这些改动尚未合入 main、迁移业务库或部署。受管生成上线前必须配置诊断加密密钥，并由管理员初始化草稿、显式评测和发布有效活动提示词；否则新练习生成返回 `PROMPT_RUNTIME_UNAVAILABLE`。具体步骤见 `backend/README.md`，测试中的合成评测不能代替业务环境的真实模型评测。
