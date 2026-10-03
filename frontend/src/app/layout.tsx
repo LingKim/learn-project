@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Viewport } from "next";
 
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="zh-CN">
       <body>
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <TooltipProvider delayDuration={150}>
+            <AuthProvider>{children}</AuthProvider>
+          </TooltipProvider>
         </QueryProvider>
         <Toaster position="top-right" richColors />
       </body>

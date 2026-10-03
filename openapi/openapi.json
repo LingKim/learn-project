@@ -11304,6 +11304,15 @@
               }
             ],
             "title": "Preferred Language"
+          },
+          "navigation_position": {
+            "type": "string",
+            "enum": [
+              "left",
+              "top"
+            ],
+            "title": "Navigation Position",
+            "default": "left"
           }
         },
         "additionalProperties": false,
@@ -11428,6 +11437,14 @@
             ],
             "title": "Preferred Language"
           },
+          "navigation_position": {
+            "type": "string",
+            "enum": [
+              "left",
+              "top"
+            ],
+            "title": "Navigation Position"
+          },
           "avatar_set": {
             "type": "boolean",
             "title": "Avatar Set"
@@ -11467,6 +11484,7 @@
           "focus_topics",
           "learning_goal",
           "preferred_language",
+          "navigation_position",
           "avatar_set",
           "avatar_url",
           "version",

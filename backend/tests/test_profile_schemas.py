@@ -57,9 +57,25 @@ def test_profile_patch_rejects_read_only_username_and_null_nickname() -> None:
         {"version": 0, "experience_months": 721},
         {"version": 0, "target_level": "lead"},
         {"version": 0, "preferred_language": "ja-JP"},
+        {"version": 0, "navigation_position": "right"},
+        {"version": 0, "navigation_position": None},
         {"version": 0, "target_skills": [str(index) for index in range(31)]},
     ],
 )
 def test_profile_patch_rejects_out_of_policy_values(payload: dict[str, object]) -> None:
     with pytest.raises(ValidationError):
         UserProfilePatch.model_validate(payload)
+
+
+@pytest.mark.parametrize("position", ["left", "top"])
+def test_navigation_preference_accepts_supported_positions(position: str) -> None:
+    request = UserProfilePatch.model_validate({"version": 1, "navigation_position": position})
+
+    assert request.navigation_position == position
+    assert "navigation_position" in request.model_fields_set
+
+
+def test_omitted_navigation_preference_is_not_part_of_patch() -> None:
+    request = UserProfilePatch.model_validate({"version": 1, "nickname": "新昵称"})
+
+    assert "navigation_position" not in request.model_dump(exclude_unset=True)

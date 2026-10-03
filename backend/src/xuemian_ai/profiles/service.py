@@ -28,6 +28,7 @@ from xuemian_ai.profiles.schemas import (
     AvatarUploadCompleteView,
     AvatarUploadCreate,
     AvatarUploadPlan,
+    NavigationPosition,
     PreferredLanguage,
     TargetLevel,
     UserProfilePatch,
@@ -42,6 +43,7 @@ _PROFILE_FIELDS = {
     "focus_topics",
     "learning_goal",
     "preferred_language",
+    "navigation_position",
 }
 
 
@@ -99,6 +101,7 @@ class UserProfileService:
         if profile is None and profile_fields:
             profile = UserProfile(
                 user_id=self._user.id,
+                navigation_position="left",
                 version=1,
                 created_by=self._user.id,
                 updated_by=self._user.id,
@@ -334,6 +337,9 @@ class UserProfileService:
             learning_goal=profile.learning_goal if profile else None,
             preferred_language=(
                 cast(PreferredLanguage | None, profile.preferred_language) if profile else None
+            ),
+            navigation_position=(
+                cast(NavigationPosition, profile.navigation_position) if profile else "left"
             ),
             avatar_set=bool(profile and profile.avatar_file_asset_id),
             avatar_url=(

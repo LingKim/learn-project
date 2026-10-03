@@ -69,8 +69,8 @@ export function DeleteImpactDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        overlayClassName="top-[76px]"
-        className="top-[76px] h-[calc(100dvh-76px)] max-h-[calc(100dvh-76px)] w-full max-w-none translate-y-0 rounded-none border-0 bg-background p-0"
+        overlayClassName=""
+        className="top-0 h-dvh max-h-dvh w-full max-w-none translate-y-0 rounded-none border-0 bg-background p-0"
         showCloseButton={false}
       >
         <div className="mx-auto w-full max-w-[1440px] px-5 py-7 lg:px-[110px]">

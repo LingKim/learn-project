@@ -15,6 +15,7 @@ def test_user_profile_has_one_to_one_avatar_and_version_constraints() -> None:
         "focus_topics",
         "learning_goal",
         "preferred_language",
+        "navigation_position",
         "avatar_file_asset_id",
         "version",
     } <= columns
@@ -23,8 +24,17 @@ def test_user_profile_has_one_to_one_avatar_and_version_constraints() -> None:
         "ck_user_profiles_experience_months",
         "ck_user_profiles_target_level",
         "ck_user_profiles_preferred_language",
+        "ck_user_profiles_navigation_position",
         "ck_user_profiles_version",
     } <= constraints
+
+
+def test_navigation_position_is_non_nullable_with_database_default() -> None:
+    column = UserProfile.__table__.columns["navigation_position"]
+
+    assert column.nullable is False
+    assert column.default is not None and column.default.arg == "left"
+    assert column.server_default is not None and str(column.server_default.arg) == "left"
 
 
 def test_upload_session_supports_isolated_avatar_purpose() -> None:

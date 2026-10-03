@@ -8,6 +8,7 @@ TrimmedNickname = Annotated[
 ]
 TargetLevel = Literal["intern", "junior", "intermediate", "senior", "expert"]
 PreferredLanguage = Literal["zh-CN", "en-US"]
+NavigationPosition = Literal["left", "top"]
 
 
 def _normalize_optional_text(value: str | None) -> str | None:
@@ -54,6 +55,7 @@ class UserProfileView(BaseModel):
     focus_topics: list[str] | None
     learning_goal: str | None
     preferred_language: PreferredLanguage | None
+    navigation_position: NavigationPosition
     avatar_set: bool
     avatar_url: str | None
     version: int
@@ -72,6 +74,7 @@ class UserProfilePatch(BaseModel):
     focus_topics: list[str] | None = Field(default=None, max_length=30)
     learning_goal: str | None = Field(default=None, max_length=1000)
     preferred_language: PreferredLanguage | None = None
+    navigation_position: NavigationPosition = "left"
 
     @field_validator("nickname")
     @classmethod

@@ -14,6 +14,7 @@ const profile: UserProfileView = {
   focus_topics: ["JVM"],
   learning_goal: "完成面试准备",
   preferred_language: "zh-CN",
+  navigation_position: "left",
   avatar_set: false,
   avatar_url: null,
   version: 4,

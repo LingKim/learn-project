@@ -277,7 +277,7 @@ export function LearningPage() {
 
   return (
     <ContentShell>
-      <div className="flex min-h-[calc(100dvh-76px)] flex-col lg:h-[calc(100dvh-76px)] lg:min-h-0 lg:flex-row">
+      <div className="flex min-h-[calc(100dvh-var(--app-header-height))] flex-col lg:h-[calc(100dvh-var(--app-header-height))] lg:min-h-0 lg:flex-row">
         <aside
           className="flex shrink-0 flex-col gap-5 border-b border-border bg-sidebar px-5 py-6 lg:w-[312px] lg:border-r lg:border-b-0"
           aria-label="问答历史"

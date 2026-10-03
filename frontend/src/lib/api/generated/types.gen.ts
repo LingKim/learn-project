@@ -1613,6 +1613,10 @@ export type UserProfilePatch = {
      * Preferred Language
      */
     preferred_language?: 'zh-CN' | 'en-US' | null;
+    /**
+     * Navigation Position
+     */
+    navigation_position?: 'left' | 'top';
 };
 
 /**
@@ -1659,6 +1663,10 @@ export type UserProfileView = {
      * Preferred Language
      */
     preferred_language: 'zh-CN' | 'en-US' | null;
+    /**
+     * Navigation Position
+     */
+    navigation_position: 'left' | 'top';
     /**
      * Avatar Set
      */
