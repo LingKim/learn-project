@@ -100,10 +100,10 @@ AI 结果 + trace_id
 
 - 顶部：工单状态、负责人、问题类型、提交时间和授权状态；
 - 用户陈述：问题描述、期望结果、用户补充和公开回复；
-- Trace 瀑布：解析/索引、Query、BM25、Vector、融合、Rerank、证据门禁、生成/引用的状态、候选数和耗时；
+- Trace 瀑布：解析/索引、Query、FTS、Vector、融合、Rerank、证据门禁、生成/引用的状态、候选数和耗时；
 - 排名对比：同一 chunk 在关键词、向量、融合、Rerank 和最终结果中的排名、分数与过滤原因；
 - 版本信息：解析器、分块、Embedding、融合、Rerank、提示词和模型版本；
-- 回放对比：Baseline、BM25-only、Vector-only、Hybrid-only、无 Rerank 和当前完整策略；
+- 回放对比：Baseline、FTS-only、Vector-only、Hybrid-only、无 Rerank 和当前完整策略；
 - 时间线：领取、状态、授权、访问、回放、回复和解决事件。
 
 诊断页只生成修复建议或评测集候选，不直接出现“发布策略”按钮。
@@ -140,9 +140,11 @@ AI 结果 + trace_id
 
 ## 7. 回放和问题归因
 
+本期仅对真实 Trace 已记录的候选排名进行离线对照，不重新执行线上检索或模型，不宣称独立负载耗时或因果消融。仅支持现有 `fts-jieba-or/vector/llama-rrf/qwen-rerank-v2` 策略；Hybrid-only 与无 Rerank 在当前实现中相同。来源或策略不可用时明确拒绝回放。
+
 - 回放必须固定 Trace 当时的知识范围和可用策略版本；源资料已经删除或授权不足时明确返回不可回放，不从备份恢复正文。
-- 回放模式至少包含 `bm25_only | vector_only | hybrid_only | without_rerank | full`。
-- 归因码至少包含：`parsing_gap | stale_index | bm25_filter | vector_recall | fusion | rerank | evidence_gate | generation | citation | source_outdated | latency | not_reproduced | user_expectation | unknown`。
+- 回放模式至少包含 `fts_only | vector_only | hybrid_only | without_rerank | full`。
+- 归因码至少包含：`parsing_gap | stale_index | fts_filter | vector_recall | fusion | rerank | evidence_gate | generation | citation | source_outdated | latency | not_reproduced | user_expectation | unknown`。
 - “来源于某路”不是因果归因；只有消融对照或确定性错误证据才能选择对应技术归因。
 - 工单解决后可以创建脱敏评测集候选，只保存人工重新编写或合法授权的 Query、目标 chunk ID 和标签；未经独立审核不得自动进入发布门禁集。
 

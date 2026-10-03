@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     log_format: Literal["console", "json"] = "console"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     api_v1_prefix: str = "/api/v1"
+    # 应用层加密密钥环 JSON：key_id -> Fernet key；空配置明确拒绝创建/读取正文快照。
+    diagnostic_snapshot_keys: SecretStr = SecretStr("{}")
+    diagnostic_snapshot_active_key_id: str = Field(default="v1", pattern=r"^[A-Za-z0-9_-]{1,32}$")
+    ai_quality_confirmation_days: int = Field(default=7, ge=1, le=30)
     database_url: SecretStr = SecretStr(
         "postgresql+asyncpg://xuemian_ai_app:change-me@localhost:5432/xuemian_ai"
     )

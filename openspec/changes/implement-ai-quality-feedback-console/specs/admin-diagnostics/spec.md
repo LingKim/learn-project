@@ -49,7 +49,7 @@
 
 ### Requirement: 诊断回放必须隔离且可比较
 
-系统 SHALL 在只读隔离 runner 中执行 BM25-only、Vector-only、Hybrid-only、无 Rerank 和完整策略回放，不得影响活动索引、发布指针或用户结果。
+系统 SHALL 在只读隔离 runner 中执行 FTS-only、Vector-only、Hybrid-only、无 Rerank 和完整策略回放，不得影响活动索引、发布指针或用户结果。
 
 #### Scenario: 授权充分且源数据仍有效
 
@@ -66,7 +66,7 @@
 
 #### Scenario: 判断技术归因
 
-- **WHEN** 管理员选择 BM25、Vector、融合或 Rerank 为根因
+- **WHEN** 管理员选择 FTS、Vector、融合或 Rerank 为根因
 - **THEN** 系统要求存在对应消融差异或确定性错误证据
 - **AND** 不允许仅凭候选来源标签形成因果结论
 

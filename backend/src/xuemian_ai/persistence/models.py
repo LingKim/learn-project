@@ -1,6 +1,7 @@
 """集中导入当前真实模型，供 Alembic 发现元数据。"""
 
 from xuemian_ai.accounts.models import AuthAuditEvent, AuthSession, User
+from xuemian_ai.agent_runs.models import AgentRun
 from xuemian_ai.document_processing.models import (
     AIProcessingConsent,
     BackgroundTask,
@@ -49,6 +50,7 @@ from xuemian_ai.practice.models import (
 from xuemian_ai.profiles.models import UserProfile
 
 __all__ = [
+    "AgentRun",
     "KnowledgeCardVersion",
     "KnowledgeExplanation",
     "KnowledgeRun",
