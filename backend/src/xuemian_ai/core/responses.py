@@ -29,8 +29,8 @@ def success_response[T](
     message: str = "请求成功",
     code: ApiStatusCode = ApiStatusCode.OK,
 ) -> ApiResponse[T]:
-    if code not in {ApiStatusCode.OK, ApiStatusCode.CREATED}:
-        raise ValueError("success response code must be 200 or 201")
+    if code not in {ApiStatusCode.OK, ApiStatusCode.CREATED, ApiStatusCode.ACCEPTED}:
+        raise ValueError("success response code must be 200, 201 or 202")
     return ApiResponse(code=code.value, message=message, data=data)
 
 

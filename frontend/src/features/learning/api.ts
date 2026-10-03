@@ -23,7 +23,7 @@ import type {
   ConversationCreate,
   ConversationView,
   ConversationDetail,
-  FeedbackRequest,
+  XuemianAiLearningSchemasFeedbackRequest as FeedbackRequest,
   TurnView,
 } from "@/lib/api/generated/types.gen";
 import {

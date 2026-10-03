@@ -25,9 +25,29 @@ from xuemian_ai.file_management.models import (
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
 from xuemian_ai.learning.attachment_models import LearningAttachment
 from xuemian_ai.learning.models import LearningConversation, LearningTurn
+from xuemian_ai.practice.models import (
+    PracticeAnswer,
+    PracticeAttempt,
+    PracticeFeedback,
+    PracticeGrade,
+    PracticePlan,
+    PracticeRevision,
+    PracticeRun,
+    PracticeSet,
+    PracticeSubmission,
+)
 from xuemian_ai.profiles.models import UserProfile
 
 __all__ = [
+    "PracticeSet",
+    "PracticePlan",
+    "PracticeRevision",
+    "PracticeAttempt",
+    "PracticeAnswer",
+    "PracticeSubmission",
+    "PracticeGrade",
+    "PracticeRun",
+    "PracticeFeedback",
     "LearningAttachment",
     "LearningConversation",
     "LearningTurn",

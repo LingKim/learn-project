@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     learning_model_timeout_seconds: float = Field(default=60, gt=0, le=120)
     learning_request_timeout_seconds: float = Field(default=120, gt=0, le=180)
     learning_consent_version: str = "qwen-learning-v2"
+    practice_worker_poll_seconds: float = Field(default=1.0, gt=0)
+    practice_worker_lease_seconds: int = Field(default=30, ge=15)
+    practice_worker_concurrency: int = Field(default=2, ge=1, le=16)
+    practice_run_timeout_seconds: float = Field(default=180, ge=120, le=600)
     document_provider: Literal["qwen", "deterministic"] = "qwen"
     document_embedding_model: str = "qwen3.7-text-embedding"
     document_rerank_model: str = "qwen3-rerank"

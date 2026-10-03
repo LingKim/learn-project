@@ -55,6 +55,29 @@ services:
       qdrant:
         condition: service_started
 
+  practice-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["uv", "run", "--no-sync", "xuemian-ai-practice-worker"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${APP_DB_USER}:${APP_DB_PASSWORD}@host.docker.internal:5432/${APP_DB_NAME}
+      REDIS_URL: redis://host.docker.internal:6379/0
+      RUSTFS_INTERNAL_ENDPOINT: http://rustfs:9000
+      QDRANT_URL: http://qdrant:6333
+      ENVIRONMENT: development
+      LOG_FORMAT: json
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      rustfs:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+
   backend:
     build:
       context: ./backend

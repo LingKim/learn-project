@@ -1,4 +1,4 @@
-.PHONY: init-env bootstrap-db bootstrap-storage preflight install dev down logs contract format check test compose-config
+.PHONY: init-env bootstrap-db bootstrap-storage preflight install dev practice-worker down logs contract format check test compose-config
 
 init-env:
 	./scripts/init-env.sh
@@ -18,6 +18,9 @@ install:
 
 dev: preflight
 	docker compose up
+
+practice-worker:
+	cd backend && uv run xuemian-ai-practice-worker
 
 down:
 	docker compose down

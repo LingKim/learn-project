@@ -86,6 +86,24 @@ export type AnswerCitation = {
 };
 
 /**
+ * AnswerEvidence
+ */
+export type AnswerEvidence = {
+    /**
+     * Quote
+     */
+    quote: string;
+    /**
+     * Start
+     */
+    start: number;
+    /**
+     * End
+     */
+    end: number;
+};
+
+/**
  * AnswerRequest
  */
 export type AnswerRequest = {
@@ -105,6 +123,32 @@ export type AnswerRequest = {
      * Attachment Ids
      */
     attachment_ids?: Array<string>;
+};
+
+/**
+ * AnswerSave
+ */
+export type AnswerSave = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Answer
+     */
+    answer: ({
+        type: 'single_choice';
+    } & SingleAnswer) | ({
+        type: 'multiple_choice';
+    } & MultipleAnswer) | ({
+        type: 'true_false';
+    } & BooleanAnswer) | ({
+        type: 'code_text' | 'short_answer';
+    } & TextAnswer);
+    /**
+     * Current Question Id
+     */
+    current_question_id?: string | null;
 };
 
 /**
@@ -131,6 +175,32 @@ export type AnswerStreamEvent = {
 };
 
 /**
+ * AnswerView
+ */
+export type AnswerView = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Answer
+     */
+    answer: ({
+        type: 'single_choice';
+    } & SingleAnswer) | ({
+        type: 'multiple_choice';
+    } & MultipleAnswer) | ({
+        type: 'true_false';
+    } & BooleanAnswer) | ({
+        type: 'code_text' | 'short_answer';
+    } & TextAnswer);
+};
+
+/**
  * ApiResponse[AIConsentView]
  */
 export type ApiResponseAiConsentView = {
@@ -143,6 +213,21 @@ export type ApiResponseAiConsentView = {
      */
     message: string;
     data: AiConsentView;
+};
+
+/**
+ * ApiResponse[AttemptView]
+ */
+export type ApiResponseAttemptView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AttemptView;
 };
 
 /**
@@ -266,6 +351,21 @@ export type ApiResponseDownloadUrlView = {
 };
 
 /**
+ * ApiResponse[FeedbackView]
+ */
+export type ApiResponseFeedbackView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: FeedbackView;
+};
+
+/**
  * ApiResponse[FilePolicyView]
  */
 export type ApiResponseFilePolicyView = {
@@ -278,6 +378,21 @@ export type ApiResponseFilePolicyView = {
      */
     message: string;
     data: FilePolicyView;
+};
+
+/**
+ * ApiResponse[GradeView]
+ */
+export type ApiResponseGradeView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: GradeView;
 };
 
 /**
@@ -359,6 +474,21 @@ export type ApiResponseNoneType = {
 };
 
 /**
+ * ApiResponse[PlanView]
+ */
+export type ApiResponsePlanView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: PlanView;
+};
+
+/**
  * ApiResponse[ProcessingTaskView]
  */
 export type ApiResponseProcessingTaskView = {
@@ -374,6 +504,21 @@ export type ApiResponseProcessingTaskView = {
 };
 
 /**
+ * ApiResponse[ReportView]
+ */
+export type ApiResponseReportView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ReportView;
+};
+
+/**
  * ApiResponse[RetrievalResult]
  */
 export type ApiResponseRetrievalResult = {
@@ -386,6 +531,96 @@ export type ApiResponseRetrievalResult = {
      */
     message: string;
     data: RetrievalResult;
+};
+
+/**
+ * ApiResponse[RevisionView]
+ */
+export type ApiResponseRevisionView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: RevisionView;
+};
+
+/**
+ * ApiResponse[RunView]
+ */
+export type ApiResponseRunView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: RunView;
+};
+
+/**
+ * ApiResponse[SetDetail]
+ */
+export type ApiResponseSetDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: SetDetail;
+};
+
+/**
+ * ApiResponse[SetView]
+ */
+export type ApiResponseSetView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: SetView;
+};
+
+/**
+ * ApiResponse[SourcePreview]
+ */
+export type ApiResponseSourcePreview = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: SourcePreview;
+};
+
+/**
+ * ApiResponse[SubmissionGradeView]
+ */
+export type ApiResponseSubmissionGradeView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: SubmissionGradeView;
 };
 
 /**
@@ -515,6 +750,84 @@ export type ApiResponseListSignedPart = {
 };
 
 /**
+ * AttemptCreate
+ */
+export type AttemptCreate = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Revision Id
+     */
+    revision_id: string;
+};
+
+/**
+ * AttemptView
+ */
+export type AttemptView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Set Id
+     */
+    set_id: string;
+    /**
+     * Revision Id
+     */
+    revision_id: string;
+    /**
+     * Status
+     */
+    status: 'active' | 'completed';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Current Question Id
+     */
+    current_question_id: string | null;
+    /**
+     * Questions
+     */
+    questions: Array<SingleChoiceQuestion | MultipleChoiceQuestion | TrueFalseQuestion | ShortAnswerQuestion | CodeTextQuestion>;
+    /**
+     * Answers
+     */
+    answers: Array<AnswerView>;
+    /**
+     * Submissions
+     */
+    submissions: Array<SubmissionGradeView>;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Question Feedback
+     */
+    question_feedback?: {
+        [key: string]: 'helpful' | 'unhelpful' | null;
+    };
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Completed At
+     */
+    completed_at: string | null;
+};
+
+/**
  * AuthPayload
  */
 export type AuthPayload = {
@@ -617,6 +930,62 @@ export type BodyLearningAttachmentsUpload = {
      * File
      */
     file: Blob | File;
+};
+
+/**
+ * BooleanAnswer
+ */
+export type BooleanAnswer = {
+    /**
+     * Type
+     */
+    type: 'true_false';
+    /**
+     * Value
+     */
+    value: boolean;
+};
+
+/**
+ * CodeTextQuestion
+ */
+export type CodeTextQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Stem
+     */
+    stem: string;
+    /**
+     * Answer Explanation
+     */
+    answer_explanation: string;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Source Refs
+     */
+    source_refs?: Array<SourceRef>;
+    /**
+     * Type
+     */
+    type: 'code_text';
+    /**
+     * Answer
+     */
+    answer: Array<string>;
 };
 
 /**
@@ -783,6 +1152,32 @@ export type DependencyCheck = {
 };
 
 /**
+ * DimensionGrade
+ */
+export type DimensionGrade = {
+    /**
+     * Dimension Id
+     */
+    dimension_id: string;
+    /**
+     * Level
+     */
+    level: 'correct' | 'partial' | 'incorrect' | 'absent';
+    /**
+     * Evidence
+     */
+    evidence?: Array<AnswerEvidence>;
+    /**
+     * Score
+     */
+    score?: number | null;
+    /**
+     * Max Score
+     */
+    max_score?: number | null;
+};
+
+/**
  * DownloadUrlView
  */
 export type DownloadUrlView = {
@@ -865,13 +1260,29 @@ export type EvidenceChunk = {
 };
 
 /**
- * FeedbackRequest
+ * FeedbackView
  */
-export type FeedbackRequest = {
+export type FeedbackView = {
+    /**
+     * Revision Id
+     */
+    revision_id?: string | null;
+    /**
+     * Question Id
+     */
+    question_id?: string | null;
+    /**
+     * Grade Id
+     */
+    grade_id?: string | null;
     /**
      * Feedback
      */
     feedback: 'helpful' | 'unhelpful' | null;
+    /**
+     * Id
+     */
+    id: string;
 };
 
 /**
@@ -954,6 +1365,106 @@ export type FilePolicyView = {
      * Updated At
      */
     updated_at: string;
+};
+
+/**
+ * GenerateRequest
+ */
+export type GenerateRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Plan Version
+     */
+    plan_version: number;
+    /**
+     * Candidate
+     */
+    candidate: 'original' | 'recommended';
+    /**
+     * Confirmed Config Digest
+     */
+    confirmed_config_digest: string;
+};
+
+/**
+ * GradeView
+ */
+export type GradeView = {
+    /**
+     * Level
+     */
+    level: 'correct' | 'partial' | 'incorrect';
+    /**
+     * Dimensions
+     */
+    dimensions: Array<DimensionGrade>;
+    /**
+     * Score
+     */
+    score?: number | null;
+    /**
+     * Max Score
+     */
+    max_score?: number | null;
+    /**
+     * Confidence
+     */
+    confidence: number;
+    /**
+     * Missing Points
+     */
+    missing_points?: Array<string>;
+    /**
+     * Error Reasons
+     */
+    error_reasons?: Array<string>;
+    /**
+     * Suggestions
+     */
+    suggestions?: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Submission Id
+     */
+    submission_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Low Confidence
+     */
+    low_confidence: boolean;
+    /**
+     * Feedback
+     */
+    feedback?: 'helpful' | 'unhelpful' | null;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Source Mode
+     */
+    source_mode: 'materials' | 'general';
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -1143,6 +1654,80 @@ export type LoginRequest = {
 };
 
 /**
+ * MultipleAnswer
+ */
+export type MultipleAnswer = {
+    /**
+     * Type
+     */
+    type: 'multiple_choice';
+    /**
+     * Option Ids
+     */
+    option_ids: Array<string>;
+};
+
+/**
+ * MultipleChoiceQuestion
+ */
+export type MultipleChoiceQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Stem
+     */
+    stem: string;
+    /**
+     * Answer Explanation
+     */
+    answer_explanation: string;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Source Refs
+     */
+    source_refs?: Array<SourceRef>;
+    /**
+     * Options
+     */
+    options: Array<Option>;
+    /**
+     * Type
+     */
+    type: 'multiple_choice';
+    /**
+     * Answer
+     */
+    answer: Array<string>;
+};
+
+/**
+ * Option
+ */
+export type Option = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
  * PageMeta
  */
 export type PageMeta = {
@@ -1219,6 +1804,156 @@ export type PageResponseKnowledgeFileView = {
      */
     data: Array<KnowledgeFileView>;
     meta: PageMeta;
+};
+
+/**
+ * PageResponse[SetView]
+ */
+export type PageResponseSetView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<SetView>;
+    meta: PageMeta;
+};
+
+/**
+ * PlanCandidate
+ */
+export type PlanCandidate = {
+    config: PracticeConfig;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Config Digest
+     */
+    config_digest: string;
+    /**
+     * Effective Context
+     */
+    effective_context: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * PlanRequest
+ */
+export type PlanRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
+ * PlanView
+ */
+export type PlanView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Set Id
+     */
+    set_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Base Set Version
+     */
+    base_set_version: number;
+    original: PlanCandidate;
+    recommended: PlanCandidate;
+    /**
+     * Suggestions
+     */
+    suggestions: Array<string>;
+};
+
+/**
+ * PracticeConfig
+ */
+export type PracticeConfig = {
+    /**
+     * Mode
+     */
+    mode?: 'practice';
+    /**
+     * Source Mode
+     */
+    source_mode?: 'materials' | 'general';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Topic
+     */
+    topic?: string;
+    /**
+     * Target Job
+     */
+    target_job?: string | null;
+    /**
+     * Experience Months
+     */
+    experience_months?: number | null;
+    /**
+     * Target Level
+     */
+    target_level?: 'intern' | 'junior' | 'intermediate' | 'senior' | 'expert' | null;
+    /**
+     * Target Skills
+     */
+    target_skills?: Array<string> | null;
+    /**
+     * Focus Topics
+     */
+    focus_topics?: Array<string> | null;
+    /**
+     * Learning Goal
+     */
+    learning_goal?: string | null;
+    /**
+     * Preferred Language
+     */
+    preferred_language?: 'zh-CN' | 'en-US' | null;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Question Count
+     */
+    question_count?: number;
+    /**
+     * Question Types
+     */
+    question_types?: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -1353,6 +2088,30 @@ export type ProcessingVersionView = {
 };
 
 /**
+ * QuestionEdit
+ */
+export type QuestionEdit = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Question
+     */
+    question: ({
+        type: 'single_choice';
+    } & SingleChoiceQuestion) | ({
+        type: 'multiple_choice';
+    } & MultipleChoiceQuestion) | ({
+        type: 'true_false';
+    } & TrueFalseQuestion) | ({
+        type: 'short_answer';
+    } & ShortAnswerQuestion) | ({
+        type: 'code_text';
+    } & CodeTextQuestion);
+};
+
+/**
  * ReadyResponse
  */
 export type ReadyResponse = {
@@ -1366,6 +2125,28 @@ export type ReadyResponse = {
     checks: {
         [key: string]: DependencyCheck;
     };
+};
+
+/**
+ * RegenerateRequest
+ */
+export type RegenerateRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Base Revision Id
+     */
+    base_revision_id: string;
+    /**
+     * Question Id
+     */
+    question_id?: string | null;
 };
 
 /**
@@ -1384,6 +2165,103 @@ export type RegisterRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * RegradeRequest
+ */
+export type RegradeRequest = {
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
+ * ReportQuestion
+ */
+export type ReportQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    submission: SubmissionGradeView | null;
+    /**
+     * Status
+     */
+    status: 'unsubmitted' | 'ungraded' | 'correct' | 'partial' | 'incorrect';
+};
+
+/**
+ * ReportView
+ */
+export type ReportView = {
+    /**
+     * Attempt Id
+     */
+    attempt_id: string;
+    /**
+     * Status
+     */
+    status: 'active' | 'completed';
+    /**
+     * Total Questions
+     */
+    total_questions: number;
+    /**
+     * Submitted Count
+     */
+    submitted_count: number;
+    /**
+     * Graded Count
+     */
+    graded_count: number;
+    /**
+     * Questions
+     */
+    questions: Array<ReportQuestion>;
+    /**
+     * Topics
+     */
+    topics: Array<TopicReport>;
+    /**
+     * Score
+     */
+    score?: number | null;
+    /**
+     * Max Score
+     */
+    max_score?: number | null;
+    /**
+     * Source Mode
+     */
+    source_mode: 'materials' | 'general';
+};
+
+/**
+ * ResultRef
+ */
+export type ResultRef = {
+    /**
+     * Type
+     */
+    type: 'plan' | 'revision' | 'grade';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version
+     */
+    version: number;
 };
 
 /**
@@ -1423,6 +2301,291 @@ export type RetrievalResult = {
 };
 
 /**
+ * RetryRequest
+ */
+export type RetryRequest = {
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Input Digest
+     */
+    input_digest: string;
+};
+
+/**
+ * RevisionView
+ */
+export type RevisionView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Set Id
+     */
+    set_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    config: PracticeConfig;
+    /**
+     * Effective Context
+     */
+    effective_context: {
+        [key: string]: unknown;
+    };
+    /**
+     * Questions
+     */
+    questions: Array<SingleChoiceQuestion | MultipleChoiceQuestion | TrueFalseQuestion | ShortAnswerQuestion | CodeTextQuestion>;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Question Feedback
+     */
+    question_feedback?: {
+        [key: string]: 'helpful' | 'unhelpful' | null;
+    };
+    /**
+     * Source Mode
+     */
+    source_mode: 'materials' | 'general';
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * RubricDimension
+ */
+export type RubricDimension = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Max Score
+     */
+    max_score?: number | null;
+};
+
+/**
+ * RunView
+ */
+export type RunView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Operation
+     */
+    operation: 'plan' | 'generate' | 'regenerate' | 'grade' | 'regrade';
+    /**
+     * Status
+     */
+    status: 'pending' | 'processing' | 'cancel_requested' | 'succeeded' | 'failed' | 'cancelled';
+    /**
+     * Stage
+     */
+    stage: string;
+    /**
+     * Attempt Count
+     */
+    attempt_count: number;
+    /**
+     * Retryable
+     */
+    retryable: boolean;
+    /**
+     * Error Key
+     */
+    error_key: string | null;
+    /**
+     * Submission Id
+     */
+    submission_id: string | null;
+    result_ref: ResultRef | null;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Input Digest
+     */
+    input_digest: string;
+};
+
+/**
+ * SetCreate
+ */
+export type SetCreate = {
+    /**
+     * Title
+     */
+    title?: string;
+    config: PracticeConfig;
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
+ * SetDetail
+ */
+export type SetDetail = {
+    /**
+     * Profile Override Fields
+     */
+    profile_override_fields?: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    config: PracticeConfig;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Current Revision Id
+     */
+    current_revision_id: string | null;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    revision: RevisionView | null;
+    /**
+     * Attempts
+     */
+    attempts: Array<AttemptView>;
+};
+
+/**
+ * SetPatch
+ */
+export type SetPatch = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Title
+     */
+    title?: string | null;
+    config?: PracticeConfig | null;
+};
+
+/**
+ * SetView
+ */
+export type SetView = {
+    /**
+     * Profile Override Fields
+     */
+    profile_override_fields?: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    config: PracticeConfig;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Current Revision Id
+     */
+    current_revision_id: string | null;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ShortAnswerQuestion
+ */
+export type ShortAnswerQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Stem
+     */
+    stem: string;
+    /**
+     * Answer Explanation
+     */
+    answer_explanation: string;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Source Refs
+     */
+    source_refs?: Array<SourceRef>;
+    /**
+     * Type
+     */
+    type: 'short_answer';
+    /**
+     * Answer
+     */
+    answer: Array<string>;
+};
+
+/**
  * SignPartsRequest
  */
 export type SignPartsRequest = {
@@ -1444,6 +2607,278 @@ export type SignedPart = {
      * Upload Url
      */
     upload_url: string;
+};
+
+/**
+ * SingleAnswer
+ */
+export type SingleAnswer = {
+    /**
+     * Type
+     */
+    type: 'single_choice';
+    /**
+     * Option Id
+     */
+    option_id: string;
+};
+
+/**
+ * SingleChoiceQuestion
+ */
+export type SingleChoiceQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Stem
+     */
+    stem: string;
+    /**
+     * Answer Explanation
+     */
+    answer_explanation: string;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Source Refs
+     */
+    source_refs?: Array<SourceRef>;
+    /**
+     * Options
+     */
+    options: Array<Option>;
+    /**
+     * Type
+     */
+    type: 'single_choice';
+    /**
+     * Answer
+     */
+    answer: string;
+};
+
+/**
+ * SourcePreview
+ */
+export type SourcePreview = {
+    source: SourceRef;
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Evidence
+     */
+    evidence: string | null;
+};
+
+/**
+ * SourceRef
+ */
+export type SourceRef = {
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * File Id
+     */
+    file_id: string;
+    /**
+     * File Asset Id
+     */
+    file_asset_id: string;
+    /**
+     * Processing Version Id
+     */
+    processing_version_id: string;
+    /**
+     * Chunk Id
+     */
+    chunk_id: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Page Start
+     */
+    page_start?: number | null;
+    /**
+     * Page End
+     */
+    page_end?: number | null;
+    /**
+     * Paragraph Start
+     */
+    paragraph_start?: number | null;
+    /**
+     * Paragraph End
+     */
+    paragraph_end?: number | null;
+};
+
+/**
+ * SubmissionGradeView
+ */
+export type SubmissionGradeView = {
+    /**
+     * Submission Id
+     */
+    submission_id: string;
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Answer
+     */
+    answer: ({
+        type: 'single_choice';
+    } & SingleAnswer) | ({
+        type: 'multiple_choice';
+    } & MultipleAnswer) | ({
+        type: 'true_false';
+    } & BooleanAnswer) | ({
+        type: 'code_text' | 'short_answer';
+    } & TextAnswer);
+    /**
+     * Answer Version
+     */
+    answer_version: number;
+    /**
+     * Grades
+     */
+    grades: Array<GradeView>;
+    run?: RunView | null;
+};
+
+/**
+ * SubmitRequest
+ */
+export type SubmitRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Answer Version
+     */
+    answer_version: number;
+};
+
+/**
+ * TextAnswer
+ */
+export type TextAnswer = {
+    /**
+     * Type
+     */
+    type: 'short_answer' | 'code_text';
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * TopicReport
+ */
+export type TopicReport = {
+    /**
+     * Topic
+     */
+    topic: string;
+    /**
+     * Correct
+     */
+    correct?: number;
+    /**
+     * Partial
+     */
+    partial?: number;
+    /**
+     * Incorrect
+     */
+    incorrect?: number;
+    /**
+     * Ungraded
+     */
+    ungraded?: number;
+    /**
+     * Unsubmitted
+     */
+    unsubmitted?: number;
+    /**
+     * Insufficient Sample
+     */
+    insufficient_sample?: boolean;
+    /**
+     * Error Reasons
+     */
+    error_reasons?: Array<string>;
+    /**
+     * Suggestions
+     */
+    suggestions?: Array<string>;
+};
+
+/**
+ * TrueFalseQuestion
+ */
+export type TrueFalseQuestion = {
+    /**
+     * Question Id
+     */
+    question_id: string;
+    /**
+     * Difficulty
+     */
+    difficulty?: 'easy' | 'medium' | 'hard';
+    /**
+     * Topics
+     */
+    topics: Array<string>;
+    /**
+     * Stem
+     */
+    stem: string;
+    /**
+     * Answer Explanation
+     */
+    answer_explanation: string;
+    /**
+     * Rubric
+     */
+    rubric: Array<RubricDimension>;
+    /**
+     * Source Refs
+     */
+    source_refs?: Array<SourceRef>;
+    /**
+     * Type
+     */
+    type: 'true_false';
+    /**
+     * Answer
+     */
+    answer: boolean;
 };
 
 /**
@@ -1782,6 +3217,48 @@ export type ValidationIssue = {
      * Message
      */
     message: string;
+};
+
+/**
+ * VersionRequest
+ */
+export type VersionRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+};
+
+/**
+ * FeedbackRequest
+ */
+export type XuemianAiLearningSchemasFeedbackRequest = {
+    /**
+     * Feedback
+     */
+    feedback: 'helpful' | 'unhelpful' | null;
+};
+
+/**
+ * FeedbackRequest
+ */
+export type XuemianAiPracticeSchemasFeedbackRequest = {
+    /**
+     * Revision Id
+     */
+    revision_id?: string | null;
+    /**
+     * Question Id
+     */
+    question_id?: string | null;
+    /**
+     * Grade Id
+     */
+    grade_id?: string | null;
+    /**
+     * Feedback
+     */
+    feedback: 'helpful' | 'unhelpful' | null;
 };
 
 /**
@@ -5794,7 +7271,7 @@ export type LearningAnswersCreateResponses = {
 export type LearningAnswersCreateResponse = LearningAnswersCreateResponses[keyof LearningAnswersCreateResponses];
 
 export type LearningAnswersFeedbackData = {
-    body: FeedbackRequest;
+    body: XuemianAiLearningSchemasFeedbackRequest;
     path: {
         /**
          * Conversation Id
@@ -5944,3 +7421,1975 @@ export type LearningAnswersStreamResponses = {
 };
 
 export type LearningAnswersStreamResponse = LearningAnswersStreamResponses[keyof LearningAnswersStreamResponses];
+
+export type PracticeListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/learning/practice/sets';
+};
+
+export type PracticeListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeListError = PracticeListErrors[keyof PracticeListErrors];
+
+export type PracticeListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseSetView;
+};
+
+export type PracticeListResponse = PracticeListResponses[keyof PracticeListResponses];
+
+export type PracticeCreateData = {
+    body: SetCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/practice/sets';
+};
+
+export type PracticeCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeCreateError = PracticeCreateErrors[keyof PracticeCreateErrors];
+
+export type PracticeCreateResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseSetView;
+};
+
+export type PracticeCreateResponse = PracticeCreateResponses[keyof PracticeCreateResponses];
+
+export type PracticeDeleteData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}';
+};
+
+export type PracticeDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeDeleteError = PracticeDeleteErrors[keyof PracticeDeleteErrors];
+
+export type PracticeDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type PracticeDeleteResponse = PracticeDeleteResponses[keyof PracticeDeleteResponses];
+
+export type PracticeDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}';
+};
+
+export type PracticeDetailErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeDetailError = PracticeDetailErrors[keyof PracticeDetailErrors];
+
+export type PracticeDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseSetDetail;
+};
+
+export type PracticeDetailResponse = PracticeDetailResponses[keyof PracticeDetailResponses];
+
+export type PracticePatchData = {
+    body: SetPatch;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}';
+};
+
+export type PracticePatchErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticePatchError = PracticePatchErrors[keyof PracticePatchErrors];
+
+export type PracticePatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseSetView;
+};
+
+export type PracticePatchResponse = PracticePatchResponses[keyof PracticePatchResponses];
+
+export type PracticePlanGetData = {
+    body?: never;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+        /**
+         * Plan Version
+         */
+        plan_version: number;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/plans/{plan_version}';
+};
+
+export type PracticePlanGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticePlanGetError = PracticePlanGetErrors[keyof PracticePlanGetErrors];
+
+export type PracticePlanGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponsePlanView;
+};
+
+export type PracticePlanGetResponse = PracticePlanGetResponses[keyof PracticePlanGetResponses];
+
+export type PracticeRevisionGetData = {
+    body?: never;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+        /**
+         * Revision Id
+         */
+        revision_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/revisions/{revision_id}';
+};
+
+export type PracticeRevisionGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRevisionGetError = PracticeRevisionGetErrors[keyof PracticeRevisionGetErrors];
+
+export type PracticeRevisionGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRevisionView;
+};
+
+export type PracticeRevisionGetResponse = PracticeRevisionGetResponses[keyof PracticeRevisionGetResponses];
+
+export type PracticePlanData = {
+    body: PlanRequest;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/plan';
+};
+
+export type PracticePlanErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticePlanError = PracticePlanErrors[keyof PracticePlanErrors];
+
+export type PracticePlanResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticePlanResponse = PracticePlanResponses[keyof PracticePlanResponses];
+
+export type PracticeGenerateData = {
+    body: GenerateRequest;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/generate';
+};
+
+export type PracticeGenerateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeGenerateError = PracticeGenerateErrors[keyof PracticeGenerateErrors];
+
+export type PracticeGenerateResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticeGenerateResponse = PracticeGenerateResponses[keyof PracticeGenerateResponses];
+
+export type PracticeRegenerateData = {
+    body: RegenerateRequest;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/regenerate';
+};
+
+export type PracticeRegenerateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRegenerateError = PracticeRegenerateErrors[keyof PracticeRegenerateErrors];
+
+export type PracticeRegenerateResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticeRegenerateResponse = PracticeRegenerateResponses[keyof PracticeRegenerateResponses];
+
+export type PracticeQuestionDeleteData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+        /**
+         * Question Id
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/questions/{question_id}';
+};
+
+export type PracticeQuestionDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeQuestionDeleteError = PracticeQuestionDeleteErrors[keyof PracticeQuestionDeleteErrors];
+
+export type PracticeQuestionDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRevisionView;
+};
+
+export type PracticeQuestionDeleteResponse = PracticeQuestionDeleteResponses[keyof PracticeQuestionDeleteResponses];
+
+export type PracticeQuestionEditData = {
+    body: QuestionEdit;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+        /**
+         * Question Id
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/questions/{question_id}';
+};
+
+export type PracticeQuestionEditErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeQuestionEditError = PracticeQuestionEditErrors[keyof PracticeQuestionEditErrors];
+
+export type PracticeQuestionEditResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRevisionView;
+};
+
+export type PracticeQuestionEditResponse = PracticeQuestionEditResponses[keyof PracticeQuestionEditResponses];
+
+export type PracticeAttemptCreateData = {
+    body: AttemptCreate;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/attempts';
+};
+
+export type PracticeAttemptCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeAttemptCreateError = PracticeAttemptCreateErrors[keyof PracticeAttemptCreateErrors];
+
+export type PracticeAttemptCreateResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseAttemptView;
+};
+
+export type PracticeAttemptCreateResponse = PracticeAttemptCreateResponses[keyof PracticeAttemptCreateResponses];
+
+export type PracticeAttemptGetData = {
+    body?: never;
+    path: {
+        /**
+         * Attempt Id
+         */
+        attempt_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/attempts/{attempt_id}';
+};
+
+export type PracticeAttemptGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeAttemptGetError = PracticeAttemptGetErrors[keyof PracticeAttemptGetErrors];
+
+export type PracticeAttemptGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAttemptView;
+};
+
+export type PracticeAttemptGetResponse = PracticeAttemptGetResponses[keyof PracticeAttemptGetResponses];
+
+export type PracticeAnswerSaveData = {
+    body: AnswerSave;
+    path: {
+        /**
+         * Attempt Id
+         */
+        attempt_id: string;
+        /**
+         * Question Id
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/attempts/{attempt_id}/answers/{question_id}';
+};
+
+export type PracticeAnswerSaveErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeAnswerSaveError = PracticeAnswerSaveErrors[keyof PracticeAnswerSaveErrors];
+
+export type PracticeAnswerSaveResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAttemptView;
+};
+
+export type PracticeAnswerSaveResponse = PracticeAnswerSaveResponses[keyof PracticeAnswerSaveResponses];
+
+export type PracticeRegradeData = {
+    body: RegradeRequest;
+    path: {
+        /**
+         * Submission Id
+         */
+        submission_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/submissions/{submission_id}/regrade';
+};
+
+export type PracticeRegradeErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRegradeError = PracticeRegradeErrors[keyof PracticeRegradeErrors];
+
+export type PracticeRegradeResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticeRegradeResponse = PracticeRegradeResponses[keyof PracticeRegradeResponses];
+
+export type PracticeGradeGetData = {
+    body?: never;
+    path: {
+        /**
+         * Submission Id
+         */
+        submission_id: string;
+        /**
+         * Grade Version
+         */
+        grade_version: number;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/submissions/{submission_id}/grades/{grade_version}';
+};
+
+export type PracticeGradeGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeGradeGetError = PracticeGradeGetErrors[keyof PracticeGradeGetErrors];
+
+export type PracticeGradeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseGradeView;
+};
+
+export type PracticeGradeGetResponse = PracticeGradeGetResponses[keyof PracticeGradeGetResponses];
+
+export type PracticeCompleteData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Attempt Id
+         */
+        attempt_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/attempts/{attempt_id}/complete';
+};
+
+export type PracticeCompleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeCompleteError = PracticeCompleteErrors[keyof PracticeCompleteErrors];
+
+export type PracticeCompleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAttemptView;
+};
+
+export type PracticeCompleteResponse = PracticeCompleteResponses[keyof PracticeCompleteResponses];
+
+export type PracticeReportData = {
+    body?: never;
+    path: {
+        /**
+         * Attempt Id
+         */
+        attempt_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/attempts/{attempt_id}/report';
+};
+
+export type PracticeReportErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeReportError = PracticeReportErrors[keyof PracticeReportErrors];
+
+export type PracticeReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseReportView;
+};
+
+export type PracticeReportResponse = PracticeReportResponses[keyof PracticeReportResponses];
+
+export type PracticeRunGetData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/runs/{run_id}';
+};
+
+export type PracticeRunGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRunGetError = PracticeRunGetErrors[keyof PracticeRunGetErrors];
+
+export type PracticeRunGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRunView;
+};
+
+export type PracticeRunGetResponse = PracticeRunGetResponses[keyof PracticeRunGetResponses];
+
+export type PracticeCancelData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/runs/{run_id}/cancel';
+};
+
+export type PracticeCancelErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeCancelError = PracticeCancelErrors[keyof PracticeCancelErrors];
+
+export type PracticeCancelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRunView;
+};
+
+export type PracticeCancelResponse = PracticeCancelResponses[keyof PracticeCancelResponses];
+
+export type PracticeRetryData = {
+    body: RetryRequest;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/runs/{run_id}/retry';
+};
+
+export type PracticeRetryErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRetryError = PracticeRetryErrors[keyof PracticeRetryErrors];
+
+export type PracticeRetryResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticeRetryResponse = PracticeRetryResponses[keyof PracticeRetryResponses];
+
+export type PracticeFeedbackData = {
+    body: XuemianAiPracticeSchemasFeedbackRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/practice/feedback';
+};
+
+export type PracticeFeedbackErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeFeedbackError = PracticeFeedbackErrors[keyof PracticeFeedbackErrors];
+
+export type PracticeFeedbackResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseFeedbackView;
+};
+
+export type PracticeFeedbackResponse = PracticeFeedbackResponses[keyof PracticeFeedbackResponses];
+
+export type PracticeRunLookupData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Request Key
+         */
+        request_key: string;
+        /**
+         * Operation
+         */
+        operation?: 'plan' | 'generate' | 'regenerate' | 'grade' | 'regrade' | null;
+        /**
+         * Set Id
+         */
+        set_id?: string | null;
+    };
+    url: '/api/v1/learning/practice/runs';
+};
+
+export type PracticeRunLookupErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeRunLookupError = PracticeRunLookupErrors[keyof PracticeRunLookupErrors];
+
+export type PracticeRunLookupResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseRunView;
+};
+
+export type PracticeRunLookupResponse = PracticeRunLookupResponses[keyof PracticeRunLookupResponses];
+
+export type PracticeSubmitData = {
+    body: SubmitRequest;
+    path: {
+        /**
+         * Attempt Id
+         */
+        attempt_id: string;
+        /**
+         * Question Id
+         */
+        question_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/attempts/{attempt_id}/questions/{question_id}/submit';
+};
+
+export type PracticeSubmitErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeSubmitError = PracticeSubmitErrors[keyof PracticeSubmitErrors];
+
+export type PracticeSubmitResponses = {
+    /**
+     * Response Practice Submit
+     *
+     * Successful Response
+     */
+    200: ApiResponseSubmissionGradeView | ApiResponseRunView;
+    /**
+     * Accepted
+     */
+    202: ApiResponseRunView;
+};
+
+export type PracticeSubmitResponse = PracticeSubmitResponses[keyof PracticeSubmitResponses];
+
+export type PracticeSourcePreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Set Id
+         */
+        set_id: string;
+        /**
+         * Revision Id
+         */
+        revision_id: string;
+        /**
+         * Question Id
+         */
+        question_id: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/practice/sets/{set_id}/revisions/{revision_id}/questions/{question_id}/sources/{source_id}';
+};
+
+export type PracticeSourcePreviewErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PracticeSourcePreviewError = PracticeSourcePreviewErrors[keyof PracticeSourcePreviewErrors];
+
+export type PracticeSourcePreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseSourcePreview;
+};
+
+export type PracticeSourcePreviewResponse = PracticeSourcePreviewResponses[keyof PracticeSourcePreviewResponses];

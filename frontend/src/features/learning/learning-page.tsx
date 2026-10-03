@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import {
   MessageCircle,
   Plus,
@@ -462,26 +463,43 @@ export function LearningPage() {
                   detail: "创建题目并评估能力",
                   Icon: ClipboardCheck,
                   active: false,
+                  href: "/learning/practice",
                 },
-              ].map(({ label, detail: description, Icon, active: enabled }) => (
-                <button
-                  key={label}
-                  type="button"
-                  disabled={!enabled}
-                  aria-pressed={enabled}
-                  title={enabled ? undefined : `${label}尚未开放`}
-                  className={`m-1 flex min-h-16 items-start gap-2 rounded-md px-3 py-3 text-left ${hasConversation ? "lg:h-14 lg:min-h-14 lg:py-2" : ""} ${enabled ? "border border-border bg-surface" : "text-muted-foreground"}`}
-                >
-                  <Icon className="mt-0.5 size-4 shrink-0" />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium">{label}</span>
-                    <span className="mt-1 hidden truncate text-[11px] text-muted-foreground sm:block">
-                      {description}
-                      {enabled ? "" : " · 尚未开放"}
+              ].map(({ label, detail: description, Icon, active: enabled, href }) =>
+                href ? (
+                  <Link
+                    key={label}
+                    href={href}
+                    className={`m-1 flex min-h-16 items-start gap-2 rounded-md px-3 py-3 text-left text-muted-foreground hover:bg-surface ${hasConversation ? "lg:h-14 lg:min-h-14 lg:py-2" : ""}`}
+                  >
+                    <Icon className="mt-0.5 size-4 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{label}</span>
+                      <span className="mt-1 hidden truncate text-[11px] text-muted-foreground sm:block">
+                        {description}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              ))}
+                  </Link>
+                ) : (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={!enabled}
+                    aria-pressed={enabled}
+                    title={enabled ? undefined : `${label}尚未开放`}
+                    className={`m-1 flex min-h-16 items-start gap-2 rounded-md px-3 py-3 text-left ${hasConversation ? "lg:h-14 lg:min-h-14 lg:py-2" : ""} ${enabled ? "border border-border bg-surface" : "text-muted-foreground"}`}
+                  >
+                    <Icon className="mt-0.5 size-4 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{label}</span>
+                      <span className="mt-1 hidden truncate text-[11px] text-muted-foreground sm:block">
+                        {description}
+                        {enabled ? "" : " · 尚未开放"}
+                      </span>
+                    </span>
+                  </button>
+                ),
+              )}
             </div>
             {hasConversation ? (
               <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">

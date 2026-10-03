@@ -1,0 +1,251 @@
+{
+  "synthetic_only": true,
+  "scope": "DocumentWorker/PG/Qdrant/OCR/embedding/rerank/Qwen; synthetic bytes storage fixture",
+  "reports": [
+    {
+      "version": "practice-four-format-quality",
+      "model": "qwen3.8-flash",
+      "denominators": {
+        "positive_files": 6,
+        "negative_topics": 0
+      },
+      "samples": [
+        {
+          "file": "synthetic.txt",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic.md",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic.docx",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-native.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-scan.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-mixed.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        }
+      ],
+      "negative_samples": [],
+      "grading": null
+    },
+    {
+      "version": "practice-four-format-quality-v2",
+      "model": "qwen3.8-flash",
+      "denominators": {
+        "positive_files": 6,
+        "negative_topics": 3
+      },
+      "samples": [
+        {
+          "file": "synthetic.txt",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic.md",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "markdown"
+          ]
+        },
+        {
+          "file": "synthetic.docx",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-native.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-scan.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        },
+        {
+          "file": "synthetic-mixed.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": false,
+          "citations_locatable": false,
+          "error_key": "PRACTICE_GENERATION_INVALID"
+        }
+      ],
+      "negative_samples": [
+        {
+          "topic": "法国葡萄酒酿造参数",
+          "correct_refusal": true
+        },
+        {
+          "topic": "海王星距离",
+          "correct_refusal": true
+        },
+        {
+          "topic": "某公司2030年利润",
+          "correct_refusal": true
+        }
+      ],
+      "grading": {
+        "passed": false,
+        "error_key": "PRACTICE_GRADE_INVALID"
+      }
+    },
+    {
+      "version": "practice-four-format-quality-v3",
+      "model": "qwen3.8-flash",
+      "denominators": {
+        "positive_files": 6,
+        "negative_topics": 3
+      },
+      "samples": [
+        {
+          "file": "synthetic.txt",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "paragraph"
+          ]
+        },
+        {
+          "file": "synthetic.md",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "markdown"
+          ]
+        },
+        {
+          "file": "synthetic.docx",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "paragraph"
+          ]
+        },
+        {
+          "file": "synthetic-native.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "native_text"
+          ]
+        },
+        {
+          "file": "synthetic-scan.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "ocr"
+          ]
+        },
+        {
+          "file": "synthetic-mixed.pdf",
+          "processing": true,
+          "recall_at_5": 1.0,
+          "source_complete": true,
+          "structure": true,
+          "citations_locatable": true,
+          "retrieved_source_kinds": [
+            "native_text"
+          ]
+        }
+      ],
+      "negative_samples": [
+        {
+          "topic": "法国葡萄酒酿造参数",
+          "correct_refusal": true
+        },
+        {
+          "topic": "海王星距离",
+          "correct_refusal": true
+        },
+        {
+          "topic": "某公司2030年利润",
+          "correct_refusal": true
+        }
+      ],
+      "grading": {
+        "passed": true,
+        "dimensions": 2,
+        "confidence": 1.0
+      }
+    }
+  ]
+}

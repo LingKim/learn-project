@@ -34,6 +34,7 @@ dependencies = [
 ]
 
 [project.scripts]
+xuemian-ai-practice-worker = "xuemian_ai.practice.worker:run"
 xuemian-ai-document-worker = "xuemian_ai.document_processing.worker:run"
 xuemian-ai-init-vectors = "xuemian_ai.document_processing.cli:run"
 xuemian-ai-api = "xuemian_ai.main:run"

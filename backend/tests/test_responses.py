@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from pytest import raises
+from pytest import mark, raises
 
 from xuemian_ai.core.responses import ApiResponse, PageResponse, page_response, success_response
 from xuemian_ai.core.status_codes import ApiStatusCode
@@ -9,18 +9,19 @@ class Item(BaseModel):
     id: int
 
 
-def test_success_response_uses_numeric_http_status_code() -> None:
-    response = success_response(Item(id=1), message="创建成功", code=ApiStatusCode.CREATED)
+@mark.parametrize("status", [ApiStatusCode.OK, ApiStatusCode.CREATED, ApiStatusCode.ACCEPTED])
+def test_success_response_uses_numeric_http_status_code(status: ApiStatusCode) -> None:
+    response = success_response(Item(id=1), message="创建成功", code=status)
 
     assert response.model_dump() == {
-        "code": 201,
+        "code": status.value,
         "message": "创建成功",
         "data": {"id": 1},
     }
 
 
 def test_success_response_rejects_error_status() -> None:
-    with raises(ValueError, match="200 or 201"):
+    with raises(ValueError, match="200, 201 or 202"):
         success_response(None, code=ApiStatusCode.BAD_REQUEST)
 
 

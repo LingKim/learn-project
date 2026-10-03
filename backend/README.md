@@ -1,6 +1,6 @@
 # 学面通AI后端
 
-FastAPI 模块化单体，包含认证、个人资料、知识库、文件管理及文档处理。
+FastAPI 模块化单体，包含认证、个人资料、知识库、文件管理、文档处理、快速回答与刷题练习。
 
 ## 常用命令
 
@@ -102,3 +102,19 @@ uv run python scripts/qwen_document_smoke.py
 `LEARNING_ANSWER_MODEL=qwen3.8-flash`，使用既有千问密钥与兼容 API，关闭思考并校验结构化输出和引用。首次生成需独立确认 AI 数据处理说明。模型调用不持有数据库事务，不向外部 LangSmith 自动发送正文追踪。
 
 后端开发可按根 AGENTS.md 直接迁移本项目业务库：`backend/.venv/bin/python backend/scripts/migrate_business_database.py`；脚本先核对目标与版本、备份，再迁移并读回。不要启停外部 PostgreSQL/Redis。隔离验证使用 `backend/.venv/bin/python backend/scripts/run_learning_checks.py --real-models --quality`，只发送合成资料，结束清理本次测试数据库与 collection。
+
+## 刷题练习与 worker
+
+API 前缀为 `/api/v1/learning/practice`。练习题集、配置方案、题集 revision、attempt、答案、submission、grade、run 与反馈分别持久化；revision/submission/grade 追加版本。来源失效时历史业务结果保留，生成与评分停止，预览不得返回旧原文。客观判分直接执行保存规则；模型只负责配置建议、出题与主观点评。
+
+```bash
+uv run xuemian-ai-practice-worker
+# 未重新同步命令入口时也可直接执行源码
+.venv/bin/python -c 'from xuemian_ai.practice.worker import run; run()'
+```
+
+本次迁移 `20261003_03` 仅新增本项目 9 张练习表；正式库执行前须核对目标、current 并完成可恢复备份。本机已完成，详见本期 evidence。Compose 增加 practice-worker 服务；没有构建或启动本期镜像。
+
+隔离验证命令 `.venv/bin/python scripts/run_practice_integration.py` 创建唯一临时数据库，执行 upgrade/downgrade/upgrade 与真实 PostgreSQL/ASGI HTTP + worker 集成；默认结束清理本次库，`--keep` 仅用于合成评测协同，`--cleanup` 受精确名称护栏限制。普通 pytest 中这些集成测试显式 skip，不会清理业务库。
+
+`run_practice_http_smoke.py` 接入已运行的 API/worker，仅创建合成私有练习，通过 `--token-file` 输入临时令牌，禁止将令牌或正文写入共享 evidence。`evaluate_practice_quality.py` 只使用合成四格式材料，检索、出题与拒答的真实分母分别记录。
