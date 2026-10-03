@@ -6,6 +6,18 @@ import { learningKeys, conversationQueryOptions, sendQuestionMutationOptions } f
 import * as api from "./api";
 
 const profileSource = vi.hoisted(() => ({ profile: vi.fn(), avatar: vi.fn() }));
+const authState = vi.hoisted(() => ({ role: "user" }));
+vi.mock("@/features/auth/auth-provider", () => ({
+  useAuth: () => ({ status: "authenticated", user: { role: authState.role } }),
+  authenticatedAccessToken: vi.fn(),
+}));
+vi.mock("@/features/ai-quality/feedback-dialog", () => ({
+  QualityFeedbackDialog: ({ sourceId, traceId }: { sourceId: string; traceId: string }) => (
+    <div role="dialog" data-source={sourceId} data-trace={traceId}>
+      合成反馈组件
+    </div>
+  ),
+}));
 vi.mock("@/features/user-profile/queries", () => ({
   userProfileQueryOptions: () => ({
     queryKey: ["user-profile", "detail"],
@@ -82,6 +94,7 @@ function mount() {
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();
+  authState.role = "user";
   profileSource.profile.mockResolvedValue({ avatar_set: false, version: 1 });
   profileSource.avatar.mockResolvedValue(new Blob(["synthetic-avatar"], { type: "image/png" }));
   vi.mocked(api.getLearningConsent).mockResolvedValue({
@@ -105,6 +118,43 @@ beforeEach(() => {
   });
 });
 describe("学习快速回答交互", () => {
+  it("只在本人完整资料回答后开放反馈，并仅传递不可变身份引用", async () => {
+    const materials = { ...conversation, mode: "materials" as const, knowledge_base_id: "kb" };
+    vi.mocked(api.listConversations).mockResolvedValue({
+      data: [materials],
+      meta: { page: 1, page_size: 20, total: 1, total_pages: 1 },
+    });
+    vi.mocked(api.getConversation).mockResolvedValue({
+      conversation: materials,
+      turns: [{ ...turn, trace_id: "trace", trace_complete: true }],
+    });
+    mount();
+    fireEvent.click(await screen.findByRole("button", { name: "合成问题" }));
+    fireEvent.click(await screen.findByRole("button", { name: "反馈回答问题" }));
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("data-source", turn.id);
+    expect(dialog).toHaveAttribute("data-trace", "trace");
+  });
+  it.each(["general", "incomplete", "admin"])("%s 不显示质量工单入口", async (scope) => {
+    const scoped = {
+      ...conversation,
+      mode: (scope === "general" ? "general" : "materials") as "general" | "materials",
+      knowledge_base_id: scope === "general" ? null : "kb",
+    };
+    if (scope === "admin") authState.role = "admin";
+    vi.mocked(api.listConversations).mockResolvedValue({
+      data: [scoped],
+      meta: { page: 1, page_size: 20, total: 1, total_pages: 1 },
+    });
+    vi.mocked(api.getConversation).mockResolvedValue({
+      conversation: scoped,
+      turns: [{ ...turn, trace_id: "trace", trace_complete: scope !== "incomplete" }],
+    });
+    mount();
+    fireEvent.click(await screen.findByRole("button", { name: "合成问题" }));
+    await screen.findByText("合成回答");
+    expect(screen.queryByRole("button", { name: "反馈回答问题" })).not.toBeInTheDocument();
+  });
   it("shows the configured avatar in history and updates or removes it with the profile cache", async () => {
     profileSource.profile.mockResolvedValue({ avatar_set: true, version: 1 });
     vi.mocked(api.listConversations).mockResolvedValue({

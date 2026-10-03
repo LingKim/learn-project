@@ -25,3 +25,7 @@
 质量UI：`features/ai-quality/**`、`app/ai-quality/**`、`app/admin/ai-quality/**`；Prompt UI：`features/prompt-management/**`、`app/admin/prompts/**`。Root负责learning入口、practice入队/worker/provider、Settings、main、models导入、迁移、导航、OpenAPI与生成SDK、依赖及集成文档。
 
 两后端先实现真实routes及Pydantic schemas；真实curl权限矩阵通过→Root实际导出OpenAPI/生成SDK→前端开始业务API实现。前端可以先核对Pen/设计和状态，但不得伪造DTO或假接口。API形状与operation_id最终冻结以同一实际导出SDK提交为准，变动先通知Root。所有角色/字段和功能遵循各已批准 design，不自行追加产品功能。
+
+## 本机设计参考授权
+
+三份本机 Pen 文件未找到本批完整原稿，先明确报告并暂停页面。用户随后直接回复“授权设计”，同意使用仓库 `docs/ui-design/evidence/rag-feedback-ui/56..61` 截图及 `06-admin-global-qa-complete.png` 的后台风格，补齐已批准 OpenSpec 的缺失状态。此授权解决视觉参考缺口，不增加产品范围；最终只记录截图参考与本机浏览器检查，不声明原 Pen 逐项验收通过。

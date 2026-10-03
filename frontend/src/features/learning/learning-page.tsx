@@ -20,6 +20,7 @@ import {
   RotateCcw,
   LoaderCircle,
   UserRound,
+  MessageSquareWarning,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AttachmentComposer } from "./attachment-composer";
@@ -44,6 +45,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ContentShell } from "@/features/file-management/content-shell";
+import { QualityFeedbackDialog } from "@/features/ai-quality/feedback-dialog";
+import { useAuth } from "@/features/auth/auth-provider";
 import { userProfileQueryOptions, userAvatarQueryOptions } from "@/features/user-profile/queries";
 import {
   knowledgeBaseListQueryOptions,
@@ -75,6 +78,11 @@ export function answerError(code: string | null | undefined) {
 
 export function LearningPage() {
   const client = useQueryClient();
+  const { user } = useAuth();
+  const [qualityFeedback, setQualityFeedback] = useState<{
+    sourceId: string;
+    traceId: string;
+  } | null>(null);
   const draft = useDraftAttachments();
   const profile = useQuery(userProfileQueryOptions());
   const avatar = useQuery(
@@ -862,6 +870,23 @@ export function LearningPage() {
                       >
                         <Copy className="size-4" />
                       </Button>
+                      {user?.role === "user" &&
+                      (active?.mode ?? visibleLocal?.scope.mode ?? mode) === "materials" &&
+                      turn.trace_complete &&
+                      turn.trace_id ? (
+                        <Button
+                          size="icon"
+                          className="size-9 min-h-9"
+                          variant="ghost"
+                          title="反馈回答问题"
+                          aria-label="反馈回答问题"
+                          onClick={() =>
+                            setQualityFeedback({ sourceId: turn.id, traceId: turn.trace_id! })
+                          }
+                        >
+                          <MessageSquareWarning className="size-3.5" />
+                        </Button>
+                      ) : null}
                       {copied === turn.id ? (
                         <span role="status" className="self-center text-xs text-muted-foreground">
                           已复制
@@ -994,6 +1019,16 @@ export function LearningPage() {
           </div>
         </section>
       </div>
+      {qualityFeedback && (
+        <QualityFeedbackDialog
+          open
+          sourceId={qualityFeedback.sourceId}
+          traceId={qualityFeedback.traceId}
+          onOpenChange={(open) => {
+            if (!open) setQualityFeedback(null);
+          }}
+        />
+      )}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent>
           <DialogHeader>
