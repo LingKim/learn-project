@@ -1,7 +1,22 @@
 .DS_Store
+
+# Local environment configuration
 .env
-.env.*.local
+.env.*
 !.env.example
+
+# Private keys and credential stores
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
 
 # Frontend
 frontend/.next/
