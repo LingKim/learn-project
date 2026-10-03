@@ -544,6 +544,87 @@ async def test_complete_validation_regression_and_late_user_state_fence(assets):
     assert (await domain.detail(weakness.id)).mastery_state == latest_mark.mastery_state
 
 
+async def test_material_review_source_round_trips_append_without_duplicate_history(assets):
+    from xuemian_ai.document_processing.models import DocumentProcessingVersion
+
+    domain, practice = assets
+    material_set, reference, file_id, source_version_id = await material_fixture(practice)
+    weakness = await domain.create(
+        WeaknessCreate(
+            title="事务",
+            source_mode="materials",
+            knowledge_base_id=material_set.config.knowledge_base_id,
+            file_ids=[file_id],
+            request_key=uuid4(),
+        )
+    )
+    config = PracticeConfig(
+        topic="事务",
+        source_mode="materials",
+        knowledge_base_id=material_set.config.knowledge_base_id,
+        file_ids=[file_id],
+        question_count=3,
+        question_types={"single_choice": 3},
+        learning_target=WeaknessTarget(kind="weakness", id=weakness.id, version=weakness.version),
+    )
+    created = await practice.create(SetCreate(config=config, request_key=uuid4()))
+    questions = [
+        {
+            **reference.questions[0],
+            "question_id": str(uuid4()),
+            "stem": f"合成复习题 {index}：{reference.questions[0]['stem']}",
+        }
+        for index in range(3)
+    ]
+    async with domain.sessions.begin() as session:
+        persisted = await practice._set(session, created.id, True)
+        revision = await practice._new_revision(
+            session,
+            persisted,
+            questions,
+            persisted.config,
+            persisted.effective_context,
+            persisted.source_snapshot,
+            "generate",
+        )
+    generated = await practice.detail(created.id)
+    attempt = await practice.create_attempt(
+        created.id,
+        AttemptCreate(
+            expected_version=generated.version, revision_id=revision.id, request_key=uuid4()
+        ),
+    )
+    for question in questions:
+        await submit(practice, attempt.id, UUID(question["question_id"]), True)
+    current = await practice.get_attempt(attempt.id)
+    await practice.complete(attempt.id, current.version)
+    await drain(domain)
+    assert (await domain.reviews(weakness.id, 1, 20)).data[0].validation_passed
+
+    # 直接控制合成来源的活动状态，验证相同版本再次可用时真实唯一约束仍成立。
+    for index, active in enumerate([False, True, False, True], start=1):
+        async with domain.sessions.begin() as session:
+            source = await session.get(DocumentProcessingVersion, source_version_id)
+            source.status = "active" if active else "retired"
+            await append_evidence_event(
+                session, domain.owner, "attempt_completed", attempt.id, index + 100
+            )
+        await drain(domain)
+        reviews = await domain.reviews(weakness.id, 1, 20)
+        assert reviews.meta.total == index + 1
+        assert reviews.data[0].version == index + 1
+        assert reviews.data[0].validation_passed == active
+        assert reviews.data[0].conclusion == (
+            "validation_passed" if active else "source_unavailable"
+        )
+        async with domain.sessions.begin() as session:
+            await append_evidence_event(
+                session, domain.owner, "attempt_completed", attempt.id, index + 200
+            )
+        await drain(domain)
+        assert (await domain.reviews(weakness.id, 1, 20)).meta.total == index + 1
+
+
 async def test_projection_and_answer_submission_do_not_deadlock(assets):
     import asyncio
 
