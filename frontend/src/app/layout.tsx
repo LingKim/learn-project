@@ -23,11 +23,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="zh-CN">
       <body>
-        <QueryProvider>
-          <TooltipProvider delayDuration={150}>
-            <AuthProvider>{children}</AuthProvider>
-          </TooltipProvider>
-        </QueryProvider>
+        <AuthProvider>
+          <QueryProvider>
+            <TooltipProvider delayDuration={150}>{children}</TooltipProvider>
+          </QueryProvider>
+        </AuthProvider>
         <Toaster position="top-right" richColors />
       </body>
     </html>
