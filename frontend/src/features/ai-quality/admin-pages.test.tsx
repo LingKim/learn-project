@@ -226,6 +226,51 @@ describe("管理员质量视图", () => {
     expect(screen.queryByText("82%")).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
+  it("未领取不能提交候选片段授权，领取后保留草稿并使用最新版本申请", async () => {
+    const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const submitted = { ...fixture(), status: "submitted" as const };
+    const received = {
+      ...submitted,
+      status: "triaging" as const,
+      assignee_id: "admin",
+      version: 4,
+    };
+    vi.mocked(api.requestAccess).mockResolvedValue({ data: received, message: "成功" });
+    const props = { actorId: "admin", onStart: vi.fn(), onFinished: vi.fn(async () => {}) };
+    const view = render(
+      <QueryClientProvider client={client}>
+        <AdminActions detail={submitted} {...props} />
+      </QueryClientProvider>,
+    );
+    await choose("操作", "请求候选片段追加授权");
+    fireEvent.change(screen.getByLabelText("诊断用途"), { target: { value: "核对本次候选引用" } });
+    fireEvent.change(screen.getByLabelText("指定候选 Chunk IDs（必填）"), {
+      target: { value: "chunk-a" },
+    });
+    const submit = screen.getByRole("button", { name: "提交操作" });
+    expect(submit).toBeDisabled();
+    expect(screen.getByText("先领取工单，再申请候选片段授权")).toBeInTheDocument();
+    fireEvent.click(submit);
+    expect(api.requestAccess).not.toHaveBeenCalled();
+    expect(props.onStart).not.toHaveBeenCalled();
+    view.rerender(
+      <QueryClientProvider client={client}>
+        <AdminActions detail={received} {...props} />
+      </QueryClientProvider>,
+    );
+    expect(screen.queryByText("先领取工单，再申请候选片段授权")).not.toBeInTheDocument();
+    expect(submit).toBeEnabled();
+    fireEvent.click(submit);
+    await waitFor(() =>
+      expect(api.requestAccess).toHaveBeenCalledWith("case", {
+        expected_version: 4,
+        reason: "核对本次候选引用",
+        chunk_ids: ["chunk-a"],
+        duration_days: 30,
+      }),
+    );
+    client.clear();
+  });
   it("追加授权提交明确用途、去重指定片段与有效期", async () => {
     vi.mocked(api.requestAccess).mockResolvedValue({ data: fixture(), message: "成功" });
     const done = vi.fn(async () => {});

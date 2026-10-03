@@ -586,6 +586,8 @@ export function AdminActions({
   const activeGrants = detail.grants.filter((grant) => grantActive(grant, detail));
   const selectedGrant = activeGrants.find((grant) => grant.id === grantId);
   const closed = detail.status === "closed";
+  // 候选正文授权只能在处理中申请，和后端已有状态约束保持一致。
+  const canRequestAccess = ["triaging", "investigating", "waiting_user"].includes(detail.status);
   async function submit() {
     if (!mounted.current || invalid) return;
     setError(null);
@@ -660,7 +662,8 @@ export function AdminActions({
     refreshing ||
     (action === "assign" && !assignee.trim()) ||
     (action === "access" &&
-      (!reason.trim() ||
+      (!canRequestAccess ||
+        !reason.trim() ||
         !chunkIds(chunks).length ||
         Number(days) < 1 ||
         Number(days) > 30 ||
@@ -707,6 +710,13 @@ export function AdminActions({
           )}
           {action === "access" && (
             <>
+              {!canRequestAccess && (
+                <p className="text-sm text-muted-foreground">
+                  {detail.status === "submitted"
+                    ? "先领取工单，再申请候选片段授权"
+                    : "当前工单状态不支持申请候选片段授权。"}
+                </p>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="quality-purpose">诊断用途</Label>
                 <Textarea
