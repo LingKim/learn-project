@@ -510,8 +510,15 @@ class LearningProjection:
                 .order_by(LearningReview.version)
             )
         )
-        if any(item.input_digest == fp for item in prior):
-            return
+        if prior:
+            previous_digest = prior[-2].input_digest if len(prior) > 1 else None
+            latest_digest = fingerprint({"input": fp, "previous": previous_digest})
+            # 只与最新结论去重：来源 A→失效 B→恢复 A 仍需要追加恢复记录。
+            # 兼容旧版直接保存内容摘要的历史；新版本串入前一摘要，既保留
+            # 相同投影重放的幂等性，也满足数据库对 attempt/input_digest 的唯一约束。
+            if prior[-1].input_digest in {fp, latest_digest}:
+                return
+            fp = fingerprint({"input": fp, "previous": prior[-1].input_digest})
         session.add(
             LearningReview(
                 owner_user_id=owner,
