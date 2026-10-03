@@ -227,3 +227,16 @@ it("列表使用真实分页和status，页内筛选不冒充全局搜索", asyn
   expect(screen.queryByText("Q-2026-1")).not.toBeInTheDocument();
   expect(screen.getByText("暂无符合条件的反馈")).toBeInTheDocument();
 });
+
+it("本人撤销后接口仍含自己的陈述时，本页清正文但不自动重取循环", async () => {
+  vi.mocked(api.getCase).mockResolvedValue({
+    ...detail,
+    grants: [{ ...detail.grants[0], status: "revoked" }],
+  });
+  show(<MyQualityCasePage id="case" />);
+  await screen.findByText("正文授权已结束，本页不再显示问题描述。");
+  await screen.findByText("已撤销");
+  expect(screen.queryByText("私有描述")).not.toBeInTheDocument();
+  expect(screen.queryByText("公开说明")).not.toBeInTheDocument();
+  expect(api.getCase).toHaveBeenCalledTimes(1);
+});

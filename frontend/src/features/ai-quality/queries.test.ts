@@ -96,7 +96,7 @@ describe("质量正文缓存边界", () => {
     expect(a).toMatchObject({ gcTime: 0, staleTime: 0, retry: false });
     client.clear();
   });
-  it("grant到期立即删除snapshot和含描述的详情，但保留无正文列表", async () => {
+  it("grant到期立即删除snapshot并剥离描述，保留无正文详情和列表", async () => {
     const client = setup();
     const key = qualityKeys.snapshot("case", 3, "grant", 2, ["query"]);
     client.setQueryData(qualityKeys.userLists, { data: [] });
@@ -105,7 +105,11 @@ describe("质量正文缓存边界", () => {
     expect(client.getQueryData(key)).toEqual(snapshot);
     await vi.advanceTimersByTimeAsync(10_000);
     expect(client.getQueryData(key)).toBeUndefined();
-    expect(client.getQueryData(qualityKeys.detail("user", "case", 3))).toBeUndefined();
+    expect(client.getQueryData(qualityKeys.detail("user", "case", 3))).toMatchObject({
+      description: null,
+      expected_result: null,
+      events: [],
+    });
     expect(client.getQueryData(qualityKeys.userLists)).toEqual({ data: [] });
     client.clear();
   });
@@ -118,7 +122,11 @@ describe("质量正文缓存边界", () => {
     } satisfies UserCaseDetail);
     await Promise.resolve();
     await Promise.resolve();
-    expect(client.getQueryData(key)).toBeUndefined();
+    expect(client.getQueryData(key)).toMatchObject({
+      description: null,
+      expected_result: null,
+      version: 3,
+    });
     client.clear();
   });
   it("撤销开始就清除旧正文，并取消挂起的读取；迟到响应不能回填", async () => {

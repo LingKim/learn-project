@@ -332,7 +332,15 @@ export function GrantPanel({ detail, busy }: { detail: AdminCaseDetail; busy: bo
       {detail.grants.map((grant) => (
         <div key={grant.id} className="mb-4 space-y-2 text-sm">
           <p className="font-medium">
-            {grantLabels[grant.status]} · 授权 v{grant.version}
+            {
+              grantLabels[
+                ["active", "pending"].includes(grant.status) &&
+                Date.parse(grant.expires_at) <= Date.now()
+                  ? "expired"
+                  : grant.status
+              ]
+            }{" "}
+            · 授权 v{grant.version}
           </p>
           <p>{grant.reason}</p>
           <p className="text-xs">{localTime(grant.expires_at)} 到期</p>

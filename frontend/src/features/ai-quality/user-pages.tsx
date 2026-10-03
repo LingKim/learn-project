@@ -323,7 +323,7 @@ function MyQualityCaseContent({ id }: { id: string }) {
             <div className="grid content-start gap-4">
               <Panel title="我的问题描述">
                 <p className="whitespace-pre-wrap text-sm leading-6">
-                  {item.description ?? "正文授权已结束，问题描述不再保留。"}
+                  {item.description ?? "正文授权已结束，本页不再显示问题描述。"}
                 </p>
                 {item.expected_result && (
                   <p className="mt-3 rounded-md bg-muted p-3 text-xs text-muted-foreground">

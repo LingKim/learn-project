@@ -326,7 +326,7 @@ describe("管理员质量视图", () => {
       }),
     );
   });
-  it("已挂载详情授权到期后丢弃正文并重新读取元数据", async () => {
+  it("已挂载详情授权到期后丢弃正文，保留无正文元数据且不自动重取循环", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-03T00:00:00Z"));
     const expiry = "2026-10-03T00:00:05Z";
@@ -356,7 +356,7 @@ describe("管理员质量视图", () => {
     });
     expect(screen.queryByText("到期必须清除的正文")).not.toBeInTheDocument();
     expect(screen.getByText(/已到期/)).toBeInTheDocument();
-    expect(vi.mocked(api.getAdminCase).mock.calls.length).toBeGreaterThan(before);
+    expect(vi.mocked(api.getAdminCase).mock.calls.length).toBe(before);
   });
   it("延迟失败后保持备注草稿和局部错误，并从最新工单版本重试", async () => {
     let current = fixture();

@@ -47,6 +47,27 @@ export async function removeQualityBody(client: QueryClient, id?: string) {
   await cancelled;
 }
 
+// 本人接口可继续返回自己的陈述；失活授权后只剥离正文，保留详情元数据，避免移除→自动重取形成循环。
+function expireQualityBody(client: QueryClient, id: string) {
+  const filters = { predicate: (query: { queryKey: QueryKey }) => bodyKey(query.queryKey, id) };
+  void client.cancelQueries(filters);
+  for (const query of client.getQueryCache().findAll(filters)) {
+    if (query.queryKey[2] === "snapshot") {
+      query.setState({ data: undefined, dataUpdatedAt: 0, status: "pending" });
+      client.removeQueries({ queryKey: query.queryKey, exact: true });
+    } else if (query.state.data) {
+      const detail = query.state.data as UserCaseDetail | AdminCaseDetail;
+      query.setState({
+        data: {
+          ...detail,
+          ...("description" in detail ? { description: null, expected_result: null } : {}),
+          events: detail.events.map((event) => ({ ...event, content: null })),
+        },
+      });
+    }
+  }
+}
+
 const installed = new WeakSet<QueryClient>();
 export function protectQualityCache(client: QueryClient) {
   if (installed.has(client)) return;
@@ -71,12 +92,8 @@ export function protectQualityCache(client: QueryClient) {
     } else {
       const detail = query.state.data as UserCaseDetail | AdminCaseDetail;
       const basic = detail.grants.find((grant) => grant.fields.includes("query"));
-      const hasBody =
-        ("description" in detail && detail.description != null) ||
-        detail.events.some((item) => item.content != null);
-      if (basic?.status === "active") expiry = Date.parse(basic.expires_at);
-      else if (hasBody) expiry = Date.now();
-      if (detail.status === "closed") expiry = hasBody ? Date.now() : undefined;
+      if (basic) expiry = basic.status === "active" ? Date.parse(basic.expires_at) : Date.now();
+      if (detail.status === "closed") expiry = Date.now();
     }
     if (expiry === undefined) return;
     // 最长授权 30 天超过单次浏览器 timer 上限；分段等待仍以服务端 expiry 为准。
@@ -86,7 +103,7 @@ export function protectQualityCache(client: QueryClient) {
         timers.set(query.queryHash, setTimeout(expire, Math.min(remaining, 2_147_483_647)));
       } else {
         timers.delete(query.queryHash);
-        void removeQualityBody(client, String(query.queryKey[3]));
+        expireQualityBody(client, String(query.queryKey[3]));
       }
     };
     expire();
