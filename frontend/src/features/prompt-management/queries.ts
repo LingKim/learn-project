@@ -134,8 +134,10 @@ export function promptStatusOptions(client: QueryClient, definitionId: string) {
 
 /** 离开管理范围时调用：取消读取，清除含正文的Query/Mutation。不会取消已提交的业务写入。 */
 export async function clearPromptManagementCache(client: QueryClient) {
-  await client.cancelQueries({ queryKey: promptManagementKeys.all });
+  const cancelled = client.cancelQueries({ queryKey: promptManagementKeys.all });
+  // 先同步移除旧范围，避免等待取消后误删下一页面刚建立的新Query。
   client.removeQueries({ queryKey: promptManagementKeys.all });
   const cache = client.getMutationCache();
   for (const item of cache.findAll({ mutationKey: promptManagementKeys.all })) cache.remove(item);
+  await cancelled;
 }

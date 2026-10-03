@@ -158,3 +158,12 @@ it("预览及评测仅显式mutation发起；预览正文和输入可随管理�
   expect(api.evaluatePromptVersion).not.toHaveBeenCalled();
   unsubscribe();
 });
+
+it("范围清理的取消完成后，不删除下一页面已经建立的新缓存", async () => {
+  client.setQueryData(keys.detail("old"), version);
+  const removing = clearPromptManagementCache(client);
+  client.setQueryData(keys.detail("new"), { id: "next-page" });
+  await removing;
+  expect(client.getQueryData(keys.detail("old"))).toBeUndefined();
+  expect(client.getQueryData(keys.detail("new"))).toEqual({ id: "next-page" });
+});
