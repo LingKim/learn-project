@@ -17,11 +17,11 @@ export function casesQueryOptions(query: Parameters<typeof api.listCases>[0] = {
     queryFn: ({ signal }) => api.listCases(query, signal),
   });
 }
-export function caseQueryOptions(client: QueryClient, id: string, version: number) {
+export function caseQueryOptions(client: QueryClient, id: string, version: number, revision = 0) {
   protectQualityCache(client);
   return queryOptions({
     ...privateQuery,
-    queryKey: qualityKeys.detail("user", id, version),
+    queryKey: [...qualityKeys.detail("user", id, version), revision],
     queryFn: ({ signal }) => api.getCase(id, signal),
     enabled: Boolean(id),
   });
@@ -40,11 +40,16 @@ export function adminCasesQueryOptions(query: Parameters<typeof api.listAdminCas
     queryFn: ({ signal }) => api.listAdminCases(query, signal),
   });
 }
-export function adminCaseQueryOptions(client: QueryClient, id: string, version: number) {
+export function adminCaseQueryOptions(
+  client: QueryClient,
+  id: string,
+  version: number,
+  revision = 0,
+) {
   protectQualityCache(client);
   return queryOptions({
     ...privateQuery,
-    queryKey: qualityKeys.detail("admin", id, version),
+    queryKey: [...qualityKeys.detail("admin", id, version), revision],
     queryFn: ({ signal }) => api.getAdminCase(id, signal),
     enabled: Boolean(id),
   });
@@ -76,30 +81,40 @@ async function refresh(client: QueryClient) {
     client.invalidateQueries({ queryKey: qualityKeys.overview }),
   ]);
 }
-export function createCaseMutationOptions(client: QueryClient) {
+export function createCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "create"],
     mutationFn: api.createCase,
-    onSuccess: () => refresh(client),
+    onSuccess: () => (isCurrent() ? refresh(client) : undefined),
   });
 }
 
-export function addMessageMutationOptions(client: QueryClient) {
+export function addMessageMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "addMessage"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.addMessage>[1] }) =>
       api.addMessage(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function decideGrantMutationOptions(client: QueryClient) {
+export function decideGrantMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "decideGrant"],
@@ -108,15 +123,19 @@ export function decideGrantMutationOptions(client: QueryClient) {
       grantId: string;
       body: Parameters<typeof api.decideGrant>[2];
     }) => api.decideGrant(input.id, input.grantId, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function revokeGrantMutationOptions(client: QueryClient) {
+export function revokeGrantMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "revokeGrant"],
@@ -125,106 +144,135 @@ export function revokeGrantMutationOptions(client: QueryClient) {
       grantId: string;
       body: Parameters<typeof api.revokeGrant>[2];
     }) => api.revokeGrant(input.id, input.grantId, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function withdrawCaseMutationOptions(client: QueryClient) {
+export function withdrawCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "withdrawCase"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.withdrawCase>[1] }) =>
       api.withdrawCase(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function closeCaseMutationOptions(client: QueryClient) {
+export function closeCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "user", "closeCase"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.closeCase>[1] }) =>
       api.closeCase(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function assignCaseMutationOptions(client: QueryClient) {
+export function assignCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "admin", "assignCase"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.assignCase>[1] }) =>
       api.assignCase(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function requestAccessMutationOptions(client: QueryClient) {
+export function requestAccessMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "admin", "requestAccess"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.requestAccess>[1] }) =>
       api.requestAccess(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function replayCaseMutationOptions(client: QueryClient) {
+export function replayCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "admin", "replayCase"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.replayCase>[1] }) =>
       api.replayCase(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function addAdminMessageMutationOptions(client: QueryClient) {
+export function addAdminMessageMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "admin", "addAdminMessage"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.addAdminMessage>[1] }) =>
       api.addAdminMessage(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },
   });
 }
 
-export function transitionCaseMutationOptions(client: QueryClient) {
+export function transitionCaseMutationOptions(
+  client: QueryClient,
+  isCurrent: () => boolean = () => true,
+) {
   return mutationOptions({
     ...privateMutation,
     mutationKey: [...qualityKeys.all, "admin", "transitionCase"],
     mutationFn: (input: { id: string; body: Parameters<typeof api.transitionCase>[1] }) =>
       api.transitionCase(input.id, input.body),
-    onMutate: (input) => removeQualityBody(client, input.id),
+    onMutate: (input) => (isCurrent() ? removeQualityBody(client, input.id) : undefined),
     onSettled: async (_data, _error, input) => {
+      if (!isCurrent()) return;
       await removeQualityBody(client, input.id);
       await refresh(client);
     },

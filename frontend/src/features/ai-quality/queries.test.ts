@@ -179,6 +179,24 @@ describe("质量正文缓存边界", () => {
     client.clear();
     expect(vi.getTimerCount()).toBe(0);
   });
+  it("旧页面已卸载时迟到mutation不清除新页面同case的授权缓存", async () => {
+    const client = setup();
+    let current = true;
+    const mutation = revokeGrantMutationOptions(client, () => current);
+    const input = {
+      id: "case",
+      grantId: "grant",
+      body: { expected_version: 3, expected_grant_version: 2 },
+    };
+    await mutation.onMutate!(input, {} as never);
+    current = false;
+    const key = qualityKeys.snapshot("case", 4, "grant", 3, ["query"]);
+    const fresh: SnapshotView = { ...snapshot, grant_version: 3 };
+    client.setQueryData(key, fresh);
+    await mutation.onSettled?.(undefined, null, input, undefined, {} as never);
+    expect(client.getQueryData(key)).toEqual(fresh);
+    client.clear();
+  });
   it("清理当前case不删除其他case或元数据", async () => {
     const client = setup();
     const other = qualityKeys.snapshot("other", 1, "other-grant", 1, ["query"]);
