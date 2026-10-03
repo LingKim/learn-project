@@ -106,3 +106,11 @@ export async function requestNoContent(
   }
   return { data: undefined, message };
 }
+
+export async function requestBlob(request: () => Promise<SdkSuccess<unknown>>): Promise<Blob> {
+  const result = await executeRequest(request);
+  if (!(result.data instanceof Blob)) {
+    throw contractError(result.response, result.data);
+  }
+  return result.data;
+}

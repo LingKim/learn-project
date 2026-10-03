@@ -21,6 +21,9 @@ import {
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AttachmentComposer } from "./attachment-composer";
+import { useDraftAttachments } from "./use-draft-attachments";
+import { HistoryAttachments } from "./history-attachments";
 import { AnswerContent } from "./answer-content";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +43,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ContentShell } from "@/features/file-management/content-shell";
+import { userProfileQueryOptions, userAvatarQueryOptions } from "@/features/user-profile/queries";
 import {
   knowledgeBaseListQueryOptions,
   knowledgeFileListQueryOptions,
@@ -55,6 +59,8 @@ import {
   renameConversationMutationOptions,
   feedbackMutationOptions,
   learningKeys,
+  learningConsentQueryOptions,
+  confirmLearningConsentMutationOptions,
 } from "./queries";
 
 export function answerError(code: string | null | undefined) {
@@ -68,6 +74,33 @@ export function answerError(code: string | null | undefined) {
 
 export function LearningPage() {
   const client = useQueryClient();
+  const draft = useDraftAttachments();
+  const profile = useQuery(userProfileQueryOptions());
+  const avatar = useQuery(
+    userAvatarQueryOptions(profile.data?.version ?? 0, Boolean(profile.data?.avatar_set)),
+  );
+  const [avatarPreview, setAvatarPreview] = useState<{ blob: Blob; url: string } | null>(null);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!avatar.data || !profile.data?.avatar_set) {
+      setAvatarPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(avatar.data);
+    setAvatarPreview({ blob: avatar.data, url });
+    return () => URL.revokeObjectURL(url);
+  }, [avatar.data, profile.data?.avatar_set]);
+  const avatarUrl =
+    profile.data?.avatar_set &&
+    !avatar.isError &&
+    avatarPreview?.blob === avatar.data &&
+    avatarPreview?.url !== failedAvatarUrl
+      ? avatarPreview?.url
+      : null;
+  const consent = useQuery(learningConsentQueryOptions());
+  const confirmConsent = useMutation(confirmLearningConsentMutationOptions(client));
+  const consentConfirmed =
+    consent.data?.confirmed === true && consent.data.terms_version === "qwen-learning-v2";
   const [historyPage, setHistoryPage] = useState(1);
   const [selected, setSelected] = useState("");
   const [mode, setMode] = useState<"materials" | "general">("materials");
@@ -139,6 +172,7 @@ export function LearningPage() {
   }
   function reset() {
     cancel();
+    draft.clear();
     setSelected("");
     setQuestion("");
     setFiles([]);
@@ -147,6 +181,7 @@ export function LearningPage() {
   }
   function selectConversation(id: string) {
     cancel();
+    draft.clear();
     setSelected(id);
     setQuestion("");
     follow.current = true;
@@ -154,13 +189,16 @@ export function LearningPage() {
   }
   async function ask(text: string, retry?: TurnView) {
     if (
-      !text.trim() ||
+      !consentConfirmed ||
+      (!retry && draft.blocked) ||
+      (!text.trim() && !(retry?.attachments?.length || draft.ready.length)) ||
       processing ||
       controller.current ||
       (!selected && mode === "materials" && !kb) ||
       (selected && !active)
     )
       return;
+    const attachments = retry?.attachments ?? draft.ready;
     const abort = new AbortController();
     controller.current = abort;
     const key = retry?.request_key ?? crypto.randomUUID();
@@ -180,11 +218,15 @@ export function LearningPage() {
       status: "processing",
       answer: null,
       refused: false,
-      source_label:
-        active?.mode === "materials" || (!selected && mode === "materials")
+      source_label: attachments.length
+        ? active?.mode === "materials" || (!selected && mode === "materials")
+          ? "用户资料与附件"
+          : "用户附件"
+        : active?.mode === "materials" || (!selected && mode === "materials")
           ? "用户资料"
           : "模型通用知识",
       citations: [],
+      attachments,
       trace_id: null,
       trace_complete: false,
       error_code: null,
@@ -193,7 +235,6 @@ export function LearningPage() {
     };
     let id = selected;
     setLocal({ turn: snapshot, conversationId: id, scope });
-    setQuestion("");
     setStreamError(null);
     follow.current = true;
     setAwayFromBottom(false);
@@ -211,12 +252,20 @@ export function LearningPage() {
       }
       await send.mutateAsync({
         id,
-        body: { request_key: key, question: snapshot.question },
+        body: {
+          request_key: key,
+          question: snapshot.question,
+          attachment_ids: attachments.map((attachment) => attachment.id),
+        },
         signal: abort.signal,
         receive: (event) => {
           if (controller.current !== abort || abort.signal.aborted) return;
           if (event.turn && event.turn.request_key !== key)
             throw new ApiError("回答与当前问题不一致");
+          if (event.type === "started") {
+            setQuestion("");
+            draft.acknowledge(attachments.map((attachment) => attachment.id));
+          }
           if (event.type === "completed" && event.turn) {
             const finalTurn = event.turn;
             client.setQueryData<ConversationDetail>(learningKeys.detail(id), (value) =>
@@ -569,7 +618,9 @@ export function LearningPage() {
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    回答来自模型通用知识，不使用您的资料。
+                    {draft.items.length
+                      ? "将结合上传附件与模型通用知识回答。"
+                      : "回答来自模型通用知识，不使用您的资料。"}
                   </p>
                 )}
               </div>
@@ -621,11 +672,21 @@ export function LearningPage() {
                     className="absolute top-5 right-0 grid size-9 place-items-center rounded-full bg-sidebar"
                     aria-hidden="true"
                   >
-                    <UserRound className="size-4" />
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        className="size-9 rounded-full object-cover"
+                        onError={() => setFailedAvatarUrl(avatarUrl)}
+                      />
+                    ) : (
+                      <UserRound className="size-4" />
+                    )}
                   </span>
                   <span className="mb-1 block text-right text-[11px] text-muted-foreground">
                     你
                   </span>
+                  <HistoryAttachments attachments={turn.attachments ?? []} />
                   <p className="rounded-md bg-[#F0F0EC] px-4 py-3 text-sm leading-7 whitespace-pre-wrap break-words">
                     {turn.question}
                   </p>
@@ -816,65 +877,100 @@ export function LearningPage() {
             </p>
           ) : null}
           <div
-            className={`shrink-0 px-5 pb-7 lg:px-11 ${hasConversation ? "border-t border-border bg-surface pt-3 lg:h-[88px] lg:px-10 lg:pt-2.5 lg:pb-2.5" : ""}`}
+            className={`shrink-0 px-5 pb-7 lg:px-11 ${hasConversation ? "border-t border-border bg-surface pt-3 lg:px-10 lg:pt-2.5 lg:pb-2.5" : ""}`}
           >
-            <form
-              onSubmit={submit}
-              className={`rounded-md border border-border bg-surface p-3 ${hasConversation ? "lg:flex lg:h-[66px] lg:items-center lg:gap-3 lg:p-2" : ""}`}
-            >
-              <label htmlFor="learning-question" className="sr-only">
-                {hasConversation ? "继续提问" : "您的问题"}
-              </label>
-              <Textarea
-                id="learning-question"
-                value={question}
-                maxLength={2000}
-                rows={hasConversation ? 2 : 3}
-                className={`resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 ${hasConversation ? "min-h-12 lg:h-12 lg:min-h-12 lg:flex-1 lg:py-1" : "min-h-20"}`}
-                disabled={processing || (Boolean(selected) && !active)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-                    event.preventDefault();
-                    void ask(question);
-                  }
-                }}
-                onChange={(event) => {
-                  setQuestion(event.target.value);
-                  setStreamError(null);
-                  send.reset();
-                }}
-                placeholder={
-                  selected
-                    ? "继续追问，或补充新的场景…"
-                    : "输入你的问题，支持粘贴代码、错误信息或具体场景…"
-                }
-              />
-              <div
-                className={`mt-2 flex flex-wrap items-center justify-between gap-2 ${hasConversation ? "lg:mt-0 lg:shrink-0" : ""}`}
-              >
-                <p
-                  className={`text-[11px] text-muted-foreground ${hasConversation ? "lg:hidden" : ""}`}
+            {consent.isPending ? (
+              <p role="status" className="mb-2 text-xs text-muted-foreground">
+                正在读取 AI 处理说明…
+              </p>
+            ) : consent.isError ? (
+              <p role="alert" className="mb-2 text-xs text-destructive">
+                AI 处理说明读取失败，暂不能上传或发送。
+                <Button variant="ghost" size="sm" onClick={() => void consent.refetch()}>
+                  重试
+                </Button>
+              </p>
+            ) : !consentConfirmed ? (
+              <div className="mb-3 rounded-md border border-border bg-muted p-3">
+                <p className="text-xs leading-6">{consent.data?.notice}</p>
+                <Button
+                  type="button"
+                  variant="brand"
+                  size="sm"
+                  disabled={!consent.data || confirmConsent.isPending}
+                  onClick={() => {
+                    if (consent.data)
+                      confirmConsent.mutate({
+                        confirmed: true,
+                        terms_version: consent.data.terms_version,
+                      });
+                  }}
                 >
-                  AI 回答可能有误，请结合来源核对。
-                </p>
-                <div className="flex gap-2">
+                  同意并继续
+                </Button>
+                {confirmConsent.isError ? (
+                  <p role="alert" className="text-xs text-destructive">
+                    确认失败，请重试。
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <form onSubmit={submit}>
+              <AttachmentComposer
+                draft={draft}
+                actions={
                   <Button
                     type="submit"
                     size="icon"
-                    className="size-9 min-h-9"
+                    className="size-9 min-h-9 rounded-full"
                     title={processing ? "正在回答" : "发送问题"}
                     aria-label={processing ? "正在回答" : "发送问题"}
                     disabled={
                       processing ||
-                      !question.trim() ||
+                      !consentConfirmed ||
+                      draft.blocked ||
+                      (!question.trim() && !draft.ready.length) ||
                       (!selected && mode === "materials" && !kb) ||
                       (Boolean(selected) && !active)
                     }
                   >
                     <Send className="size-3.5" />
                   </Button>
-                </div>
-              </div>
+                }
+                disabled={!consentConfirmed || processing || Boolean(selected && !active)}
+              >
+                <label htmlFor="learning-question" className="sr-only">
+                  {hasConversation ? "继续提问" : "您的问题"}
+                </label>
+                <Textarea
+                  id="learning-question"
+                  value={question}
+                  maxLength={2000}
+                  rows={hasConversation ? 2 : 3}
+                  className={`resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 ${hasConversation ? "min-h-12 lg:h-12 lg:min-h-12 lg:flex-1 lg:py-1" : "min-h-20"}`}
+                  disabled={processing || (Boolean(selected) && !active)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      !event.shiftKey &&
+                      !event.nativeEvent.isComposing
+                    ) {
+                      event.preventDefault();
+                      void ask(question);
+                    }
+                  }}
+                  onChange={(event) => {
+                    setQuestion(event.target.value);
+                    setStreamError(null);
+                    send.reset();
+                  }}
+                  placeholder={
+                    selected
+                      ? "继续追问，或补充新的场景…"
+                      : "输入你的问题，支持粘贴代码、错误信息或具体场景…"
+                  }
+                />
+              </AttachmentComposer>
             </form>
           </div>
         </section>

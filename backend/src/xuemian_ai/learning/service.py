@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import hmac
+import json
 import time
 from collections.abc import AsyncGenerator
 from contextlib import aclosing
@@ -27,10 +28,12 @@ from xuemian_ai.document_processing.retrieval import RetrievalService
 from xuemian_ai.document_processing.schemas import AIConsentView, EvidenceChunk, RetrievalRequest
 from xuemian_ai.file_management.models import FileAsset, KnowledgeBaseFile
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
+from xuemian_ai.learning.attachments import AttachmentService
 from xuemian_ai.learning.generation import (
     REFUSAL,
     REFUSAL_EN,
     AnswerProvider,
+    InputAttachment,
     InputContext,
     QwenAnswerProvider,
     prompt_manifest,
@@ -50,7 +53,7 @@ from xuemian_ai.learning.schemas import (
 from xuemian_ai.profiles.models import UserProfile
 
 LEARNING_NOTICE = (
-    "使用 AI 问答时，您的问题、当前会话最近六条问题和选定资料中的检索片段会发送给千问，"
+    "使用 AI 问答时，您的问题、当前会话最近六轮问题、图片和文档正文及选定资料检索片段会发送给千问，"
     "用于生成回答；资料检索还会发送检索问题与候选片段用于向量和重排。"
     "您也将确认既有资料解析说明：待 OCR 的 PDF 页面图片和文档文本会用于文字识别与生成向量。"
     "请确认您有权处理这些内容。系统不会自动创建笔记，也不会将本次输入保存为默认画像。"
@@ -66,10 +69,12 @@ class LearningService:
         request_id: str | None = None,
         provider: AnswerProvider | None = None,
         retrieval: RetrievalService | None = None,
+        attachments: AttachmentService | None = None,
     ) -> None:
         self.sessions, self.settings, self.user_id = sessions, settings, user_id
         self.provider = provider or QwenAnswerProvider(settings)
         self.request_id, self.retrieval = request_id, retrieval
+        self.attachments = attachments
 
     async def consent(self, version: str | None = None) -> AIConsentView:
         async with self.sessions() as session, session.begin():
@@ -101,6 +106,16 @@ class LearningService:
             terms_version=self.settings.learning_consent_version,
             notice=LEARNING_NOTICE,
         )
+
+    async def require_consent(self, session: AsyncSession) -> None:
+        confirmed = await session.scalar(
+            select(AIProcessingConsent.id).where(
+                AIProcessingConsent.user_id == self.user_id,
+                AIProcessingConsent.terms_version == self.settings.learning_consent_version,
+            )
+        )
+        if confirmed is None:
+            raise ConflictError("请先确认 AI 问答处理说明", error_key="AI_CONSENT_REQUIRED")
 
     async def conversation(
         self, session: AsyncSession, identifier: UUID, *, lock: bool = False
@@ -209,6 +224,8 @@ class LearningService:
         async with self.sessions() as session, session.begin():
             item = await self.conversation(session, identifier, lock=True)
             item.deleted_at, item.deleted_by = datetime.now(UTC), self.user_id
+            if self.attachments is not None:
+                await self.attachments.delete_conversation(session, identifier)
 
     async def evidence(
         self,
@@ -218,8 +235,13 @@ class LearningService:
         *,
         lock: bool = False,
     ) -> dict[UUID, EvidenceChunk]:
+        attachment_evidence = (
+            await self.attachments.evidence(session, item.id, ids)
+            if self.attachments is not None and ids
+            else {}
+        )
         if item.mode == "general" or not ids:
-            return {}
+            return attachment_evidence
         retrieval = self.retrieval or RetrievalService(
             self.sessions, self.settings, self.user_id, self.request_id
         )
@@ -238,7 +260,7 @@ class LearningService:
                     )
                 )
             rows = (await session.execute(query)).all()
-            return {
+            return attachment_evidence | {
                 chunk.id: EvidenceChunk(
                     chunk_id=chunk.id,
                     file_id=binding.id,
@@ -265,6 +287,12 @@ class LearningService:
     ) -> TurnView:
         ids = [UUID(str(c["chunk_id"])) for c in turn.citations]
         available = await self.evidence(session, item, ids)
+        attachments = (
+            await self.attachments.views(session, [UUID(i) for i in turn.attachment_ids], turn.id)
+            if self.attachments is not None and turn.attachment_ids
+            else []
+        )
+        has_attachments = bool(turn.model_parameters.get("has_attachments", turn.attachment_ids))
         return TurnView(
             id=turn.id,
             request_key=turn.request_key,
@@ -278,7 +306,10 @@ class LearningService:
             ),
             answer=turn.answer,
             refused=turn.refused,
-            source_label="用户资料" if item.mode == "materials" else "模型通用知识",
+            source_label=("用户资料与附件" if has_attachments else "用户资料")
+            if item.mode == "materials"
+            else ("用户附件" if has_attachments else "模型通用知识"),
+            attachments=attachments,
             citations=[
                 AnswerCitation(
                     number=int(c["number"]),
@@ -327,15 +358,28 @@ class LearningService:
             return await self.view(session, item, turn)
 
     async def prepare_answer(self, identifier: UUID, body: AnswerRequest) -> "PreparedAnswer":
+        # Existing text-only turns retain their original digest for safe replay/retry.
+        digest_input = (
+            body.question
+            if not body.attachment_ids
+            else json.dumps(
+                {
+                    "question": body.question,
+                    "attachment_ids": [str(i) for i in body.attachment_ids],
+                },
+                sort_keys=True,
+            )
+        )
         digest = hmac.new(
             self.settings.auth_fingerprint_secret.get_secret_value().encode(),
-            body.question.encode(),
+            digest_input.encode(),
             hashlib.sha256,
         ).hexdigest()
         now, token = datetime.now(UTC), uuid4()
         async with self.sessions() as session, session.begin():
             item = await self.conversation(session, identifier, lock=True)
             await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
+            await self.require_consent(session)
             turns = list(
                 (
                     await session.scalars(
@@ -360,6 +404,7 @@ class LearningService:
             body = body.model_copy(update={"language": language})
             if turn is not None and (
                 turn.question_digest != digest
+                or turn.attachment_ids != [str(i) for i in body.attachment_ids]
                 or turn.model_parameters.get("answer_language", "zh") != body.language
             ):
                 raise ConflictError(
@@ -379,15 +424,28 @@ class LearningService:
                 raise ConflictError("此会话已达 100 轮，请新建会话", error_key="CONVERSATION_LIMIT")
             if turn is None:
                 turn = LearningTurn(
+                    id=uuid4(),
                     conversation_id=identifier,
                     request_key=body.request_key,
                     question=body.question,
                     question_digest=digest,
+                    attachment_ids=[str(i) for i in body.attachment_ids],
                     attempt_count=1,
                 )
                 session.add(turn)
             else:
                 turn.attempt_count += 1
+            history = [t for t in turns if t.status == "succeeded" and t.id != turn.id][-6:]
+            groups = [
+                (t.id, [UUID(i) for i in t.attachment_ids]) for t in history if t.attachment_ids
+            ]
+            if body.attachment_ids:
+                groups.append((turn.id, body.attachment_ids))
+            if sum(len(ids) for _, ids in groups) > 6:
+                raise ConflictError(
+                    "附件上下文超过 6 件，请拆分问题或新建会话",
+                    error_key="ATTACHMENT_CONTEXT_LIMIT",
+                )
             turn.status, turn.lease_token, turn.lease_expires_at = (
                 "processing",
                 token,
@@ -398,6 +456,7 @@ class LearningService:
             turn.prompt_manifest = prompt_manifest()
             turn.model_parameters = {
                 "model": self.settings.learning_answer_model,
+                "has_attachments": bool(groups),
                 "temperature": 0,
                 "enable_thinking": False,
                 "answer_language": body.language,
@@ -407,10 +466,27 @@ class LearningService:
                 item.title = body.question[:40]
             item.updated_at = now
             await session.flush()
+            if body.attachment_ids:
+                if self.attachments is None:
+                    raise ConflictError("附件服务不可用", error_key="ATTACHMENT_UNAVAILABLE")
+                await self.attachments.load(
+                    session, body.attachment_ids, turn_id=turn.id, bind=True
+                )
             turn_id = turn.id
             mode, kb, files = item.mode, item.knowledge_base_id, [UUID(f) for f in item.file_ids]
             started = await self.view(session, item, turn)
-        return PreparedAnswer(identifier, body, turn_id, token, mode, kb, files, previous, started)
+        return PreparedAnswer(
+            identifier,
+            body,
+            turn_id,
+            token,
+            mode,
+            kb,
+            files,
+            previous,
+            started,
+            attachment_groups=groups,
+        )
 
     async def answer(self, identifier: UUID, body: AnswerRequest) -> TurnView:
         prepared = await self.prepare_answer(identifier, body)
@@ -455,6 +531,19 @@ class LearningService:
         try:
             yield AnswerStreamEvent(type="started", turn=prepared.started)
             async with asyncio.timeout(self.settings.learning_request_timeout_seconds):
+                attachments: list[InputAttachment] = []
+                if self.attachments is not None:
+                    for origin, ids in prepared.attachment_groups:
+                        values = await self.attachments.inputs(ids, origin)
+                        attachments.extend(
+                            InputAttachment.model_validate(dict(value, id=str(identifier)))
+                            for identifier, value in zip(ids, values, strict=True)
+                        )
+                if sum(len(a.text) for a in attachments) > 60000:
+                    raise ConflictError(
+                        "附件正文超过 60000 字符，请拆分问题或新建会话",
+                        error_key="ATTACHMENT_CONTEXT_LIMIT",
+                    )
                 if mode == "materials":
                     retrieval = self.retrieval or RetrievalService(
                         self.sessions, self.settings, self.user_id, self.request_id
@@ -463,19 +552,36 @@ class LearningService:
                     if previous:
                         query = (body.question + "\n此前问题：" + "\n".join(previous[-2:]))[:2000]
                     result = await retrieval.search(
-                        cast(UUID, kb), RetrievalRequest(query=query, file_ids=files, top_n=8)
+                        cast(UUID, kb),
+                        RetrievalRequest(
+                            query=query, file_ids=files, top_n=max(1, 8 - len(attachments))
+                        ),
                     )
                     trace_id, trace_complete, evidence = (
                         result.trace_id,
                         result.trace_complete,
                         result.evidence,
                     )
+                if mode == "materials" and self.attachments is not None:
+                    evidence = evidence[: 8 - len(attachments)]
+                    async with self.sessions() as session:
+                        attached = await self.attachments.evidence(
+                            session, prepared.identifier, [UUID(a.id) for a in attachments]
+                        )
+                    for attachment in attachments:
+                        chunk = attached.get(UUID(attachment.id))
+                        if chunk is None:
+                            raise ConflictError("附件来源不可用", error_key="ANSWER_SOURCE_CHANGED")
+                        evidence.append(chunk)
+                        attachment.evidence_number = len(evidence)
+                prepared.input_attachments = attachments
                 context = InputContext(
                     mode=cast("LiteralMode", mode),
                     question=body.question,
                     answer_language=cast("LiteralLanguage", body.language),
                     previous_questions=previous,
                     evidence=evidence,
+                    attachments=attachments,
                 )
                 if mode == "materials" and not evidence:
                     generated = GeneratedAnswer(
@@ -500,6 +606,12 @@ class LearningService:
                 assert generated is not None
                 async with self.sessions() as session, session.begin():
                     item, turn = await self.publication_guard(session, prepared, evidence)
+                    turn.model_parameters["model"] = (
+                        self.settings.learning_vision_model
+                        if any(a.image_data_url for a in attachments)
+                        else self.settings.learning_answer_model
+                    )
+                    turn.model_parameters = dict(turn.model_parameters)
                     turn.status, turn.answer, turn.refused = (
                         "succeeded",
                         generated.answer,
@@ -577,10 +689,23 @@ class LearningService:
         ):
             raise ConflictError("回答请求已过期，请重试", error_key="ANSWER_LEASE_EXPIRED")
         await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
+        await self.require_consent(session)
+        if self.attachments is not None:
+            for origin, ids in prepared.attachment_groups:
+                rows = await self.attachments.load(session, ids, turn_id=origin)
+                original = {a.id: a for a in prepared.input_attachments}
+                if any(
+                    str(row.id) not in original or row.extracted_text != original[str(row.id)].text
+                    for row in rows
+                ):
+                    raise ConflictError(
+                        "附件内容已变化，请重新提问", error_key="ANSWER_SOURCE_CHANGED"
+                    )
         current = await self.evidence(session, item, [e.chunk_id for e in evidence], lock=True)
         if any(
             e.chunk_id not in current
             or current[e.chunk_id].processing_version_id != e.processing_version_id
+            or current[e.chunk_id].content != e.content
             for e in evidence
         ):
             raise ConflictError("资料已变化，请重新提问", error_key="ANSWER_SOURCE_CHANGED")
@@ -605,3 +730,5 @@ class PreparedAnswer:
     previous: list[str] = field(default_factory=list)
     started: TurnView | None = None
     replay: TurnView | None = None
+    attachment_groups: list[tuple[UUID, list[UUID]]] = field(default_factory=list)
+    input_attachments: list[InputAttachment] = field(default_factory=list)

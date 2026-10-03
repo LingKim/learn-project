@@ -8,6 +8,9 @@ import {
 import { listConversations, sendQuestion, streamQuestion } from "./api";
 vi.mock("@/features/auth/auth-provider", () => ({ authenticatedAccessToken: vi.fn() }));
 vi.mock("@/lib/api/generated/sdk.gen", () => ({
+  learningAttachmentsUpload: vi.fn(),
+  learningAttachmentsContent: vi.fn(),
+  learningAttachmentsDelete: vi.fn(),
   learningAnswersCreate: vi.fn(),
   learningAnswersStream: vi.fn(),
   learningConversationsList: vi.fn(),
@@ -170,3 +173,57 @@ const syntheticTurn = {
 };
 
 afterEach(() => vi.unstubAllGlobals());
+
+it("uploads a real File through the multipart SDK and unwraps the shared envelope", async () => {
+  const { learningAttachmentsUpload } = await import("@/lib/api/generated/sdk.gen");
+  const { uploadAttachment } = await import("./api");
+  const file = new File(["synthetic text"], "notes.txt", { type: "text/plain" });
+  vi.mocked(learningAttachmentsUpload).mockResolvedValue({
+    data: {
+      code: 200,
+      message: "ok",
+      data: {
+        id: "a",
+        filename: "notes.txt",
+        kind: "document",
+        media_type: "text/plain",
+        byte_size: file.size,
+      },
+    },
+    request: new Request("http://localhost"),
+    response: new Response(null, { status: 200 }),
+  });
+  expect((await uploadAttachment(file)).data.id).toBe("a");
+  expect(learningAttachmentsUpload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      body: { file },
+      headers: { Authorization: "Bearer test-access" },
+      credentials: "include",
+    }),
+  );
+});
+it("loads private attachment content as Blob and keeps failures as ApiError", async () => {
+  const { learningAttachmentsContent } = await import("@/lib/api/generated/sdk.gen");
+  const { getAttachmentContent } = await import("./api");
+  const data = new Blob(["synthetic text"], { type: "text/plain" });
+  vi.mocked(learningAttachmentsContent).mockResolvedValue({
+    data,
+    request: new Request("http://localhost"),
+    response: new Response(null, { status: 200 }),
+  });
+  expect(await getAttachmentContent("a")).toBe(data);
+  expect(learningAttachmentsContent).toHaveBeenCalledWith(
+    expect.objectContaining({ path: { attachment_id: "a" }, parseAs: "blob" }),
+  );
+  vi.mocked(learningAttachmentsContent).mockRejectedValue({
+    type: "about:blank",
+    title: "附件不可用",
+    detail: "附件不可用",
+    code: 404,
+    data: null,
+    status: 404,
+    message: "附件不可用",
+    error_key: "ATTACHMENT_UNAVAILABLE",
+  });
+  await expect(getAttachmentContent("a")).rejects.toMatchObject({ status: 404 });
+});

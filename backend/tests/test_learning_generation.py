@@ -391,7 +391,7 @@ async def test_provider_cannot_complete_collapsed_markdown_and_manifest_has_new_
         next(part for part in manifest["parts"] if part["key"] == "learning_quick_answer")[
             "version"
         ]
-        == 4
+        == 8
     )
 
 
@@ -442,3 +442,97 @@ def test_double_escaped_blocks_and_html_language_glue_are_rejected(answer):
     from xuemian_ai.learning.generation import valid_markdown_blocks
 
     assert not valid_markdown_blocks(answer)
+
+
+@pytest.mark.parametrize("question,attachments", [("", []), ("问题", [str(uuid4())] * 2)])
+def test_attachment_request_rejects_empty_input_and_duplicate_ids(question, attachments):
+    from xuemian_ai.learning.schemas import AnswerRequest
+
+    with pytest.raises(ValidationError):
+        AnswerRequest(request_key=uuid4(), question=question, attachment_ids=attachments)
+
+
+def test_attachment_only_request_has_standard_question_and_six_file_limit():
+    from xuemian_ai.learning.schemas import AnswerRequest
+
+    body = AnswerRequest(request_key=uuid4(), attachment_ids=[uuid4()])
+    assert body.question == "请分析所上传的附件"
+    with pytest.raises(ValidationError):
+        AnswerRequest(request_key=uuid4(), attachment_ids=[uuid4() for _ in range(7)])
+
+
+async def test_multimodal_provider_transmits_actual_image_and_document_to_vision_model():
+    from xuemian_ai.learning.generation import InputAttachment
+
+    settings = get_settings().model_copy(update={"dashscope_api_key": SecretStr("synthetic-test")})
+    image_url = "data:image/webp;base64,UklGRnN5bnRoZXRpYw=="
+    context = InputContext(
+        mode="general",
+        question="解读附件",
+        previous_questions=[],
+        evidence=[],
+        attachments=[
+            InputAttachment(id=str(uuid4()), filename="合成图.webp", image_data_url=image_url),
+            InputAttachment(
+                id=str(uuid4()), filename="合成文本.txt", text="synthetic-document-body"
+            ),
+        ],
+    )
+
+    def handle(request):
+        body = json.loads(request.content)
+        assert body["model"] == settings.learning_vision_model
+        assert body["response_format"] == {"type": "json_object"}
+        system, user = body["messages"]
+        assert image_url not in system["content"]
+        content = user["content"]
+        assert any(block.get("image_url", {}).get("url") == image_url for block in content)
+        data = json.loads(content[0]["text"])
+        assert data["attachments"][1]["text"] == "synthetic-document-body"
+        assert "image_data_url" not in data["attachments"][0]
+        return stream_response(
+            200,
+            "stop",
+            [json.dumps({"answer": "附件合成回答", "refused": False, "citation_ids": []})],
+        )
+
+    original = httpx.AsyncClient
+    with patch(
+        "xuemian_ai.learning.generation.AsyncClient",
+        side_effect=lambda **_: original(transport=httpx.MockTransport(handle)),
+    ):
+        result = await QwenAnswerProvider(settings).generate(context)
+    assert result.answer == "附件合成回答"
+
+
+async def test_document_only_provider_keeps_text_model_and_document_body():
+    from xuemian_ai.learning.generation import InputAttachment
+
+    settings = get_settings().model_copy(update={"dashscope_api_key": SecretStr("synthetic-test")})
+    context = InputContext(
+        mode="general",
+        question="问题",
+        previous_questions=[],
+        evidence=[],
+        attachments=[
+            InputAttachment(id=str(uuid4()), filename="合成.txt", text="actual-synthetic-content")
+        ],
+    )
+
+    def handle(request):
+        body = json.loads(request.content)
+        assert body["model"] == settings.learning_answer_model
+        assert body["response_format"] == {"type": "json_object"}
+        assert "actual-synthetic-content" in body["messages"][1]["content"]
+        return stream_response(
+            200,
+            "stop",
+            [json.dumps({"answer": "文档合成回答", "refused": False, "citation_ids": []})],
+        )
+
+    original = httpx.AsyncClient
+    with patch(
+        "xuemian_ai.learning.generation.AsyncClient",
+        side_effect=lambda **_: original(transport=httpx.MockTransport(handle)),
+    ):
+        assert (await QwenAnswerProvider(settings).generate(context)).answer == "文档合成回答"

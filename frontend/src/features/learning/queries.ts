@@ -1,5 +1,8 @@
 import { mutationOptions, queryOptions, type QueryClient } from "@tanstack/react-query";
 import {
+  uploadAttachment,
+  deleteAttachment,
+  getAttachmentContent,
   createConversation,
   deleteConversation,
   getConversation,
@@ -20,6 +23,7 @@ export const learningKeys = {
   lists: () => ["learning", "conversations", "list"] as const,
   list: (page: number) => [...learningKeys.lists(), page] as const,
   detail: (id: string) => ["learning", "conversations", "detail", id] as const,
+  attachment: (id: string) => ["learning", "attachments", id] as const,
   consent: () => ["learning", "consent"] as const,
 };
 export function conversationsQueryOptions(page = 1) {
@@ -120,5 +124,31 @@ export function streamQuestionMutationOptions(client: QueryClient) {
     onSettled: (_data, _error, input) => refresh(client, input.id),
     retry: false,
     meta: { successToast: false, errorMode: "local" },
+  });
+}
+
+export function uploadAttachmentMutationOptions() {
+  return mutationOptions({
+    mutationKey: [...learningKeys.all, "attachment-upload"],
+    mutationFn: (file: File) => uploadAttachment(file),
+    retry: false,
+    meta: { successToast: false, errorMode: "local" },
+  });
+}
+export function deleteAttachmentMutationOptions() {
+  return mutationOptions({
+    mutationKey: [...learningKeys.all, "attachment-delete"],
+    mutationFn: (id: string) => deleteAttachment(id),
+    retry: false,
+    meta: { successToast: false, errorMode: "local" },
+  });
+}
+export function attachmentContentQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: learningKeys.attachment(id),
+    queryFn: ({ signal }) => getAttachmentContent(id, signal),
+    gcTime: 0,
+    staleTime: 0,
+    retry: false,
   });
 }

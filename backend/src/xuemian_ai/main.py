@@ -12,12 +12,14 @@ from xuemian_ai.api.documents import router as documents_router
 from xuemian_ai.api.files import router as files_router
 from xuemian_ai.api.health import router as health_router
 from xuemian_ai.api.learning import router as learning_router
+from xuemian_ai.api.learning_attachments import router as learning_attachments_router
 from xuemian_ai.api.profiles import router as profiles_router
 from xuemian_ai.core.config import get_settings
 from xuemian_ai.core.logging import configure_logging, get_logger
 from xuemian_ai.core.problem_details import PROBLEM_RESPONSES, register_problem_handlers
 from xuemian_ai.core.request_context import request_context_middleware
 from xuemian_ai.infrastructure.resources import Infrastructure
+from xuemian_ai.learning.attachment_limits import AttachmentUploadLimitMiddleware
 
 _logger = get_logger(__name__)
 
@@ -62,6 +64,9 @@ def create_app() -> FastAPI:
             title=f"{application.title} - ReDoc",
         )
 
+    application.add_middleware(
+        AttachmentUploadLimitMiddleware, path=f"{settings.api_v1_prefix}/learning/attachments"
+    )
     application.middleware("http")(request_context_middleware)
     application.add_middleware(
         CORSMiddleware,
@@ -76,6 +81,7 @@ def create_app() -> FastAPI:
     application.include_router(files_router, prefix=settings.api_v1_prefix)
     application.include_router(profiles_router, prefix=settings.api_v1_prefix)
     application.include_router(documents_router, prefix=settings.api_v1_prefix)
+    application.include_router(learning_attachments_router, prefix=settings.api_v1_prefix)
     application.include_router(learning_router, prefix=settings.api_v1_prefix)
     return application
 

@@ -68,6 +68,7 @@ class LearningTurn(UuidPrimaryKeyMixin, CreatedAtMixin, Base):
     )
     request_key: Mapped[UUID]
     question: Mapped[str] = mapped_column(Text)
+    attachment_ids: Mapped[list[str]] = mapped_column(JSONB, default=list)
     question_digest: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(16))
     lease_token: Mapped[UUID]

@@ -12,6 +12,7 @@ from xuemian_ai.auth.dependencies import current_user_model
 from xuemian_ai.core.config import Settings, get_settings
 from xuemian_ai.core.responses import ApiResponse, PageResponse, success_response
 from xuemian_ai.document_processing.schemas import AIConsentRequest, AIConsentView
+from xuemian_ai.learning.attachments import AttachmentService
 from xuemian_ai.learning.schemas import (
     AnswerRequest,
     AnswerStreamEvent,
@@ -42,6 +43,12 @@ def service(
         settings,
         user.id,
         getattr(request.state, "request_id", None),
+        attachments=AttachmentService(
+            request.app.state.infrastructure.sessions,
+            settings,
+            user.id,
+            request.app.state.infrastructure.object_storage,
+        ),
     )
 
 

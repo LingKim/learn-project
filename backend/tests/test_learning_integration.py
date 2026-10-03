@@ -38,6 +38,7 @@ async def setup(context, mode="general"):
     )
     retrieval = RetrievalService(sessions, settings, user.id, None, store)
     service = LearningService(sessions, settings, user.id, provider=provider, retrieval=retrieval)
+    await service.consent(settings.learning_consent_version)
     conversation = await service.create(
         ConversationCreate(mode=mode, knowledge_base_id=kb if mode == "materials" else None)
     )
@@ -155,7 +156,7 @@ async def test_version_change_during_model_call_rejects_answer(context) -> None:
     assert error.value.error_key == "ANSWER_SOURCE_CHANGED"
 
 
-async def test_no_evidence_skips_generation_without_learning_consent(context) -> None:
+async def test_no_evidence_skips_generation_and_new_consent_is_enforced(context) -> None:
     service, conversation, provider, _, _ = await setup(context, "materials")
     service.retrieval = AsyncMock()
     service.retrieval.search.return_value = RetrievalResult(
@@ -170,10 +171,9 @@ async def test_no_evidence_skips_generation_without_learning_consent(context) ->
         update={"learning_consent_version": "unconfirmed-new-version"}
     )
     other = LearningService(service.sessions, settings, service.user_id, provider=provider)
-    result = await other.answer(
-        conversation.id, AnswerRequest(request_key=uuid4(), question="问题")
-    )
-    assert result.status == "succeeded"
+    with pytest.raises(ConflictError) as error:
+        await other.answer(conversation.id, AnswerRequest(request_key=uuid4(), question="问题"))
+    assert error.value.error_key == "AI_CONSENT_REQUIRED"
 
 
 @pytest.mark.skipif(
@@ -471,3 +471,149 @@ async def test_response_cleanup_releases_lease_without_starting_iterator(context
     await service.cancel_prepared(prepared)
     assert (await service.detail(conversation.id)).turns[0].status == "processing"
     await service.cancel_prepared(newer)
+
+
+async def test_attachment_retry_and_followup_keep_real_context_and_reject_changed_request(context):
+    from types import SimpleNamespace
+
+    from xuemian_ai.learning.attachment_schemas import LearningAttachmentView
+
+    service, conversation, provider, _, _ = await setup(context)
+    identifier = uuid4()
+    attached = SimpleNamespace(id=identifier, extracted_text="合成资料正文")
+    storage = AsyncMock()
+    storage.load.return_value = [attached]
+    storage.views.return_value = [
+        LearningAttachmentView(
+            id=identifier,
+            filename="合成.txt",
+            media_type="text/plain",
+            byte_size=20,
+            kind="document",
+        )
+    ]
+    storage.inputs.return_value = [
+        {"id": str(identifier), "filename": "合成.txt", "text": "合成资料正文"}
+    ]
+    service.attachments = storage
+    body = AnswerRequest(request_key=uuid4(), attachment_ids=[identifier])
+    provider.generate.side_effect = UpstreamServiceError(error_key="ANSWER_UNAVAILABLE")
+    with pytest.raises(UpstreamServiceError):
+        await service.answer(conversation.id, body)
+    provider.generate.side_effect = None
+    first = await service.answer(conversation.id, body)
+    assert first.source_label == "用户附件" and first.attachments[0].id == identifier
+    with pytest.raises(ConflictError):
+        await service.answer(conversation.id, body.model_copy(update={"attachment_ids": [uuid4()]}))
+    followup = await service.answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="继续说明")
+    )
+    assert followup.source_label == "用户附件" and not followup.attachments
+    sent_context = provider.generate.call_args.args[0]
+    assert sent_context.attachments[0].text == "合成资料正文"
+    assert sent_context.attachments[0].id == str(identifier)
+    assert (await service.detail(conversation.id)).turns[0].attachments[0].id == identifier
+
+
+async def test_attachment_context_change_prevents_publication(context):
+    from types import SimpleNamespace
+
+    from xuemian_ai.learning.attachment_schemas import LearningAttachmentView
+
+    service, conversation, provider, _, _ = await setup(context)
+    identifier = uuid4()
+    attached = SimpleNamespace(id=identifier, extracted_text="原始合成正文")
+    storage = AsyncMock()
+    storage.load.return_value = [attached]
+    storage.views.return_value = [
+        LearningAttachmentView(
+            id=identifier,
+            filename="合成.txt",
+            media_type="text/plain",
+            byte_size=20,
+            kind="document",
+        )
+    ]
+    storage.inputs.return_value = [
+        {"id": str(identifier), "filename": "合成.txt", "text": "原始合成正文"}
+    ]
+    service.attachments = storage
+
+    async def changed(_):
+        attached.extracted_text = "被更改的正文"
+        return GeneratedAnswer(answer="附件回答", refused=False, citation_ids=[])
+
+    provider.generate.side_effect = changed
+    with pytest.raises(ConflictError) as error:
+        await service.answer(
+            conversation.id, AnswerRequest(request_key=uuid4(), attachment_ids=[identifier])
+        )
+    assert error.value.error_key == "ANSWER_SOURCE_CHANGED"
+
+
+async def test_legacy_text_digest_remains_replayable_and_cannot_gain_attachments(context):
+    import hashlib
+    import hmac
+
+    service, conversation, provider, _, _ = await setup(context)
+    body = AnswerRequest(request_key=uuid4(), question="旧版纯文本问题")
+    first = await service.answer(conversation.id, body)
+    legacy_digest = hmac.new(
+        service.settings.auth_fingerprint_secret.get_secret_value().encode(),
+        body.question.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    async with service.sessions() as session, session.begin():
+        turn = await session.get(LearningTurn, first.id)
+        turn.question_digest = legacy_digest
+    replay = await service.answer(conversation.id, body)
+    assert replay.id == first.id and provider.generate.await_count == 1
+    with pytest.raises(ConflictError) as error:
+        await service.answer(conversation.id, body.model_copy(update={"attachment_ids": [uuid4()]}))
+    assert error.value.error_key == "ANSWER_REQUEST_CONFLICT"
+
+
+async def test_attachment_history_limit_is_explicit_and_never_drops_files(context):
+    from types import SimpleNamespace
+
+    service, conversation, provider, _, _ = await setup(context)
+    ids = [uuid4() for _ in range(6)]
+    storage = AsyncMock()
+    storage.load.return_value = [SimpleNamespace(id=i, extracted_text="合成正文") for i in ids]
+    storage.views.return_value = []
+    storage.inputs.return_value = [
+        {"id": str(i), "filename": f"{i}.txt", "text": "合成正文"} for i in ids
+    ]
+    service.attachments = storage
+    await service.answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="说明附件", attachment_ids=ids)
+    )
+    assert len(provider.generate.call_args.args[0].attachments) == 6
+    with pytest.raises(ConflictError) as error:
+        await service.answer(
+            conversation.id,
+            AnswerRequest(request_key=uuid4(), question="新增附件", attachment_ids=[uuid4()]),
+        )
+    assert error.value.error_key == "ATTACHMENT_CONTEXT_LIMIT"
+    assert provider.generate.await_count == 1
+
+
+async def test_attachment_context_character_limit_blocks_model_call(context):
+    from types import SimpleNamespace
+
+    service, conversation, provider, _, _ = await setup(context)
+    identifier = uuid4()
+    storage = AsyncMock()
+    storage.load.return_value = [SimpleNamespace(id=identifier, extracted_text="A" * 60001)]
+    storage.views.return_value = []
+    storage.inputs.return_value = [
+        {"id": str(identifier), "filename": "合成.txt", "text": "A" * 60001}
+    ]
+    service.attachments = storage
+    with pytest.raises(ConflictError) as error:
+        await service.answer(
+            conversation.id,
+            AnswerRequest(request_key=uuid4(), question="问题", attachment_ids=[identifier]),
+        )
+    assert error.value.error_key == "ATTACHMENT_CONTEXT_LIMIT"
+    provider.generate.assert_not_awaited()

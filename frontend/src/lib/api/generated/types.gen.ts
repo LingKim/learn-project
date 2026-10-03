@@ -100,7 +100,11 @@ export type AnswerRequest = {
     /**
      * Question
      */
-    question: string;
+    question?: string;
+    /**
+     * Attachment Ids
+     */
+    attachment_ids?: Array<string>;
 };
 
 /**
@@ -319,6 +323,21 @@ export type ApiResponseKnowledgeFileView = {
      */
     message: string;
     data: KnowledgeFileView;
+};
+
+/**
+ * ApiResponse[LearningAttachmentView]
+ */
+export type ApiResponseLearningAttachmentView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: LearningAttachmentView;
 };
 
 /**
@@ -588,6 +607,16 @@ export type AvatarUploadPlan = {
      * Status
      */
     status: string;
+};
+
+/**
+ * Body_learning_attachments_upload
+ */
+export type BodyLearningAttachmentsUpload = {
+    /**
+     * File
+     */
+    file: Blob | File;
 };
 
 /**
@@ -1060,6 +1089,32 @@ export type KnowledgeFileView = {
 };
 
 /**
+ * LearningAttachmentView
+ */
+export type LearningAttachmentView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Media Type
+     */
+    media_type: string;
+    /**
+     * Byte Size
+     */
+    byte_size: number;
+    /**
+     * Kind
+     */
+    kind: 'image' | 'document';
+};
+
+/**
  * LiveResponse
  */
 export type LiveResponse = {
@@ -1426,7 +1481,11 @@ export type TurnView = {
     /**
      * Source Label
      */
-    source_label: '用户资料' | '模型通用知识';
+    source_label: '用户资料' | '模型通用知识' | '用户附件' | '用户资料与附件';
+    /**
+     * Attachments
+     */
+    attachments?: Array<LearningAttachmentView>;
     /**
      * Citations
      */
@@ -4935,6 +4994,223 @@ export type DocumentRetrievalSearchResponses = {
 };
 
 export type DocumentRetrievalSearchResponse = DocumentRetrievalSearchResponses[keyof DocumentRetrievalSearchResponses];
+
+export type LearningAttachmentsUploadData = {
+    body: BodyLearningAttachmentsUpload;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/attachments';
+};
+
+export type LearningAttachmentsUploadErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAttachmentsUploadError = LearningAttachmentsUploadErrors[keyof LearningAttachmentsUploadErrors];
+
+export type LearningAttachmentsUploadResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseLearningAttachmentView;
+};
+
+export type LearningAttachmentsUploadResponse = LearningAttachmentsUploadResponses[keyof LearningAttachmentsUploadResponses];
+
+export type LearningAttachmentsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Attachment Id
+         */
+        attachment_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/attachments/{attachment_id}';
+};
+
+export type LearningAttachmentsDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAttachmentsDeleteError = LearningAttachmentsDeleteErrors[keyof LearningAttachmentsDeleteErrors];
+
+export type LearningAttachmentsDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseNoneType;
+};
+
+export type LearningAttachmentsDeleteResponse = LearningAttachmentsDeleteResponses[keyof LearningAttachmentsDeleteResponses];
+
+export type LearningAttachmentsContentData = {
+    body?: never;
+    path: {
+        /**
+         * Attachment Id
+         */
+        attachment_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/attachments/{attachment_id}/content';
+};
+
+export type LearningAttachmentsContentErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAttachmentsContentError = LearningAttachmentsContentErrors[keyof LearningAttachmentsContentErrors];
+
+export type LearningAttachmentsContentResponses = {
+    /**
+     * Successful Response
+     */
+    200: Blob | File;
+};
+
+export type LearningAttachmentsContentResponse = LearningAttachmentsContentResponses[keyof LearningAttachmentsContentResponses];
 
 export type LearningConsentGetData = {
     body?: never;

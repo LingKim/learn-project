@@ -46,10 +46,11 @@ class Settings(BaseSettings):
     ai_rerank_url: AnyHttpUrl = AnyHttpUrl(
         "https://maas.qianwenaiapi.com/api/v1/services/rerank/text-rerank/text-rerank"
     )
+    learning_vision_model: str = "qwen3-vl-flash"
     learning_answer_model: str = "qwen3.8-flash"
     learning_model_timeout_seconds: float = Field(default=60, gt=0, le=120)
     learning_request_timeout_seconds: float = Field(default=120, gt=0, le=180)
-    learning_consent_version: str = "qwen-learning-v1"
+    learning_consent_version: str = "qwen-learning-v2"
     document_provider: Literal["qwen", "deterministic"] = "qwen"
     document_embedding_model: str = "qwen3.7-text-embedding"
     document_rerank_model: str = "qwen3-rerank"

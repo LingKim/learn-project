@@ -29,18 +29,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const REMEMBERED_USERNAME_KEY = "auth:remembered-username:v1";
 
 let accessToken: string | null = null;
+let accessTokenExpiresAt = 0;
 let initializationPromise: Promise<UserView | null> | null = null;
 let refreshPromise: Promise<AuthPayload> | null = null;
 
-function setAccessToken(token: string | null) {
+function setAccessToken(token: string | null, expiresIn = 0) {
   accessToken = token;
+  accessTokenExpiresAt = token ? Date.now() + expiresIn * 1000 : 0;
 }
 
 async function refreshSingleFlight(): Promise<AuthPayload> {
   if (!refreshPromise) {
     refreshPromise = refreshSession()
       .then((result) => {
-        setAccessToken(result.data.access_token);
+        setAccessToken(result.data.access_token, result.data.expires_in);
         return result.data;
       })
       .finally(() => {
@@ -80,7 +82,7 @@ export function loadRememberedUsername(): string {
 }
 
 export async function authenticatedAccessToken(): Promise<string> {
-  if (accessToken) return accessToken;
+  if (accessToken && Date.now() < accessTokenExpiresAt - 30_000) return accessToken;
   return (await refreshSingleFlight()).access_token;
 }
 
@@ -103,7 +105,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
   const completeAuthentication = useCallback(
     (payload: AuthPayload, rememberedUsername?: string) => {
-      setAccessToken(payload.access_token);
+      setAccessToken(payload.access_token, payload.expires_in);
       setUser(payload.user);
       setStatus("authenticated");
       saveRememberedUsername(rememberedUsername);

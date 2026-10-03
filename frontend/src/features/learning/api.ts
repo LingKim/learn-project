@@ -1,5 +1,8 @@
 import { authenticatedAccessToken } from "@/features/auth/auth-provider";
 import {
+  learningAttachmentsUpload,
+  learningAttachmentsDelete,
+  learningAttachmentsContent,
   learningConsentGet,
   learningConsentConfirm,
   learningConversationsList,
@@ -12,6 +15,7 @@ import {
   learningAnswersFeedback,
 } from "@/lib/api/generated/sdk.gen";
 import type {
+  LearningAttachmentView,
   AnswerStreamEvent,
   AiConsentView,
   AiConsentRequest,
@@ -23,12 +27,14 @@ import type {
   TurnView,
 } from "@/lib/api/generated/types.gen";
 import {
+  requestBlob,
   API_BASE_URL,
   requestMutation,
   requestQueryData,
   requestPageData,
 } from "@/lib/api/protocol";
 export type {
+  LearningAttachmentView,
   AnswerStreamEvent,
   AnswerRequest,
   ConversationCreate,
@@ -136,5 +142,24 @@ export async function streamQuestion(
       return event.type === "completed";
     },
     signal,
+  );
+}
+
+export async function uploadAttachment(file: File) {
+  const auth = await options();
+  return requestMutation<LearningAttachmentView>(() =>
+    learningAttachmentsUpload({ ...auth, body: { file } }),
+  );
+}
+export async function deleteAttachment(id: string) {
+  const auth = await options();
+  return requestMutation<null>(() =>
+    learningAttachmentsDelete({ ...auth, path: { attachment_id: id } }),
+  );
+}
+export async function getAttachmentContent(id: string, signal?: AbortSignal) {
+  const auth = await options();
+  return requestBlob(() =>
+    learningAttachmentsContent({ ...auth, path: { attachment_id: id }, signal, parseAs: "blob" }),
   );
 }

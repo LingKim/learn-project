@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { requestMutation, requestNoContent, requestPageData, requestQueryData } from "./protocol";
+import {
+  requestBlob,
+  requestMutation,
+  requestNoContent,
+  requestPageData,
+  requestQueryData,
+} from "./protocol";
 
 function success<T>(data: T, status = 200) {
   return Promise.resolve({
@@ -55,5 +61,17 @@ describe("API protocol adapters", () => {
     const result = await requestNoContent(() => success({}, 204), "删除成功");
 
     expect(result).toEqual({ data: undefined, message: "删除成功" });
+  });
+});
+
+describe("private binary API responses", () => {
+  it("returns actual binary content", async () => {
+    const blob = new Blob(["synthetic"], { type: "text/plain" });
+    expect(await requestBlob(() => success(blob))).toBe(blob);
+  });
+  it("rejects envelopes masquerading as files", async () => {
+    await expect(
+      requestBlob(() => success({ code: 200, data: "not a blob" })),
+    ).rejects.toMatchObject({ errorKey: "API_CONTRACT_MISMATCH" });
   });
 });

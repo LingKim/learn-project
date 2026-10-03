@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from xuemian_ai.document_processing.schemas import EvidenceChunk
+from xuemian_ai.learning.attachment_schemas import LearningAttachmentView
 
 
 class ConversationCreate(BaseModel):
@@ -50,14 +51,23 @@ class AnswerRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     request_key: UUID
     language: Literal["zh", "en"] | None = None
-    question: str = Field(min_length=1, max_length=2000)
+    question: str = Field(default="", max_length=2000)
+    attachment_ids: list[UUID] = Field(default_factory=list, max_length=6)
 
     @field_validator("question")
     @classmethod
     def trim_question(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("问题不能为空")
         return value.strip()
+
+    @model_validator(mode="after")
+    def valid_input(self) -> "AnswerRequest":
+        if not self.question and not self.attachment_ids:
+            raise ValueError("请输入问题或上传附件")
+        if len(self.attachment_ids) != len(set(self.attachment_ids)):
+            raise ValueError("附件不得重复")
+        if not self.question:
+            self.question = "请分析所上传的附件"
+        return self
 
 
 class GeneratedAnswer(BaseModel):
@@ -81,7 +91,8 @@ class TurnView(BaseModel):
     status: Literal["processing", "succeeded", "failed"]
     answer: str | None
     refused: bool
-    source_label: Literal["用户资料", "模型通用知识"]
+    source_label: Literal["用户资料", "模型通用知识", "用户附件", "用户资料与附件"]
+    attachments: list[LearningAttachmentView] = Field(default_factory=list)
     citations: list[AnswerCitation]
     trace_id: UUID | None
     trace_complete: bool
