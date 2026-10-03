@@ -37,8 +37,11 @@ async def test_daily_scheduler_physically_clears_revoked_snapshot(quality):
     finally:
         await scheduler.close()
     async with q.sessions() as session:
-        assert await session.scalar(
-            select(DiagnosticSnapshot.id).where(DiagnosticSnapshot.grant_id == grant.id)
-        ) is None
+        assert (
+            await session.scalar(
+                select(DiagnosticSnapshot.id).where(DiagnosticSnapshot.grant_id == grant.id)
+            )
+            is None
+        )
         persisted = await session.get(AIQualityCase, case.id)
         assert persisted.statement_ciphertext is None and persisted.statement_key_id is None

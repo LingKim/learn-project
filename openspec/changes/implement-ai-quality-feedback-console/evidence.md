@@ -52,3 +52,9 @@
 - Scheduler 接线、真实完整服务 curl 权限矩阵、OpenAPI/SDK 重新生成、前端验证和用户人工验收由集成负责人执行；本专项不以单元/ASGI HTTP 测试代替上述验收，也未运行 Next.js/Docker 构建。
 - 维护首期扫描并锁定待处理工单/Trace，尚未进行大规模数据性能测试；后续可在真实规模证据支持下批次化，不把当前实现宣称为吞吐量结论。
 - 离线候选对照只证明已记录排序差异；不支持重跑 parsing/indexing，不提供因果归因或独立模式延时结论，未能得到批准证据的技术结论返回 `QUALITY_ATTRIBUTION_UNVERIFIED`。
+
+## 2026-10-03 首期统一集成与实际浏览器
+
+本期后端、SDK、两端 UI、共享角色 guard/导航、真实运行快照与调度清理已在独立分支完整集成。最终后端 506 passed / 41 skipped，前端 49 files / 252 tests，Ruff/format/mypy、真实 32 项 curl、OpenAPI 字节一致、迁移上下回合及 schema check、Next/Python 构建与两份 OpenSpec strict validate 通过。真实单一 Ego 浏览器完成两学习账号/管理员权限、授权/正文隔离、公开内部备注、撤销/关闭、Prompt 草稿/Diff/无模型预览/发布门禁/回滚新版本/启停/原生历史恢复；375px 页面无横向溢出。
+
+全部使用合成库与资料，未运行外部真实模型；原 Pen 缺失已获用户“授权设计”改用仓库截图，不宣称原稿或用户人工验收通过。20 张实际证据已保存，最终补充截图接口超时以 DOM 状态完成最后检查。临时数据库和本轮进程已清理，worktree 保留；未推送、PR、部署或迁移业务库。完整具体矩阵、发现并修复的问题、分支提交及真实限制见 [统一交付记录](../../../docs/development/quality-prompt-delivery-20261003.md)。

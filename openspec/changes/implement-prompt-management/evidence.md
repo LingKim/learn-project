@@ -67,3 +67,9 @@
 `freeze_practice_run()` 与真实 PracticeRun 同事务创建 AgentRun，整份重新赋值 JSONB input_snapshot；`load_practice_prompt()` 仅读取不可变版本/hash/依赖及保存快照，SQL 不读取 active/runtime_status，使用入队时保存的模型参数。后续发布、回滚、停用及 Settings 模型变更不改变旧任务。
 
 验证：22 个纯单元测试通过，含非法嵌套花括号的红绿回归；后端全源 mypy 112 模块通过；模块/API/专属测试 Ruff 通过。6 个隔离 PostgreSQL 集成检查已在 root 创建的专属数据库 `xuemian_next_20261003_prompt_backend_test` 全部通过；合计 28 passed，耗时 2.72 秒。首次执行 27 passed/1 failed 揭示启停返回的 updated_at ORM 过期导致 MissingGreenlet，已增加显式 refresh 并完成红绿回归。本段不把真实外部模型评测、SDK/前端验收记为已通过。
+
+## 2026-10-03 首期统一集成与实际浏览器
+
+本期后端、SDK、两端 UI、共享角色 guard/导航、真实运行快照与调度清理已在独立分支完整集成。最终后端 506 passed / 41 skipped，前端 49 files / 252 tests，Ruff/format/mypy、真实 32 项 curl、OpenAPI 字节一致、迁移上下回合及 schema check、Next/Python 构建与两份 OpenSpec strict validate 通过。真实单一 Ego 浏览器完成两学习账号/管理员权限、授权/正文隔离、公开内部备注、撤销/关闭、Prompt 草稿/Diff/无模型预览/发布门禁/回滚新版本/启停/原生历史恢复；375px 页面无横向溢出。
+
+全部使用合成库与资料，未运行外部真实模型；原 Pen 缺失已获用户“授权设计”改用仓库截图，不宣称原稿或用户人工验收通过。20 张实际证据已保存，最终补充截图接口超时以 DOM 状态完成最后检查。临时数据库和本轮进程已清理，worktree 保留；未推送、PR、部署或迁移业务库。完整具体矩阵、发现并修复的问题、分支提交及真实限制见 [统一交付记录](../../../docs/development/quality-prompt-delivery-20261003.md)。

@@ -73,4 +73,4 @@ knowledge-worker 默认并发 2、30 秒租约、180 秒任务上限；`KNOWLEDG
 
 质量诊断台与提示词管理首期已按用户批准范围，在独立 `codex/learn-quality-prompt-integration` 集成。本人完整资料问答可提交单次授权反馈，入口为 `/ai-quality`；管理员入口为 `/admin/ai-quality`、`/admin/ai-quality/cases` 与 `/admin/prompts`。提示词首期只纳管实际 `question_generator/practice_generate`，发布版本及依赖在任务入队时固定，后续发布或停用不改变已启动任务。公共契约与文件归属见 `docs/development/quality-prompt-contract-20261003.md`，统一交付及验证边界见 `docs/development/quality-prompt-delivery-20261003.md`。
 
-这些改动尚未合入 main、迁移业务库或部署。受管生成上线前必须配置诊断加密密钥，并由管理员初始化草稿、显式评测和发布有效活动提示词；否则新练习生成返回 `PROMPT_RUNTIME_UNAVAILABLE`。具体步骤见 `backend/README.md`，测试中的合成评测不能代替业务环境的真实模型评测。
+这些改动尚未合入 main、迁移业务库或部署。质量反馈启用前必须配置诊断加密密钥；受管练习生成启用前必须由管理员初始化草稿、显式评测和发布有效活动提示词，否则新练习生成返回 `PROMPT_RUNTIME_UNAVAILABLE`。具体步骤见 `backend/README.md`，测试中的合成评测不能代替业务环境的真实模型评测。
