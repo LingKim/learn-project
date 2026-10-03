@@ -10,12 +10,15 @@ import {
   NotebookPen,
   Settings,
   Sparkles,
+  MessageSquareWarning,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AccountControl } from "@/features/auth/account-control";
+import { useAuth } from "@/features/auth/auth-provider";
 import { NavigationSettings } from "@/features/user-profile/navigation-settings";
 import { userProfileQueryOptions } from "@/features/user-profile/queries";
 import { cn } from "@/lib/utils";
@@ -39,6 +42,7 @@ function NavigationHint({ label, children }: { label: string; children: ReactNod
 }
 export function ContentShell({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const profile = useQuery(userProfileQueryOptions());
   const left = profile.data?.navigation_position !== "top";
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -93,6 +97,21 @@ export function ContentShell({ children }: Readonly<{ children: ReactNode }>) {
             ))}
           </nav>
           <div className="nav-secondary flex shrink-0 items-center gap-2">
+            {user && (
+              <NavigationHint label={user.role === "admin" ? "系统管理" : "我的反馈"}>
+                <Link
+                  href={user.role === "admin" ? "/admin/ai-quality" : "/ai-quality"}
+                  aria-label={user.role === "admin" ? "系统管理" : "我的反馈"}
+                  className={itemClass}
+                >
+                  {user.role === "admin" ? (
+                    <ShieldCheck className="size-5" aria-hidden="true" />
+                  ) : (
+                    <MessageSquareWarning className="size-5" aria-hidden="true" />
+                  )}
+                </Link>
+              </NavigationHint>
+            )}
             {(
               [
                 ["任务中心", ClipboardList],
