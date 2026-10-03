@@ -112,7 +112,7 @@ async def freeze_practice_run(
         raise unavailable()
     service = PromptService(None, run.owner_user_id, settings)  # type: ignore[arg-type]
     version = await service._version(session, definition.active_version_id)
-    if version.status != "published":
+    if version.status != "published" or version.definition_id != definition.id:
         raise unavailable()
     composition = await service._composition(session, version)
     # 被停用的共享片段阻止新任务，已入队任务仍由不可变快照复现。

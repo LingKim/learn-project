@@ -783,6 +783,7 @@ class PromptService:
             definition.runtime_status = body.runtime_status
             await session.flush()
             self._audit(session, "set_status", id)
+            await session.refresh(definition)
             return self._definition_view(definition)
 
     async def audits(self, id: UUID, page: int, page_size: int) -> PageResponse[AuditView]:

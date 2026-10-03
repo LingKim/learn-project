@@ -53,3 +53,17 @@
 本机 `main@57629ef` 已有真实问答、练习与学习资产执行器和检索 Trace，原文“尚无真实业务 Agent”等表述属于历史记录，不代表当前基线。当前仍没有本变更的领域模型/API/页面。具体首批范围、公共契约、迁移顺序、文件归属与验收条件见本目录 `implementation-plan-20261003.md` 及 `docs/development/parallel-next-batch-20261003.md`；方案待用户批准，尚未开始本变更实现。
 
 已修正文档的 OpenSpec delta 头及 Requirement/Scenario 标点解析格式，未改产品规则；当前 CLI strict validate 通过。原规格的 AgentRun“扩展”需落为实际新增模型并与既有持久任务绑定；受管场景、动态输出 Schema 与入队快照契约须在实施批准前同步设计/spec。不将解析通过当成功能交付。
+
+## 2026-10-03 首个真实受管场景后端
+
+本批仅接入既有 `question_generator/practice_generate` 执行边界和实际依赖的 `practice_global` 公共片段。没有注册未来七类角色，没有任意定义创建 API；管理员 CLI `python -m xuemian_ai.prompt_management.cli --admin-user-id <UUID>` 校验真实管理员后，只从旧代码指令初始化 DRAFT。无已发布活动版本时，新受管生成任务稳定返回 `PROMPT_RUNTIME_UNAVAILABLE`。旧队列兼容和业务入队/worker/provider 接口由独立集成分支接入。
+
+六张领域表分别保存定义、不可变版本、固定依赖、固定合成评测集、真实评测运行和无正文审计。草稿保存校验 revision；发布/回滚/启停校验 expected_active_version_id，并在同事务锁定定义。回滚克隆新递增版本，只有完整指纹仍匹配的已通过证据可复用。数据库触发器由共享迁移 07 保护已发布/退役版本正文及依赖、已发布评测集。管理 API 所有成功和错误响应均 no-store，普通用户在对象 lookup 前被拒绝；正文、Diff、预览和状态变更留无正文审计。
+
+模板只支持一次 `{{variable}}` 替换，变量仅 trusted `agent_key`、`scene_key`；表达式、Include、脚本及不合法花括号被拒绝。用户事实通过独立 JSON data message 输入，长度/深度受限，不能修改 system 变量或空工具 allowlist。ContextResolver 逐字段遵守 presence/null 语义；快照保留不可逆字段摘要、学习资产/薄弱点 ID/version、画像 version，不复制正文。
+
+评测必须显式执行固定四个合成样例：五种题型、资料引用、证据不足、注入载荷。真实 API 调用实际 Qwen 提供者；测试通过显式注入合成 provider 走同一业务验证器，没有运行时假成功或自动发布旁路。联合指纹包括正文 hash、变量声明、固定依赖身份/hash/slot/position、稳定 InputContext/OutputModel/QuestionSnapshot/空工具契约、每样例动态题目 Schema、固定 suite ID/version/hash、provider/model/参数和公共片段测试所用固定任务夹具 hash。失败、超时或取消不产生通过资格；进程中断的 processing 评测可在期限后重新执行。
+
+`freeze_practice_run()` 与真实 PracticeRun 同事务创建 AgentRun，整份重新赋值 JSONB input_snapshot；`load_practice_prompt()` 仅读取不可变版本/hash/依赖及保存快照，SQL 不读取 active/runtime_status，使用入队时保存的模型参数。后续发布、回滚、停用及 Settings 模型变更不改变旧任务。
+
+验证：22 个纯单元测试通过，含非法嵌套花括号的红绿回归；后端全源 mypy 112 模块通过；模块/API/专属测试 Ruff 通过。6 个隔离 PostgreSQL 集成检查已在 root 创建的专属数据库 `xuemian_next_20261003_prompt_backend_test` 全部通过；合计 28 passed，耗时 2.72 秒。首次执行 27 passed/1 failed 揭示启停返回的 updated_at ORM 过期导致 MissingGreenlet，已增加显式 refresh 并完成红绿回归。本段不把真实外部模型评测、SDK/前端验收记为已通过。

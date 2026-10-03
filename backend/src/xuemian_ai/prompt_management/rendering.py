@@ -105,6 +105,15 @@ def resolve_fields(
     for _, layer in layers:
         if set(layer) - allowed:
             raise invalid()
+        if layer.get("version") is not None and (
+            not isinstance(layer["version"], (str, int)) or isinstance(layer["version"], bool)
+        ):
+            raise invalid()
+        if layer.get("id") is not None:
+            try:
+                UUID(str(layer["id"]))
+            except ValueError:
+                raise invalid() from None
     for field in PROFILE_FIELDS:
         for name, layer in layers:
             if field not in layer:

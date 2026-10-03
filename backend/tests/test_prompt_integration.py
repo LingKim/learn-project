@@ -299,3 +299,92 @@ async def test_http_admin_before_lookup_and_private_audit(domain):
             value.action == "request_denied" and value.outcome == "denied" for value in audits
         )
         assert all(not hasattr(value, "payload") for value in audits)
+
+
+async def test_concurrent_publish_allows_one_and_never_mutates_published_content(domain):
+    import asyncio
+
+    from sqlalchemy import update
+    from sqlalchemy.exc import DBAPIError
+
+    definition, published = await seed_published(domain)
+    drafts = [
+        await domain.create_draft(
+            definition.id,
+            DraftCreate(
+                expected_active_version_id=published.id,
+                source_version_id=published.id,
+                change_description=f"并发候选{i}",
+            ),
+        )
+        for i in range(2)
+    ]
+    results = await asyncio.gather(
+        *(
+            domain.publish(
+                value.id,
+                PublishRequest(
+                    expected_active_version_id=published.id, expected_revision=value.revision
+                ),
+            )
+            for value in drafts
+        ),
+        return_exceptions=True,
+    )
+    assert sum(not isinstance(value, Exception) for value in results) == 1
+    assert sum(isinstance(value, ConflictError) for value in results) == 1
+    current = await domain.definition(definition.id)
+    with pytest.raises(DBAPIError):
+        async with domain.sessions.begin() as session:
+            await session.execute(
+                update(PromptVersion)
+                .where(PromptVersion.id == current.active_version_id)
+                .values(content="非法修改已发布内容")
+            )
+    assert (await domain.version(current.active_version_id)).content == published.content
+
+
+async def test_failed_online_evaluation_and_model_change_cannot_publish(domain):
+    definition, published = await seed_published(domain)
+    candidate = await domain.create_draft(
+        definition.id,
+        DraftCreate(
+            expected_active_version_id=published.id,
+            source_version_id=published.id,
+            content="未通过的新指令" + uuid4().hex,
+            change_description="失败评测",
+        ),
+    )
+
+    class InvalidProvider:
+        async def invoke(self, messages, payload, schema):
+            return {"status": "ready", "reason": "", "questions": []}, {
+                "input_tokens": 1,
+                "output_tokens": 1,
+                "total_tokens": 2,
+            }
+
+    result = await domain.evaluate(candidate.id, InvalidProvider())
+    assert (
+        not result.passed
+        and result.status == "failed"
+        and result.metrics["usage"]["total_tokens"] == 8
+    )
+    with pytest.raises(ConflictError):
+        await domain.publish(
+            candidate.id,
+            PublishRequest(
+                expected_active_version_id=published.id, expected_revision=candidate.revision
+            ),
+        )
+    assert (await domain.evaluate(candidate.id, SyntheticProvider())).passed
+    changed_settings = domain.settings.model_copy(
+        update={"learning_answer_model": "different-model"}
+    )
+    with pytest.raises(ConflictError):
+        await PromptService(domain.sessions, domain.actor, changed_settings).publish(
+            candidate.id,
+            PublishRequest(
+                expected_active_version_id=published.id, expected_revision=candidate.revision
+            ),
+        )
