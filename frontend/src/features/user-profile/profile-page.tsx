@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Camera,
@@ -451,19 +452,29 @@ export function UserProfilePage() {
           </section>
 
           <section className="mb-6">
-            <h2 className="text-sm font-semibold">活动薄弱点</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold">活动薄弱点</h2>
+              <Link href="/weaknesses" className="text-xs underline underline-offset-4">
+                查看难点库
+              </Link>
+            </div>
             {profile.active_weaknesses.length === 0 ? (
               <div className="mt-4 border-l-2 border-border py-2 pl-3">
                 <p className="text-sm font-medium">还没有可用的薄弱点证据</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  完成练习或模拟面试后，系统会在这里汇总近期需要强化的知识点；该区域只读，不需要手工维护。
+                  完成练习后可确认评分候选，也可在难点库创建主动学习目标。
                 </p>
               </div>
             ) : (
               <ul className="mt-4 grid gap-3">
                 {profile.active_weaknesses.map((item) => (
                   <li key={item.id} className="rounded-md border border-border px-4 py-3">
-                    <p className="text-sm font-medium">{item.name}</p>
+                    <Link
+                      href={`/weaknesses/${item.id}`}
+                      className="text-sm font-medium underline underline-offset-4"
+                    >
+                      {item.name}
+                    </Link>
                     <p className="mt-1 text-xs text-muted-foreground">{item.source_summary}</p>
                   </li>
                 ))}

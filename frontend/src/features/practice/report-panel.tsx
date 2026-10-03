@@ -1,4 +1,7 @@
 "use client";
+import Link from "next/link";
+import { masteryLabels } from "@/features/learning-assets/asset-layout";
+import { reviewLabels } from "@/features/learning-assets/review-labels";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AnswerContent } from "@/features/learning/answer-content";
@@ -214,6 +217,58 @@ export function ReportPanel({
           ) : null}
         </section>
         <aside className="min-w-0 space-y-4">
+          {report.learning_target || report.learning_assets?.length ? (
+            <section className="space-y-[10px] rounded-md border border-border px-[14px] py-3">
+              <h3 className="text-sm font-semibold">难点与本次验证</h3>
+              {report.learning_assets?.map((asset) => (
+                <p key={asset.id} className="text-xs leading-6">
+                  <Link href={`/weaknesses/${asset.id}`} className="underline underline-offset-4">
+                    {asset.title}
+                  </Link>
+                  {" · "}
+                  {asset.decision === "pending"
+                    ? "待确认候选"
+                    : asset.decision === "confirmed"
+                      ? masteryLabels[asset.mastery_state]
+                      : asset.decision === "ignored"
+                        ? "已忽略"
+                        : "已撤销"}
+                  {!asset.source_available ? " · 来源失效" : ""}
+                </p>
+              ))}
+              {report.learning_target ? (
+                <Link
+                  className="block text-xs underline underline-offset-4"
+                  href={
+                    report.learning_target.kind === "weakness"
+                      ? `/weaknesses/${report.learning_target.id}`
+                      : `/learning/explanation/${report.learning_target.id}`
+                  }
+                >
+                  查看本次学习目标
+                </Link>
+              ) : null}
+              {report.learning_review ? (
+                <div className="space-y-2 text-xs leading-6">
+                  <p>
+                    相关 {report.learning_review.total_related} · 已提交{" "}
+                    {report.learning_review.submitted_count} · 已评分{" "}
+                    {report.learning_review.graded_count} · 正确{" "}
+                    {report.learning_review.correct_count} · 低置信度{" "}
+                    {report.learning_review.low_confidence_count}
+                  </p>
+                  <p>
+                    {report.learning_review.validation_passed
+                      ? "本次验证通过；是否标记掌握由你决定。"
+                      : (reviewLabels[report.learning_review.conclusion] ??
+                        "本次尚未满足验证条件。")}
+                  </p>
+                </div>
+              ) : report.learning_target ? (
+                <p className="text-xs text-muted-foreground">正在整理本次复习证据。</p>
+              ) : null}
+            </section>
+          ) : null}
           <h3 className="text-base font-bold">本次知识点结果</h3>
           {report.topics.map((topic) => (
             <section key={topic.topic} className="space-y-2 border-t border-border py-3">

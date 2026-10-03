@@ -80,7 +80,7 @@ class UserProfileService:
     async def get_profile(self) -> UserProfileView:
         profile = await self._profile()
         self._audit("read_profile", profile.id if profile is not None else self._user.id)
-        return self._view(profile)
+        return await self._view(profile)
 
     async def update_profile(self, request: UserProfilePatch) -> UserProfileView:
         await self._lock_user()
@@ -116,7 +116,7 @@ class UserProfileService:
                 setattr(profile, field, getattr(request, field))
         await self._session.flush()
         self._audit("update_profile", profile.id if profile is not None else self._user.id)
-        return self._view(profile)
+        return await self._view(profile)
 
     async def create_avatar_upload(
         self, request: AvatarUploadCreate, idempotency_key: str
@@ -246,7 +246,7 @@ class UserProfileService:
                 error_key="PROFILE_VERSION_CONFLICT",
             )
         if profile is None or profile.avatar_file_asset_id is None:
-            return self._view(profile)
+            return await self._view(profile)
         old_asset_id = profile.avatar_file_asset_id
         profile.avatar_file_asset_id = None
         profile.version += 1
@@ -254,7 +254,7 @@ class UserProfileService:
         await _retire_avatar_asset(self._session, old_asset_id, self._user.id)
         self._audit("delete_avatar", old_asset_id)
         await self._session.flush()
-        return self._view(profile)
+        return await self._view(profile)
 
     async def _profile(self) -> UserProfile | None:
         return cast(
@@ -324,7 +324,10 @@ class UserProfileService:
             profile_version=profile_version,
         )
 
-    def _view(self, profile: UserProfile | None) -> UserProfileView:
+    async def _view(self, profile: UserProfile | None) -> UserProfileView:
+        from xuemian_ai.learning_assets.service import list_active_weaknesses
+
+        weaknesses = await list_active_weaknesses(self._session, self._user.id)
         return UserProfileView(
             username=self._user.username,
             nickname=self._user.nickname,
@@ -346,7 +349,7 @@ class UserProfileService:
                 "/api/v1/users/me/avatar" if profile and profile.avatar_file_asset_id else None
             ),
             version=profile.version if profile else 0,
-            active_weaknesses=[],
+            active_weaknesses=weaknesses,
         )
 
     def _audit(self, action: str, target_id: UUID) -> None:

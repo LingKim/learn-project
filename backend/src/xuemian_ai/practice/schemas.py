@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from xuemian_ai.learning_assets.targets import LearningTarget
+
 QuestionType = Literal[
     "single_choice", "multiple_choice", "true_false", "short_answer", "code_text"
 ]
@@ -24,6 +26,7 @@ class PracticeConfig(StrictModel):
     knowledge_base_id: UUID | None = None
     file_ids: list[UUID] = Field(default_factory=list)
     topic: str = Field(default="", max_length=500)
+    learning_target: LearningTarget | None = None
     target_job: str | None = Field(default=None, max_length=120)
     experience_months: int | None = Field(default=None, ge=0, le=720)
     target_level: Literal["intern", "junior", "intermediate", "senior", "expert"] | None = None
@@ -401,6 +404,26 @@ class TopicReport(StrictModel):
     suggestions: list[str] = Field(default_factory=list)
 
 
+class ReportLearningAsset(StrictModel):
+    id: UUID
+    title: str
+    decision: Literal["pending", "confirmed", "ignored", "revoked"]
+    mastery_state: Literal["to_learn", "learning", "to_verify", "mastered"]
+    source_available: bool
+
+
+class ReportLearningReview(StrictModel):
+    version: int | None
+    total_related: int
+    submitted_count: int
+    graded_count: int
+    correct_count: int
+    low_confidence_count: int
+    validation_passed: bool
+    source_available: bool
+    conclusion: str
+
+
 class ReportView(StrictModel):
     attempt_id: UUID
     status: Literal["active", "completed"]
@@ -409,6 +432,9 @@ class ReportView(StrictModel):
     graded_count: int
     questions: list[ReportQuestion]
     topics: list[TopicReport]
+    learning_target: LearningTarget | None = None
+    learning_assets: list[ReportLearningAsset] = Field(default_factory=list)
+    learning_review: ReportLearningReview | None = None
     score: float | None = None
     max_score: float | None = None
     source_mode: Literal["materials", "general"]

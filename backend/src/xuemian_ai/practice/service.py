@@ -43,6 +43,8 @@ from xuemian_ai.practice.schemas import (
     QuestionSnapshot,
     RegenerateRequest,
     RegradeRequest,
+    ReportLearningAsset,
+    ReportLearningReview,
     ReportQuestion,
     ReportView,
     ResultRef,
@@ -84,7 +86,7 @@ def digest(value: object) -> str:
 
 def config_dump(config: PracticeConfig) -> dict[str, Any]:
     data = config.model_dump(mode="json")
-    for field in PROFILE_FIELDS:
+    for field in (*PROFILE_FIELDS, "learning_target"):
         if field not in config.model_fields_set:
             data.pop(field, None)
     return data
@@ -110,6 +112,10 @@ class PracticeService:
         self.sessions, self.owner, self.settings = sessions, owner_user_id, settings
 
     async def _set(self, session: AsyncSession, set_id: UUID, lock: bool = False) -> PracticeSet:
+        if lock:
+            from xuemian_ai.learning_assets.service import owner_lock
+
+            await owner_lock(session, self.owner)
         query = select(PracticeSet).where(
             PracticeSet.id == set_id,
             PracticeSet.owner_user_id == self.owner,
@@ -264,9 +270,34 @@ class PracticeService:
             for field in PROFILE_FIELDS
             if field in config.model_fields_set
         }
-        effective = resolve_context(overrides, defaults)
+        target = None
+        if config.learning_target:
+            from xuemian_ai.learning_assets.service import resolve_learning_target
+
+            target = await resolve_learning_target(
+                session,
+                self.owner,
+                config.learning_target.model_dump(mode="json"),
+                config_dump(config),
+            )
+        effective = resolve_context(overrides, defaults, target.get("context") if target else None)
+        if target:
+            effective["learning_target"] = target
         ensure_general_topic(config.model_dump(mode="json"), effective)
         return effective
+
+    async def _assert_learning_target(
+        self, session: AsyncSession, config: dict[str, Any], context: dict[str, Any]
+    ) -> None:
+        if not config.get("learning_target"):
+            return
+        from xuemian_ai.learning_assets.service import resolve_learning_target
+
+        current = await resolve_learning_target(
+            session, self.owner, config["learning_target"], config
+        )
+        if digest(current) != digest(context.get("learning_target")):
+            raise conflict("LEARNING_ASSET_SOURCE_CHANGED")
 
     async def _set_view(self, session: AsyncSession, obj: PracticeSet) -> SetView:
         return SetView(
@@ -387,6 +418,10 @@ class PracticeService:
             obj = await self._set(session, set_id, True)
             version_check(obj.version, expected_version)
             obj.deleted_at, obj.deleted_by = datetime.now(UTC), self.owner
+            obj.version += 1
+            from xuemian_ai.learning_assets.projection import append_evidence_event
+
+            await append_evidence_event(session, self.owner, "set_deleted", obj.id, obj.version)
             runs = (
                 await session.scalars(
                     select(PracticeRun)
@@ -460,6 +495,7 @@ class PracticeService:
                 return run_view(previous)
             version_check(obj.version, body.expected_version)
             await self._assert_sources(session, obj.config, obj.source_snapshot)
+            await self._assert_learning_target(session, obj.config, obj.effective_context)
             run = self._enqueue(
                 session,
                 obj,
@@ -519,6 +555,9 @@ class PracticeService:
             if candidate.config_digest != body.confirmed_config_digest:
                 raise conflict("PRACTICE_PLAN_STALE")
             await self._assert_sources(session, obj.config, obj.source_snapshot)
+            await self._assert_learning_target(
+                session, config_dump(candidate.config), candidate.effective_context
+            )
             selected_config = candidate.config.model_dump(mode="json")
             for field in PROFILE_FIELDS:
                 if (
@@ -565,6 +604,7 @@ class PracticeService:
             if body.question_id:
                 self._question(rev, body.question_id)
             await self._assert_sources(session, rev.config, rev.source_snapshot)
+            await self._assert_learning_target(session, rev.config, rev.effective_context)
             counts: dict[str, int] = {}
             targets = [
                 q
@@ -731,6 +771,16 @@ class PracticeService:
         from xuemian_ai.practice.generation import validate_question_snapshots
 
         questions = validate_question_snapshots(questions)
+        if config.get("learning_target"):
+            from xuemian_ai.learning_assets.policy import concept_key
+
+            concept = concept_key(str(context["learning_target"]["concept"]))
+            if any(
+                len(q["topics"]) != 1 or concept_key(q["topics"][0]) != concept for q in questions
+            ):
+                raise ValidationAppError(
+                    "针对性练习题须仅考查目标知识点", error_key="PRACTICE_GENERATION_INVALID"
+                )
         await self._validate_refs(session, questions, config, sources)
         normalized = [" ".join(str(q["stem"]).split()).casefold() for q in questions]
         if len(set(normalized)) != len(normalized) or len(
@@ -1011,6 +1061,9 @@ class PracticeService:
         )
         session.add(grade)
         await session.flush()
+        from xuemian_ai.learning_assets.projection import append_evidence_event
+
+        await append_evidence_event(session, self.owner, "grade_published", grade.id, grade.version)
         return grade
 
     async def submit(
@@ -1083,6 +1136,11 @@ class PracticeService:
             )
             session.add(sub)
             await session.flush()
+            from xuemian_ai.learning_assets.projection import append_evidence_event
+
+            await append_evidence_event(
+                session, self.owner, "submission_published", sub.id, sub.answer_version
+            )
             attempt.version += 1
             if parsed.type in ("single_choice", "multiple_choice", "true_false"):
                 from xuemian_ai.practice.grading import grade_objective
@@ -1178,12 +1236,92 @@ class PracticeService:
             attempt.status, attempt.completed_at = "completed", datetime.now(UTC)
             attempt.version += 1
             await session.flush()
+            from xuemian_ai.learning_assets.projection import append_evidence_event
+
+            await append_evidence_event(
+                session, self.owner, "attempt_completed", attempt.id, attempt.version
+            )
             return await self._attempt_view(session, attempt)
 
     async def report(self, attempt_id: UUID) -> ReportView:
         view = await self.get_attempt(attempt_id)
         async with self.sessions() as session:
             revision = await self._revision(session, view.set_id, view.revision_id)
+            from xuemian_ai.learning_assets.models import LearningReview, Weakness, WeaknessEvidence
+            from xuemian_ai.learning_assets.service import evidence_available
+
+            linked = (
+                await session.scalars(
+                    select(Weakness)
+                    .join(WeaknessEvidence, WeaknessEvidence.weakness_id == Weakness.id)
+                    .where(
+                        Weakness.owner_user_id == self.owner,
+                        Weakness.deleted_at.is_(None),
+                        WeaknessEvidence.owner_user_id == self.owner,
+                        WeaknessEvidence.attempt_id == attempt_id,
+                        WeaknessEvidence.superseded.is_(False),
+                        WeaknessEvidence.ignored.is_(False),
+                    )
+                    .distinct()
+                    .order_by(Weakness.id)
+                )
+            ).all()
+            assets = []
+            for asset in linked:
+                evidence = (
+                    await session.scalars(
+                        select(WeaknessEvidence).where(
+                            WeaknessEvidence.weakness_id == asset.id,
+                            WeaknessEvidence.owner_user_id == self.owner,
+                            WeaknessEvidence.attempt_id == attempt_id,
+                            WeaknessEvidence.superseded.is_(False),
+                            WeaknessEvidence.ignored.is_(False),
+                        )
+                    )
+                ).all()
+                available = any(
+                    [
+                        await evidence_available(session, self.owner, asset, item)
+                        for item in evidence
+                    ]
+                )
+                assets.append(
+                    ReportLearningAsset(
+                        id=asset.id,
+                        title=asset.title,
+                        decision=cast(
+                            Literal["pending", "confirmed", "ignored", "revoked"], asset.decision
+                        ),
+                        mastery_state=cast(
+                            Literal["to_learn", "learning", "to_verify", "mastered"],
+                            asset.mastery_state,
+                        ),
+                        source_available=available,
+                    )
+                )
+            review = await session.scalar(
+                select(LearningReview)
+                .where(
+                    LearningReview.attempt_id == attempt_id,
+                    LearningReview.owner_user_id == self.owner,
+                )
+                .order_by(LearningReview.version.desc())
+                .limit(1)
+            )
+            review_view = (
+                ReportLearningReview.model_validate(
+                    {key: getattr(review, key) for key in ReportLearningReview.model_fields}
+                )
+                if review
+                else None
+            )
+            if review_view:
+                review_view.source_available = await self._source_available(
+                    session, revision.config, revision.source_snapshot
+                )
+                if not review_view.source_available:
+                    review_view.validation_passed = False
+                    review_view.conclusion = "source_unavailable"
         latest = {s.question_id: s for s in view.submissions}
         rows: list[ReportQuestion] = []
         topics: dict[str, TopicReport] = {}
@@ -1213,6 +1351,60 @@ class PracticeService:
                     topic.suggestions.extend(grade.suggestions)
                 # This per-attempt report does not infer long-term mastery.
                 topic.insufficient_sample = (topic.correct + topic.partial + topic.incorrect) < 3
+        target = PracticeConfig.model_validate(revision.config).learning_target
+        if target:
+            from xuemian_ai.learning_assets.policy import (
+                concept_key,
+                fingerprint,
+                review_conclusion,
+            )
+
+            concept = concept_key(str(revision.effective_context["learning_target"]["concept"]))
+            related = [
+                q
+                for q in view.questions
+                if len(q.topics) == 1 and concept_key(q.topics[0]) == concept
+            ]
+            submitted = graded = correct = low = 0
+            refs = []
+            for question in related:
+                sub = latest.get(question.question_id)
+                grade = sub.grades[-1] if sub and sub.grades else None
+                refs.append(
+                    {
+                        "question": str(question.question_id),
+                        "submission": str(sub.submission_id) if sub else None,
+                        **({"grade": str(grade.id) if grade else None} if sub else {}),
+                    }
+                )
+                submitted += int(sub is not None)
+                graded += int(grade is not None)
+                correct += int(grade is not None and grade.level == "correct")
+                low += int(
+                    grade is not None
+                    and question.type in {"short_answer", "code_text"}
+                    and (grade.confidence or 0) < 0.7
+                )
+            available = view.source_available
+            passed, conclusion = review_conclusion(
+                len(related), submitted, graded, correct, low, view.status == "completed", available
+            )
+            current_digest = fingerprint(
+                {"refs": refs, "completed": view.status, "source_available": available}
+            )
+            review_view = ReportLearningReview(
+                version=review.version
+                if review and review.input_digest == current_digest
+                else None,
+                total_related=len(related),
+                submitted_count=submitted,
+                graded_count=graded,
+                correct_count=correct,
+                low_confidence_count=low,
+                validation_passed=passed,
+                source_available=available,
+                conclusion=conclusion,
+            )
         aggregate = bool(view.questions) and len(scores) == len(view.questions)
         return ReportView(
             attempt_id=view.id,
@@ -1222,6 +1414,9 @@ class PracticeService:
             graded_count=graded_count,
             questions=rows,
             topics=list(topics.values()),
+            learning_target=PracticeConfig.model_validate(revision.config).learning_target,
+            learning_assets=assets,
+            learning_review=review_view,
             score=sum(s[0] for s in scores) if aggregate else None,
             max_score=sum(s[1] for s in scores) if aggregate else None,
             source_mode=revision.config.get("source_mode", "general"),
@@ -1271,6 +1466,10 @@ class PracticeService:
             return FeedbackView(id=feedback.id, **body.model_dump())
 
     async def _run(self, session: AsyncSession, run_id: UUID, lock: bool = False) -> PracticeRun:
+        if lock:
+            from xuemian_ai.learning_assets.service import owner_lock
+
+            await owner_lock(session, self.owner)
         query = select(PracticeRun).where(
             PracticeRun.id == run_id, PracticeRun.owner_user_id == self.owner
         )
@@ -1333,6 +1532,9 @@ class PracticeService:
                 session, run.input_snapshot["config"], run.input_snapshot["source_snapshot"]
             )
             if run.operation in ("plan", "generate", "regenerate"):
+                await self._assert_learning_target(
+                    session, run.input_snapshot["config"], run.input_snapshot["effective_context"]
+                )
                 version_check(obj.version, int(run.input_snapshot["expected_version"]))
             elif run.submission_id:
                 sub = await self._submission(session, run.submission_id)
@@ -1371,6 +1573,12 @@ class PracticeService:
         self, run_id: UUID, token: UUID, lease_seconds: int = 30, stage: str | None = None
     ) -> bool:
         async with self.sessions.begin() as session:
+            initial = await session.get(PracticeRun, run_id)
+            if initial is None:
+                return False
+            from xuemian_ai.learning_assets.service import owner_lock
+
+            await owner_lock(session, initial.owner_user_id)
             run = await session.scalar(
                 select(PracticeRun)
                 .where(PracticeRun.id == run_id)
@@ -1399,6 +1607,9 @@ class PracticeService:
                 session, run.input_snapshot["config"], run.input_snapshot["source_snapshot"]
             )
             if run.operation in ("plan", "generate", "regenerate"):
+                await domain._assert_learning_target(
+                    session, run.input_snapshot["config"], run.input_snapshot["effective_context"]
+                )
                 version_check(obj.version, int(run.input_snapshot["expected_version"]))
             run.lease_expires_at = now + timedelta(seconds=lease_seconds)
             if stage:
@@ -1449,6 +1660,10 @@ class PracticeService:
                 and error_key
                 not in {
                     "PRACTICE_SOURCE_CHANGED",
+                    "LEARNING_ASSET_SOURCE_CHANGED",
+                    "LEARNING_ASSET_NOT_FOUND",
+                    "LEARNING_ASSET_VERSION_CONFLICT",
+                    "LEARNING_TARGET_MISMATCH",
                     "PRACTICE_VERSION_CONFLICT",
                     "PRACTICE_PLAN_STALE",
                     "PRACTICE_NOT_FOUND",
@@ -1473,6 +1688,9 @@ class PracticeService:
                 return False
             # Lock publication target before execution record, matching edit/retry transactions.
             owner = initial.owner_user_id
+            from xuemian_ai.learning_assets.service import owner_lock
+
+            await owner_lock(session, owner)
             obj = await session.scalar(
                 select(PracticeSet).where(PracticeSet.id == initial.set_id).with_for_update()
             )
@@ -1518,11 +1736,24 @@ class PracticeService:
             snapshot = run.input_snapshot
             await domain._assert_sources(session, snapshot["config"], snapshot["source_snapshot"])
             if run.operation in ("plan", "generate", "regenerate"):
+                await domain._assert_learning_target(
+                    session, snapshot["config"], snapshot["effective_context"]
+                )
                 version_check(obj.version, int(snapshot["expected_version"]))
             if run.operation == "plan":
                 original = PracticeConfig.model_validate(snapshot["config"])
                 context = snapshot["effective_context"]
                 recommended_input = dict(result["recommended_config"])
+                if "learning_target" in recommended_input and recommended_input[
+                    "learning_target"
+                ] != snapshot["config"].get("learning_target"):
+                    raise ValidationAppError(
+                        "建议不能改变学习目标", error_key="PRACTICE_GENERATION_INVALID"
+                    )
+                if original.learning_target:
+                    recommended_input["learning_target"] = original.learning_target.model_dump(
+                        mode="json"
+                    )
                 for field in PROFILE_FIELDS:
                     if (
                         field not in recommended_input
@@ -1549,6 +1780,11 @@ class PracticeService:
                     if field in recommended.model_fields_set
                 }
                 recommended_context = resolve_context(recommendation_overrides, frozen_profile)
+                if original.learning_target:
+                    recommended_context["learning_target"] = context["learning_target"]
+                    await domain._assert_learning_target(
+                        session, config_dump(recommended), recommended_context
+                    )
                 ensure_general_topic(recommended.model_dump(mode="json"), recommended_context)
                 candidates = {
                     "original": PlanCandidate(

@@ -113,6 +113,20 @@ export function ConfigForm({
   return (
     <div className="mt-[18px] grid min-w-0 gap-[30px] xl:grid-cols-[minmax(0,1fr)_300px]">
       <form onSubmit={submit} className="grid min-w-0 content-start gap-[14px] sm:grid-cols-2">
+        {config.learning_target ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-sidebar p-3 text-xs sm:col-span-2">
+            <p>关联学习目标：{initial?.topic}。调整知识点或资料范围前可取消关联。</p>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={pending}
+              onClick={() => update({ learning_target: null })}
+            >
+              取消关联
+            </Button>
+          </div>
+        ) : null}
         <Field label="练习名称">
           <Input
             aria-label="练习名称"

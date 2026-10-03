@@ -61,12 +61,16 @@ export function PracticePage({
   report = false,
   requestKey = "",
   runId = "",
+  initialConfig,
+  initialTitle,
 }: {
   setId?: string;
   attemptId?: string;
   report?: boolean;
   requestKey?: string;
   runId?: string;
+  initialConfig?: PracticeConfig;
+  initialTitle?: string;
 }) {
   const router = useRouter();
   const client = useQueryClient();
@@ -508,8 +512,8 @@ export function PracticePage({
       {configView ? (
         <ConfigForm
           key={`${setId}:${detail.data?.version ?? 0}`}
-          initial={detail.data ? configForEditing(detail.data) : undefined}
-          title={detail.data?.title}
+          initial={detail.data ? configForEditing(detail.data) : initialConfig}
+          title={detail.data?.title ?? initialTitle}
           fixedSource={Boolean(setId)}
           pending={create.isPending || patch.isPending || makePlan.isPending || busy}
           error={error}

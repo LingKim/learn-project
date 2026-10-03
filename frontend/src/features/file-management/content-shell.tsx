@@ -23,7 +23,7 @@ const navigation = [
   { href: "/learning", label: "学习室", icon: Sparkles },
   { href: null, label: "面试间", icon: Mic },
   { href: "/content", label: "内容库", icon: Library },
-  { href: null, label: "难点", icon: BookOpenText },
+  { href: "/weaknesses", label: "难点", icon: BookOpenText },
   { href: null, label: "笔记本", icon: NotebookPen },
   { href: null, label: "学习计划", icon: CalendarDays },
 ] as const;

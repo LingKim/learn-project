@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     practice_worker_lease_seconds: int = Field(default=30, ge=15)
     practice_worker_concurrency: int = Field(default=2, ge=1, le=16)
     practice_run_timeout_seconds: float = Field(default=180, ge=120, le=600)
+    knowledge_worker_poll_seconds: float = Field(default=1.0, gt=0)
+    knowledge_worker_lease_seconds: int = Field(default=30, ge=15)
+    knowledge_worker_concurrency: int = Field(default=2, ge=1, le=16)
+    knowledge_run_timeout_seconds: float = Field(default=180, ge=120, le=600)
     document_provider: Literal["qwen", "deterministic"] = "qwen"
     document_embedding_model: str = "qwen3.7-text-embedding"
     document_rerank_model: str = "qwen3-rerank"

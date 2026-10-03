@@ -60,18 +60,16 @@ export function PracticeModes() {
           <span className="hidden text-[11px] sm:block">即时解答与追问</span>
         </span>
       </Link>
-      <button
-        type="button"
-        disabled
-        className="flex min-h-[48px] min-w-0 items-center justify-center gap-2 rounded-md px-2 text-[13px] text-muted-foreground"
-        aria-label="知识精讲（尚未开放）"
+      <Link
+        href="/learning/explanation"
+        className="flex min-h-[48px] min-w-0 items-center justify-center gap-2 rounded-md px-2 text-[13px] text-muted-foreground hover:bg-surface"
       >
         <BookOpenText aria-hidden="true" className="size-4 shrink-0" />
         <span className="min-w-0">
           <span className="block">知识精讲</span>
           <span className="hidden text-[11px] sm:block">结构化讲透知识点</span>
         </span>
-      </button>
+      </Link>
       <button
         type="button"
         aria-current="page"

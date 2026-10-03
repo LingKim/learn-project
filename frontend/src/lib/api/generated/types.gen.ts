@@ -351,6 +351,36 @@ export type ApiResponseDownloadUrlView = {
 };
 
 /**
+ * ApiResponse[ExplanationAccepted]
+ */
+export type ApiResponseExplanationAccepted = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ExplanationAccepted;
+};
+
+/**
+ * ApiResponse[ExplanationDetail]
+ */
+export type ApiResponseExplanationDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: ExplanationDetail;
+};
+
+/**
  * ApiResponse[FeedbackView]
  */
 export type ApiResponseFeedbackView = {
@@ -426,6 +456,21 @@ export type ApiResponseKnowledgeBaseView = {
 };
 
 /**
+ * ApiResponse[KnowledgeCardView]
+ */
+export type ApiResponseKnowledgeCardView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: KnowledgeCardView;
+};
+
+/**
  * ApiResponse[KnowledgeFileView]
  */
 export type ApiResponseKnowledgeFileView = {
@@ -438,6 +483,21 @@ export type ApiResponseKnowledgeFileView = {
      */
     message: string;
     data: KnowledgeFileView;
+};
+
+/**
+ * ApiResponse[KnowledgeRunView]
+ */
+export type ApiResponseKnowledgeRunView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: KnowledgeRunView;
 };
 
 /**
@@ -711,6 +771,36 @@ export type ApiResponseUserView = {
      */
     message: string;
     data: UserView;
+};
+
+/**
+ * ApiResponse[WeaknessDetail]
+ */
+export type ApiResponseWeaknessDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: WeaknessDetail;
+};
+
+/**
+ * ApiResponse[WeaknessView]
+ */
+export type ApiResponseWeaknessView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: WeaknessView;
 };
 
 /**
@@ -999,6 +1089,20 @@ export type CompleteUploadRequest = {
 };
 
 /**
+ * ConfirmRequest
+ */
+export type ConfirmRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
  * ConversationCreate
  */
 export type ConversationCreate = {
@@ -1257,6 +1361,323 @@ export type EvidenceChunk = {
      * Ocr Confidence
      */
     ocr_confidence: number | null;
+};
+
+/**
+ * EvidenceView
+ */
+export type EvidenceView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'practice' | 'manual';
+    /**
+     * Question Id
+     */
+    question_id: string | null;
+    /**
+     * Attempt Id
+     */
+    attempt_id: string | null;
+    /**
+     * Submission Id
+     */
+    submission_id: string | null;
+    /**
+     * Grade Id
+     */
+    grade_id: string | null;
+    /**
+     * Grade Version
+     */
+    grade_version: number | null;
+    /**
+     * Submitted At
+     */
+    submitted_at: string | null;
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Superseded
+     */
+    superseded: boolean;
+    /**
+     * Ignored
+     */
+    ignored: boolean;
+    /**
+     * Detail
+     */
+    detail: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * ExplanationAccepted
+ */
+export type ExplanationAccepted = {
+    explanation: ExplanationView;
+    run: KnowledgeRunView;
+};
+
+/**
+ * ExplanationConfig
+ */
+export type ExplanationConfig = {
+    /**
+     * Source Mode
+     */
+    source_mode?: 'general' | 'materials';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Topic
+     */
+    topic?: string;
+    /**
+     * Foundation
+     */
+    foundation?: 'unfamiliar' | 'know_concept' | 'used_unfamiliar' | 'review';
+    /**
+     * Depth
+     */
+    depth?: 'quick' | 'systematic' | 'deep';
+    /**
+     * Preferred Language
+     */
+    preferred_language?: 'zh-CN' | 'en-US' | null;
+    /**
+     * Target Job
+     */
+    target_job?: string | null;
+    /**
+     * Experience Months
+     */
+    experience_months?: number | null;
+    /**
+     * Target Level
+     */
+    target_level?: 'intern' | 'junior' | 'intermediate' | 'senior' | 'expert' | null;
+    /**
+     * Target Skills
+     */
+    target_skills?: Array<string> | null;
+    /**
+     * Focus Topics
+     */
+    focus_topics?: Array<string> | null;
+    /**
+     * Learning Goal
+     */
+    learning_goal?: string | null;
+};
+
+/**
+ * ExplanationCreate
+ */
+export type ExplanationCreate = {
+    /**
+     * Source Mode
+     */
+    source_mode?: 'general' | 'materials';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Topic
+     */
+    topic?: string;
+    /**
+     * Foundation
+     */
+    foundation?: 'unfamiliar' | 'know_concept' | 'used_unfamiliar' | 'review';
+    /**
+     * Depth
+     */
+    depth?: 'quick' | 'systematic' | 'deep';
+    /**
+     * Preferred Language
+     */
+    preferred_language?: 'zh-CN' | 'en-US' | null;
+    /**
+     * Target Job
+     */
+    target_job?: string | null;
+    /**
+     * Experience Months
+     */
+    experience_months?: number | null;
+    /**
+     * Target Level
+     */
+    target_level?: 'intern' | 'junior' | 'intermediate' | 'senior' | 'expert' | null;
+    /**
+     * Target Skills
+     */
+    target_skills?: Array<string> | null;
+    /**
+     * Focus Topics
+     */
+    focus_topics?: Array<string> | null;
+    /**
+     * Learning Goal
+     */
+    learning_goal?: string | null;
+    /**
+     * Weakness Id
+     */
+    weakness_id?: string | null;
+    /**
+     * Weakness Version
+     */
+    weakness_version?: number | null;
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
+ * ExplanationDetail
+ */
+export type ExplanationDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Weakness Id
+     */
+    weakness_id: string | null;
+    /**
+     * Topic
+     */
+    topic: string;
+    /**
+     * Version
+     */
+    version: number;
+    config: ExplanationConfig;
+    /**
+     * Active Card Version
+     */
+    active_card_version: number | null;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Reviews
+     */
+    reviews?: Array<LearningReviewView>;
+    /**
+     * Card Versions
+     */
+    card_versions?: Array<number>;
+    card: KnowledgeCardView | null;
+    run: KnowledgeRunView | null;
+};
+
+/**
+ * ExplanationRegenerate
+ */
+export type ExplanationRegenerate = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    config?: ExplanationConfig | null;
+};
+
+/**
+ * ExplanationTarget
+ */
+export type ExplanationTarget = {
+    /**
+     * Kind
+     */
+    kind?: 'explanation';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Card Version
+     */
+    card_version: number;
+};
+
+/**
+ * ExplanationView
+ */
+export type ExplanationView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Weakness Id
+     */
+    weakness_id: string | null;
+    /**
+     * Topic
+     */
+    topic: string;
+    /**
+     * Version
+     */
+    version: number;
+    config: ExplanationConfig;
+    /**
+     * Active Card Version
+     */
+    active_card_version: number | null;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -1542,6 +1963,95 @@ export type KnowledgeBaseView = {
 };
 
 /**
+ * KnowledgeCardView
+ */
+export type KnowledgeCardView = {
+    /**
+     * Concept
+     */
+    concept: string;
+    /**
+     * Applications
+     */
+    applications: Array<string>;
+    /**
+     * Principles
+     */
+    principles: Array<string>;
+    /**
+     * Examples
+     */
+    examples: Array<KnowledgeExample>;
+    /**
+     * Misconceptions
+     */
+    misconceptions: Array<string>;
+    /**
+     * Exercises
+     */
+    exercises: Array<UnderstandingExercise>;
+    /**
+     * Citations
+     */
+    citations?: Array<SourceRef>;
+    /**
+     * Source Mode
+     */
+    source_mode: 'general' | 'materials';
+    config: ExplanationConfig;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Explanation Id
+     */
+    explanation_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Parent Version
+     */
+    parent_version: number | null;
+    /**
+     * Foundation
+     */
+    foundation: 'unfamiliar' | 'know_concept' | 'used_unfamiliar' | 'review';
+    /**
+     * Depth
+     */
+    depth: 'quick' | 'systematic' | 'deep';
+    /**
+     * Preferred Language
+     */
+    preferred_language: 'zh-CN' | 'en-US';
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * KnowledgeExample
+ */
+export type KnowledgeExample = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Content
+     */
+    content: string;
+};
+
+/**
  * KnowledgeFileMove
  */
 export type KnowledgeFileMove = {
@@ -1600,6 +2110,75 @@ export type KnowledgeFileView = {
 };
 
 /**
+ * KnowledgeResultRef
+ */
+export type KnowledgeResultRef = {
+    /**
+     * Type
+     */
+    type?: 'card';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Explanation Id
+     */
+    explanation_id: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * KnowledgeRunView
+ */
+export type KnowledgeRunView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Explanation Id
+     */
+    explanation_id: string;
+    /**
+     * Operation
+     */
+    operation: 'generate' | 'regenerate';
+    /**
+     * Status
+     */
+    status: 'pending' | 'processing' | 'cancel_requested' | 'succeeded' | 'failed' | 'cancelled';
+    /**
+     * Stage
+     */
+    stage: string;
+    /**
+     * Attempt Count
+     */
+    attempt_count: number;
+    /**
+     * Retryable
+     */
+    retryable: boolean;
+    /**
+     * Error Key
+     */
+    error_key: string | null;
+    result_ref: KnowledgeResultRef | null;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Input Digest
+     */
+    input_digest: string;
+};
+
+/**
  * LearningAttachmentView
  */
 export type LearningAttachmentView = {
@@ -1623,6 +2202,78 @@ export type LearningAttachmentView = {
      * Kind
      */
     kind: 'image' | 'document';
+};
+
+/**
+ * LearningReviewView
+ */
+export type LearningReviewView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Target Kind
+     */
+    target_kind: 'weakness' | 'explanation';
+    /**
+     * Target Id
+     */
+    target_id: string;
+    /**
+     * Target Snapshot
+     */
+    target_snapshot: {
+        [key: string]: unknown;
+    };
+    /**
+     * Set Id
+     */
+    set_id: string;
+    /**
+     * Attempt Id
+     */
+    attempt_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Total Related
+     */
+    total_related: number;
+    /**
+     * Submitted Count
+     */
+    submitted_count: number;
+    /**
+     * Graded Count
+     */
+    graded_count: number;
+    /**
+     * Correct Count
+     */
+    correct_count: number;
+    /**
+     * Low Confidence Count
+     */
+    low_confidence_count: number;
+    /**
+     * Validation Passed
+     */
+    validation_passed: boolean;
+    /**
+     * Conclusion
+     */
+    conclusion: string;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -1651,6 +2302,20 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * MasteryRequest
+ */
+export type MasteryRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Mastery State
+     */
+    mastery_state: 'to_learn' | 'learning' | 'to_verify' | 'mastered';
 };
 
 /**
@@ -1769,6 +2434,25 @@ export type PageResponseConversationView = {
 };
 
 /**
+ * PageResponse[ExplanationView]
+ */
+export type PageResponseExplanationView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<ExplanationView>;
+    meta: PageMeta;
+};
+
+/**
  * PageResponse[KnowledgeBaseView]
  */
 export type PageResponseKnowledgeBaseView = {
@@ -1807,6 +2491,25 @@ export type PageResponseKnowledgeFileView = {
 };
 
 /**
+ * PageResponse[LearningReviewView]
+ */
+export type PageResponseLearningReviewView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<LearningReviewView>;
+    meta: PageMeta;
+};
+
+/**
  * PageResponse[SetView]
  */
 export type PageResponseSetView = {
@@ -1822,6 +2525,25 @@ export type PageResponseSetView = {
      * Data
      */
     data: Array<SetView>;
+    meta: PageMeta;
+};
+
+/**
+ * PageResponse[WeaknessView]
+ */
+export type PageResponseWeaknessView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<WeaknessView>;
     meta: PageMeta;
 };
 
@@ -1912,6 +2634,14 @@ export type PracticeConfig = {
      * Topic
      */
     topic?: string;
+    /**
+     * Learning Target
+     */
+    learning_target?: ({
+        kind: 'weakness';
+    } & WeaknessTarget) | ({
+        kind: 'explanation';
+    } & ExplanationTarget) | null;
     /**
      * Target Job
      */
@@ -2182,6 +2912,74 @@ export type RegradeRequest = {
 };
 
 /**
+ * ReportLearningAsset
+ */
+export type ReportLearningAsset = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Decision
+     */
+    decision: 'pending' | 'confirmed' | 'ignored' | 'revoked';
+    /**
+     * Mastery State
+     */
+    mastery_state: 'to_learn' | 'learning' | 'to_verify' | 'mastered';
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+};
+
+/**
+ * ReportLearningReview
+ */
+export type ReportLearningReview = {
+    /**
+     * Version
+     */
+    version: number | null;
+    /**
+     * Total Related
+     */
+    total_related: number;
+    /**
+     * Submitted Count
+     */
+    submitted_count: number;
+    /**
+     * Graded Count
+     */
+    graded_count: number;
+    /**
+     * Correct Count
+     */
+    correct_count: number;
+    /**
+     * Low Confidence Count
+     */
+    low_confidence_count: number;
+    /**
+     * Validation Passed
+     */
+    validation_passed: boolean;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Conclusion
+     */
+    conclusion: string;
+};
+
+/**
  * ReportQuestion
  */
 export type ReportQuestion = {
@@ -2232,6 +3030,19 @@ export type ReportView = {
      * Topics
      */
     topics: Array<TopicReport>;
+    /**
+     * Learning Target
+     */
+    learning_target?: ({
+        kind: 'weakness';
+    } & WeaknessTarget) | ({
+        kind: 'explanation';
+    } & ExplanationTarget) | null;
+    /**
+     * Learning Assets
+     */
+    learning_assets?: Array<ReportLearningAsset>;
+    learning_review?: ReportLearningReview | null;
     /**
      * Score
      */
@@ -2948,6 +3759,20 @@ export type TurnView = {
 };
 
 /**
+ * UnderstandingExercise
+ */
+export type UnderstandingExercise = {
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Self Check Points
+     */
+    self_check_points: Array<string>;
+};
+
+/**
  * UploadPart
  */
 export type UploadPart = {
@@ -3227,6 +4052,307 @@ export type VersionRequest = {
      * Expected Version
      */
     expected_version: number;
+};
+
+/**
+ * WeaknessCreate
+ */
+export type WeaknessCreate = {
+    /**
+     * Source Mode
+     */
+    source_mode?: 'general' | 'materials';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Domain
+     */
+    domain?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
+    /**
+     * Severity
+     */
+    severity?: 'low' | 'medium' | 'high';
+    /**
+     * Request Key
+     */
+    request_key: string;
+};
+
+/**
+ * WeaknessDetail
+ */
+export type WeaknessDetail = {
+    /**
+     * Source Mode
+     */
+    source_mode?: 'general' | 'materials';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Domain
+     */
+    domain: string | null;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Severity
+     */
+    severity: 'low' | 'medium' | 'high';
+    /**
+     * Decision
+     */
+    decision: 'pending' | 'confirmed' | 'ignored' | 'revoked';
+    /**
+     * Mastery State
+     */
+    mastery_state: 'to_learn' | 'learning' | 'to_verify' | 'mastered';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Evidence Sufficient
+     */
+    evidence_sufficient: boolean;
+    /**
+     * Evidence Count
+     */
+    evidence_count?: number;
+    /**
+     * Available Evidence Count
+     */
+    available_evidence_count?: number;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Policy Version
+     */
+    policy_version: string;
+    /**
+     * Explanation Id
+     */
+    explanation_id: string | null;
+    /**
+     * Active Card Version
+     */
+    active_card_version: number | null;
+    run: KnowledgeRunView | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Card Versions
+     */
+    card_versions?: Array<number>;
+    /**
+     * Evidence
+     */
+    evidence: Array<EvidenceView>;
+    /**
+     * Events
+     */
+    events: Array<WeaknessEventView>;
+    card: KnowledgeCardView | null;
+    /**
+     * Reviews
+     */
+    reviews: Array<LearningReviewView>;
+};
+
+/**
+ * WeaknessEventView
+ */
+export type WeaknessEventView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Payload
+     */
+    payload: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * WeaknessPatch
+ */
+export type WeaknessPatch = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Domain
+     */
+    domain?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Severity
+     */
+    severity?: 'low' | 'medium' | 'high' | null;
+};
+
+/**
+ * WeaknessTarget
+ */
+export type WeaknessTarget = {
+    /**
+     * Kind
+     */
+    kind?: 'weakness';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * WeaknessView
+ */
+export type WeaknessView = {
+    /**
+     * Source Mode
+     */
+    source_mode?: 'general' | 'materials';
+    /**
+     * Knowledge Base Id
+     */
+    knowledge_base_id?: string | null;
+    /**
+     * File Ids
+     */
+    file_ids?: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Domain
+     */
+    domain: string | null;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Severity
+     */
+    severity: 'low' | 'medium' | 'high';
+    /**
+     * Decision
+     */
+    decision: 'pending' | 'confirmed' | 'ignored' | 'revoked';
+    /**
+     * Mastery State
+     */
+    mastery_state: 'to_learn' | 'learning' | 'to_verify' | 'mastered';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Evidence Sufficient
+     */
+    evidence_sufficient: boolean;
+    /**
+     * Evidence Count
+     */
+    evidence_count?: number;
+    /**
+     * Available Evidence Count
+     */
+    available_evidence_count?: number;
+    /**
+     * Source Available
+     */
+    source_available: boolean;
+    /**
+     * Policy Version
+     */
+    policy_version: string;
+    /**
+     * Explanation Id
+     */
+    explanation_id: string | null;
+    /**
+     * Active Card Version
+     */
+    active_card_version: number | null;
+    run: KnowledgeRunView | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -9393,3 +10519,1691 @@ export type PracticeSourcePreviewResponses = {
 };
 
 export type PracticeSourcePreviewResponse = PracticeSourcePreviewResponses[keyof PracticeSourcePreviewResponses];
+
+export type WeaknessListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Query
+         */
+        query?: string | null;
+        /**
+         * Tags
+         */
+        tags?: Array<string> | null;
+        /**
+         * Tag
+         */
+        tag?: string | null;
+        /**
+         * Domain
+         */
+        domain?: string | null;
+        /**
+         * Source Mode
+         */
+        source_mode?: string | null;
+        /**
+         * Severity
+         */
+        severity?: 'low' | 'medium' | 'high' | null;
+        /**
+         * Mastery State
+         */
+        mastery_state?: 'to_learn' | 'learning' | 'to_verify' | 'mastered' | null;
+        /**
+         * Decision
+         */
+        decision?: 'pending' | 'confirmed' | 'ignored' | 'revoked';
+    };
+    url: '/api/v1/weaknesses';
+};
+
+export type WeaknessListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessListError = WeaknessListErrors[keyof WeaknessListErrors];
+
+export type WeaknessListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseWeaknessView;
+};
+
+export type WeaknessListResponse = WeaknessListResponses[keyof WeaknessListResponses];
+
+export type WeaknessCreateData = {
+    body: WeaknessCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/weaknesses';
+};
+
+export type WeaknessCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessCreateError = WeaknessCreateErrors[keyof WeaknessCreateErrors];
+
+export type WeaknessCreateResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseWeaknessView;
+};
+
+export type WeaknessCreateResponse = WeaknessCreateResponses[keyof WeaknessCreateResponses];
+
+export type WeaknessDeleteData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}';
+};
+
+export type WeaknessDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessDeleteError = WeaknessDeleteErrors[keyof WeaknessDeleteErrors];
+
+export type WeaknessDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type WeaknessDeleteResponse = WeaknessDeleteResponses[keyof WeaknessDeleteResponses];
+
+export type WeaknessDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}';
+};
+
+export type WeaknessDetailErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessDetailError = WeaknessDetailErrors[keyof WeaknessDetailErrors];
+
+export type WeaknessDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessDetail;
+};
+
+export type WeaknessDetailResponse = WeaknessDetailResponses[keyof WeaknessDetailResponses];
+
+export type WeaknessPatchData = {
+    body: WeaknessPatch;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}';
+};
+
+export type WeaknessPatchErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessPatchError = WeaknessPatchErrors[keyof WeaknessPatchErrors];
+
+export type WeaknessPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessView;
+};
+
+export type WeaknessPatchResponse = WeaknessPatchResponses[keyof WeaknessPatchResponses];
+
+export type WeaknessConfirmData = {
+    body: ConfirmRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}/confirm';
+};
+
+export type WeaknessConfirmErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessConfirmError = WeaknessConfirmErrors[keyof WeaknessConfirmErrors];
+
+export type WeaknessConfirmResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessView;
+};
+
+export type WeaknessConfirmResponse = WeaknessConfirmResponses[keyof WeaknessConfirmResponses];
+
+export type WeaknessIgnoreData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}/ignore';
+};
+
+export type WeaknessIgnoreErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessIgnoreError = WeaknessIgnoreErrors[keyof WeaknessIgnoreErrors];
+
+export type WeaknessIgnoreResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessView;
+};
+
+export type WeaknessIgnoreResponse = WeaknessIgnoreResponses[keyof WeaknessIgnoreResponses];
+
+export type WeaknessRevokeData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}/revoke';
+};
+
+export type WeaknessRevokeErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessRevokeError = WeaknessRevokeErrors[keyof WeaknessRevokeErrors];
+
+export type WeaknessRevokeResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessView;
+};
+
+export type WeaknessRevokeResponse = WeaknessRevokeResponses[keyof WeaknessRevokeResponses];
+
+export type WeaknessMasteryData = {
+    body: MasteryRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/weaknesses/{object_id}/mastery';
+};
+
+export type WeaknessMasteryErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessMasteryError = WeaknessMasteryErrors[keyof WeaknessMasteryErrors];
+
+export type WeaknessMasteryResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseWeaknessView;
+};
+
+export type WeaknessMasteryResponse = WeaknessMasteryResponses[keyof WeaknessMasteryResponses];
+
+export type WeaknessReviewsData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/weaknesses/{object_id}/reviews';
+};
+
+export type WeaknessReviewsErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type WeaknessReviewsError = WeaknessReviewsErrors[keyof WeaknessReviewsErrors];
+
+export type WeaknessReviewsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseLearningReviewView;
+};
+
+export type WeaknessReviewsResponse = WeaknessReviewsResponses[keyof WeaknessReviewsResponses];
+
+export type ExplanationListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/learning/explanations';
+};
+
+export type ExplanationListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationListError = ExplanationListErrors[keyof ExplanationListErrors];
+
+export type ExplanationListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseExplanationView;
+};
+
+export type ExplanationListResponse = ExplanationListResponses[keyof ExplanationListResponses];
+
+export type ExplanationCreateData = {
+    body: ExplanationCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/learning/explanations';
+};
+
+export type ExplanationCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationCreateError = ExplanationCreateErrors[keyof ExplanationCreateErrors];
+
+export type ExplanationCreateResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseExplanationAccepted;
+};
+
+export type ExplanationCreateResponse = ExplanationCreateResponses[keyof ExplanationCreateResponses];
+
+export type ExplanationDeleteData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/explanations/{object_id}';
+};
+
+export type ExplanationDeleteErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationDeleteError = ExplanationDeleteErrors[keyof ExplanationDeleteErrors];
+
+export type ExplanationDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ExplanationDeleteResponse = ExplanationDeleteResponses[keyof ExplanationDeleteResponses];
+
+export type ExplanationDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/explanations/{object_id}';
+};
+
+export type ExplanationDetailErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationDetailError = ExplanationDetailErrors[keyof ExplanationDetailErrors];
+
+export type ExplanationDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseExplanationDetail;
+};
+
+export type ExplanationDetailResponse = ExplanationDetailResponses[keyof ExplanationDetailResponses];
+
+export type ExplanationCardData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/learning/explanations/{object_id}/cards/{version}';
+};
+
+export type ExplanationCardErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationCardError = ExplanationCardErrors[keyof ExplanationCardErrors];
+
+export type ExplanationCardResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeCardView;
+};
+
+export type ExplanationCardResponse = ExplanationCardResponses[keyof ExplanationCardResponses];
+
+export type ExplanationSourcePreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+        /**
+         * Version
+         */
+        version: number;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/explanations/{object_id}/cards/{version}/sources/{source_id}';
+};
+
+export type ExplanationSourcePreviewErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationSourcePreviewError = ExplanationSourcePreviewErrors[keyof ExplanationSourcePreviewErrors];
+
+export type ExplanationSourcePreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseSourcePreview;
+};
+
+export type ExplanationSourcePreviewResponse = ExplanationSourcePreviewResponses[keyof ExplanationSourcePreviewResponses];
+
+export type ExplanationRegenerateData = {
+    body: ExplanationRegenerate;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/explanations/{object_id}/regenerate';
+};
+
+export type ExplanationRegenerateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationRegenerateError = ExplanationRegenerateErrors[keyof ExplanationRegenerateErrors];
+
+export type ExplanationRegenerateResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseExplanationAccepted;
+};
+
+export type ExplanationRegenerateResponse = ExplanationRegenerateResponses[keyof ExplanationRegenerateResponses];
+
+export type KnowledgeRunLookupData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Request Key
+         */
+        request_key: string;
+    };
+    url: '/api/v1/learning/knowledge-runs';
+};
+
+export type KnowledgeRunLookupErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeRunLookupError = KnowledgeRunLookupErrors[keyof KnowledgeRunLookupErrors];
+
+export type KnowledgeRunLookupResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeRunView;
+};
+
+export type KnowledgeRunLookupResponse = KnowledgeRunLookupResponses[keyof KnowledgeRunLookupResponses];
+
+export type KnowledgeRunGetData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/knowledge-runs/{run_id}';
+};
+
+export type KnowledgeRunGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeRunGetError = KnowledgeRunGetErrors[keyof KnowledgeRunGetErrors];
+
+export type KnowledgeRunGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeRunView;
+};
+
+export type KnowledgeRunGetResponse = KnowledgeRunGetResponses[keyof KnowledgeRunGetResponses];
+
+export type KnowledgeRunCancelData = {
+    body?: never;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/knowledge-runs/{run_id}/cancel';
+};
+
+export type KnowledgeRunCancelErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeRunCancelError = KnowledgeRunCancelErrors[keyof KnowledgeRunCancelErrors];
+
+export type KnowledgeRunCancelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseKnowledgeRunView;
+};
+
+export type KnowledgeRunCancelResponse = KnowledgeRunCancelResponses[keyof KnowledgeRunCancelResponses];
+
+export type KnowledgeRunRetryData = {
+    body: RetryRequest;
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/knowledge-runs/{run_id}/retry';
+};
+
+export type KnowledgeRunRetryErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type KnowledgeRunRetryError = KnowledgeRunRetryErrors[keyof KnowledgeRunRetryErrors];
+
+export type KnowledgeRunRetryResponses = {
+    /**
+     * Successful Response
+     */
+    202: ApiResponseKnowledgeRunView;
+};
+
+export type KnowledgeRunRetryResponse = KnowledgeRunRetryResponses[keyof KnowledgeRunRetryResponses];
+
+export type ExplanationReviewsData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/learning/explanations/{object_id}/reviews';
+};
+
+export type ExplanationReviewsErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type ExplanationReviewsError = ExplanationReviewsErrors[keyof ExplanationReviewsErrors];
+
+export type ExplanationReviewsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseLearningReviewView;
+};
+
+export type ExplanationReviewsResponse = ExplanationReviewsResponses[keyof ExplanationReviewsResponses];

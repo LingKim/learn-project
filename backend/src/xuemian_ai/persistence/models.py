@@ -25,6 +25,16 @@ from xuemian_ai.file_management.models import (
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
 from xuemian_ai.learning.attachment_models import LearningAttachment
 from xuemian_ai.learning.models import LearningConversation, LearningTurn
+from xuemian_ai.learning_assets.models import (
+    KnowledgeCardVersion,
+    KnowledgeExplanation,
+    KnowledgeRun,
+    LearningEvidenceEvent,
+    LearningReview,
+    Weakness,
+    WeaknessEvent,
+    WeaknessEvidence,
+)
 from xuemian_ai.practice.models import (
     PracticeAnswer,
     PracticeAttempt,
@@ -39,6 +49,14 @@ from xuemian_ai.practice.models import (
 from xuemian_ai.profiles.models import UserProfile
 
 __all__ = [
+    "KnowledgeCardVersion",
+    "KnowledgeExplanation",
+    "KnowledgeRun",
+    "LearningEvidenceEvent",
+    "LearningReview",
+    "Weakness",
+    "WeaknessEvent",
+    "WeaknessEvidence",
     "PracticeSet",
     "PracticePlan",
     "PracticeRevision",

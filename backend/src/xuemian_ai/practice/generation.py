@@ -37,7 +37,7 @@ PROMPT_PARTS = (
     ),
     (
         "practice_generation",
-        3,
+        4,
         "generate/regenerate操作按output_schema返回status=ready或evidence_insufficient、"
         "reason、questions题位对象。每个题位的题型已由服务器固定，禁止改变题型。"
         "ready时全部题位填写对应题型的完整题目；资料不足时所有题位为null。"
@@ -52,7 +52,8 @@ PROMPT_PARTS = (
         "每个主观题有评分维度、要点。rubric只包含可得分的正向学习目标，"
         "不得把未提及/缺失/错误本身设成得分维度，规则必须明确满足该维度的标准。"
         "单选选项唯一，多选非空合法集合，判断boolean。代码仅为文本练习，不执行。"
-        "资料题每题至少引用一个已提供的number，不自行编造编号。",
+        "资料题每题至少引用一个已提供的number，不自行编造编号。"
+        "config.learning_target存在时，每题topics恰好一个值，严格使用config.topic，禁止扩展或重命名目标。",
     ),
     (
         "practice_grade",
@@ -383,6 +384,13 @@ def generation_schema(config: Mapping[str, Any] | None = None) -> dict[str, Any]
         properties.pop("question_id", None)
         properties.pop("source_refs", None)
         properties["citation_ids"] = {"type": "array", "items": {"type": "integer"}}
+        if config and config.get("learning_target"):
+            properties["topics"] = {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {"type": "string", "enum": [str(config["topic"])]},
+            }
         definition["required"] = list(properties)
     # Optional scores are explicit nulls; strict JSON Schema requires all object fields.
     for definition in definitions.values():

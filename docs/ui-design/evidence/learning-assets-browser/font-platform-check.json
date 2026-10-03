@@ -1,0 +1,14 @@
+{
+  "page": "report",
+  "selector": "h1",
+  "protocol": "CSS.getPlatformFontsForNode",
+  "fonts": [
+    {
+      "familyName": "PingFang SC",
+      "postScriptName": "PingFangSC-Semibold",
+      "isCustomFont": false,
+      "glyphCount": 6
+    }
+  ],
+  "note": "Actual platform fallback; CSS declaration does not prove Noto Sans SC rendering."
+}

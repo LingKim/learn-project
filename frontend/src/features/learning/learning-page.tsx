@@ -454,6 +454,7 @@ export function LearningPage() {
                 { label: "快速回答", detail: "即时解答与追问", Icon: Sparkles, active: true },
                 {
                   label: "知识精讲",
+                  href: "/learning/explanation",
                   detail: "结构化讲透知识点",
                   Icon: BookOpenText,
                   active: false,

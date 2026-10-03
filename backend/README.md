@@ -118,3 +118,9 @@ uv run xuemian-ai-practice-worker
 隔离验证命令 `.venv/bin/python scripts/run_practice_integration.py` 创建唯一临时数据库，执行 upgrade/downgrade/upgrade 与真实 PostgreSQL/ASGI HTTP + worker 集成；默认结束清理本次库，`--keep` 仅用于合成评测协同，`--cleanup` 受精确名称护栏限制。普通 pytest 中这些集成测试显式 skip，不会清理业务库。
 
 `run_practice_http_smoke.py` 接入已运行的 API/worker，仅创建合成私有练习，通过 `--token-file` 输入临时令牌，禁止将令牌或正文写入共享 evidence。`evaluate_practice_quality.py` 只使用合成四格式材料，检索、出题与拒答的真实分母分别记录。
+
+## 学习资产与精讲 worker
+
+`make knowledge-worker` 运行持久化精讲任务和学习评分 outbox 投影，业务库版本为 `20261003_04`。运行前复用已有 PostgreSQL/Redis 等依赖，不能自行重建外部数据库。配置项为 `.env.example` 中 `KNOWLEDGE_*`；并发默认 2、租约 30 秒、任务上限 180 秒。
+
+新功能迁移通过业务库目标/version 核对、可恢复备份后执行；本轮备份和读回记录见 `openspec/changes/implement-learning-assets/evidence.md`。领域/API/迁移回归可运行 `backend/.venv/bin/python backend/scripts/run_learning_assets_checks.py`，只创建本项目 namespace 的合成测试库，最后自动清理。真实模型测试默认跳过；需显式启用且仅使用合成资料，不得外发用户资料。

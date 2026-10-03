@@ -20,6 +20,7 @@ def make_service(
     user = User(id=uuid4(), username="test-user", nickname="测试用户", role="user", status="active")
     session = MagicMock(spec=AsyncSession)
     session.scalar.side_effect = [user, profile]
+    session.scalars.return_value = []
     service = UserProfileService(
         cast(AsyncSession, session),
         cast(ObjectStorage, MagicMock()),

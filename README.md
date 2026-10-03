@@ -1,12 +1,12 @@
 # 学面通AI
 
-学面通AI是面向学习者与求职者的多模态 AI 学习与面试训练平台。当前已实现认证、个人资料、内容库与文件管理。文档解析、页面 OCR、索引及受保护检索已实现并部署到本机开发环境，学习快速回答已接入 `qwen3.8-flash`，支持资料/通用模式、中文/英文回答、引用预览、追问、私有历史、重命名、软删除和反馈。快速回答入口为 `/learning`。刷题练习第一版已实现并在本机运行，待人工验收，入口为 `/learning/practice`，支持五种题型、配置确认、题集版本、逐题点评和私有练习历史；实际验收状态见本期 evidence。
+学面通AI是面向学习者与求职者的多模态 AI 学习与面试训练平台。当前已实现认证、个人资料、内容库与文件管理。文档解析、页面 OCR、索引及受保护检索已实现并部署到本机开发环境，学习快速回答已接入 `qwen3.8-flash`，支持资料/通用模式、中文/英文回答、引用预览、追问、私有历史、重命名、软删除和反馈。快速回答入口为 `/learning`。刷题练习第一版已实现并在本机运行，待人工验收，入口为 `/learning/practice`，支持五种题型、配置确认、题集版本、逐题点评和私有练习历史；实际验收状态见本期 evidence。难点资产与文字知识精讲第一版已实现并在本机运行，入口为 `/weaknesses` 与 `/learning/explanation`，支持评分证据、手动难点、五部分卡片、持久任务和针对性再练；用户人工验收待完成。
 
 ## 技术基线
 
 - 前端：Next.js、React、TypeScript、Tailwind CSS、shadcn/ui、TanStack Query、Oxlint、Oxfmt。
 - 后端：Python 3.12、uv、FastAPI、SQLAlchemy、Alembic、LangChain、LangGraph、LlamaIndex。
-- 本地基础设施：复用已运行的 PostgreSQL 与 Redis；Docker Compose 管理 RustFS、Qdrant、backend、document-worker、practice-worker、frontend。
+- 本地基础设施：复用已运行的 PostgreSQL 与 Redis；Docker Compose 管理 RustFS、Qdrant、backend、document-worker、practice-worker、knowledge-worker、frontend。
 
 ## 第一次使用
 
@@ -23,6 +23,7 @@ make install
 ```bash
 make dev             # 启动 frontend、backend、RustFS、Qdrant、worker；可能触发首次镜像构建
 make practice-worker # 本机运行持久化练习任务 worker
+make knowledge-worker # 本机运行精讲任务与难点评分事件 worker
 make down            # 只停止本项目管理的服务
 make contract        # 校验 OpenAPI 与生成 client 一致
 make check           # 非 build 静态质量门禁
@@ -55,4 +56,12 @@ Redis       localhost:6379
 
 模型操作持久化返回 HTTP 202，页面通过任务编号读取状态。practice-worker 默认并发 2、30 秒租约与 180 秒任务上限，可通过 `.env.example` 的 `PRACTICE_*` Settings 调整；worker 重启可继续 pending，processing 租约过期后必须明确重试。后端是评分与业务规则唯一事实源；本期为非限时练习，文本编程题不执行代码。
 
-本次没有运行 Next.js / Docker build，也没有执行 Git commit / push。功能测试、真实模型质量、浏览器和人工验收须分别查阅 evidence，运行状态不代表全部验收通过。
+开发验收阶段没有运行 Next.js / Docker build；Git 交付按用户当轮明确授权执行。功能测试、真实模型质量、浏览器和人工验收须分别查阅 evidence，运行状态不代表全部验收通过。
+
+## 难点资产与文字精讲
+
+规格与验收：`openspec/changes/implement-learning-assets/`。本机业务库已备份并迁移至 `20261003_04`，现有资料/练习 worker 保持运行，并新增 knowledge-worker。备份为 `.runtime/backups/xuemian_ai-before-20261003_04-20261003T071137Z.dump`，受管进程与日志见 `.runtime/processes.json`。
+
+难点使用本人评分与版本证据，候选需确认或符合重复错误门槛；手动创建是用户主动学习声明。掌握状态由用户操作，针对性练习按全部相关题的提交、评分、正确数与低置信度计算验证结论，不自动标记已掌握。旧卡片不可变，刷新可恢复当前任务，取消或失败保留旧结果。
+
+knowledge-worker 默认并发 2、30 秒租约、180 秒任务上限；`KNOWLEDGE_*` 配置见 `.env.example`。资料精讲先受保护检索，再生成和逐字段依据审计，不支持或证据不足的内容不发布；通用精讲明确标注模型通用知识。真实六格式合成评测本轮为 3 份接受、3 份因额外保证被拦截，不代表自然资料的整体准确率。自动化、语义复核、浏览器和用户人工验收分别记录在 evidence。

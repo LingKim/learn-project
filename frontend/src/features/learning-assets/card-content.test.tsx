@@ -1,0 +1,20 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, it } from "vitest";
+import { CardContent } from "./card-content";
+import { syntheticCard } from "./fixtures.test-support";
+afterEach(cleanup);
+it("五部分保留内容，自查只展开要点且不建设第二套评分", () => {
+  render(<CardContent card={syntheticCard} />);
+  expect(screen.getByText("合成知识概念")).toBeVisible();
+  expect(screen.getByText("合成执行原理")).toBeVisible();
+  expect(screen.getByText("合成示例正文")).toBeVisible();
+  expect(screen.getByText("合成误区")).toBeVisible();
+  expect(screen.getByText("合成理解练习？")).toBeVisible();
+  expect(screen.queryByText("合成自查要点")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "查看自查要点" }));
+  expect(screen.getByText("合成自查要点")).toBeVisible();
+  expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /提交|评分|掌握/ })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "收起自查要点" }));
+  expect(screen.queryByText("合成自查要点")).not.toBeInTheDocument();
+});
