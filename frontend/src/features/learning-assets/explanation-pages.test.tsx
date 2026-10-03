@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ExplanationPage } from "./explanation-page";
 import { ExplanationDetailPage } from "./explanation-detail-page";
@@ -206,4 +206,63 @@ it("lookup metadata按owner/target隔离且不包含学习正文", () => {
   expect(readKnowledgeRequest(sessionStorage, "other-owner", detail.id)).toBe("");
   expect(readKnowledgeRequest(sessionStorage, "synthetic-owner", "other-target")).toBe("");
   expect(sessionStorage.getItem(sessionStorage.key(0)!)).toBe(key);
+});
+
+it("详情组件切到另一个精讲时读取新的URL任务，不沿用旧run指针", async () => {
+  const nextId = "another-explanation";
+  const nextRun = { ...pending, id: "another-run", explanation_id: nextId };
+  vi.mocked(api.getExplanation).mockImplementation(async (id) => ({
+    ...detail,
+    id,
+    topic: id === nextId ? "另一个精讲" : detail.topic,
+    run: null,
+  }));
+  vi.mocked(api.getKnowledgeRun).mockImplementation(async (id) =>
+    id === nextRun.id ? nextRun : finished,
+  );
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(
+    <QueryClientProvider client={client}>
+      <ExplanationDetailPage id={detail.id} runId={finished.id} />
+    </QueryClientProvider>,
+  );
+  await screen.findByText("当前任务 run-old succeeded");
+  view.rerender(
+    <QueryClientProvider client={client}>
+      <ExplanationDetailPage id={nextId} runId={nextRun.id} />
+    </QueryClientProvider>,
+  );
+  await screen.findByText("当前任务 another-run pending");
+  expect(api.getKnowledgeRun).toHaveBeenCalledWith(nextRun.id);
+  expect(screen.queryByText("当前任务 run-old succeeded")).not.toBeInTheDocument();
+});
+
+it("离开旧精讲后再生的迟到响应不能把页面跳回旧目标", async () => {
+  let finish!: (value: Awaited<ReturnType<typeof api.regenerateExplanation>>) => void;
+  vi.mocked(api.regenerateExplanation).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(
+    <QueryClientProvider client={client}>
+      <ExplanationDetailPage id={detail.id} />
+    </QueryClientProvider>,
+  );
+  await waitFor(() => expect(screen.getByRole("button", { name: "重新生成" })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: "重新生成" }));
+  await waitFor(() => expect(api.regenerateExplanation).toHaveBeenCalled());
+  view.rerender(
+    <QueryClientProvider client={client}>
+      <ExplanationDetailPage id="another-explanation" />
+    </QueryClientProvider>,
+  );
+  await act(async () => {
+    finish({ data: { explanation: detail, run: pending }, message: "ok" });
+  });
+  expect(navigation.replace).not.toHaveBeenCalledWith(
+    `/learning/explanation/${detail.id}?run=${pending.id}`,
+  );
 });

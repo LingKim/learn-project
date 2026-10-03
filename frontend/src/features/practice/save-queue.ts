@@ -29,7 +29,12 @@ export function createSaveQueue<Input, Result>(write: (input: Input) => Promise<
       return result;
     },
     async flush() {
-      await tail;
+      // 等待时仍可能有自动保存入队；尾指针稳定后才允许提交使用已确认版本。
+      let observed: Promise<void>;
+      do {
+        observed = tail;
+        await observed;
+      } while (observed !== tail);
       if (hasFailure) throw blocked;
     },
     recover() {
