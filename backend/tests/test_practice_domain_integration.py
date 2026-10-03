@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 
 import pytest
 import pytest_asyncio
+from managed_prompt_fixture import publish_test_prompt
 from sqlalchemy import delete, select, text
 
 from xuemian_ai.accounts.models import User
@@ -54,6 +55,7 @@ async def domain():
         )
         session.add(user)
         await session.flush()
+    await publish_test_prompt(sessions, settings)
     service = PracticeService(sessions, user.id, settings)
     try:
         yield service

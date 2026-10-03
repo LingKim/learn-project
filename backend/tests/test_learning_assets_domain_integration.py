@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 
 import pytest
 import pytest_asyncio
+from managed_prompt_fixture import publish_test_prompt
 from sqlalchemy import delete, select, text
 from test_practice_domain_integration import material_fixture, prepared
 
@@ -62,6 +63,7 @@ async def assets():
         )
         session.add(user)
         await session.flush()
+    await publish_test_prompt(sessions, settings)
     domain = LearningAssetService(sessions, user.id, settings)
     try:
         yield domain, PracticeService(sessions, user.id, settings)
