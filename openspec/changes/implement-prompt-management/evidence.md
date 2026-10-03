@@ -73,3 +73,7 @@
 本期后端、SDK、两端 UI、共享角色 guard/导航、真实运行快照与调度清理已在独立分支完整集成。最终后端 506 passed / 41 skipped，前端 49 files / 252 tests，Ruff/format/mypy、真实 32 项 curl、OpenAPI 字节一致、迁移上下回合及 schema check、Next/Python 构建与两份 OpenSpec strict validate 通过。真实单一 Ego 浏览器完成两学习账号/管理员权限、授权/正文隔离、公开内部备注、撤销/关闭、Prompt 草稿/Diff/无模型预览/发布门禁/回滚新版本/启停/原生历史恢复；375px 页面无横向溢出。
 
 全部使用合成库与资料，未运行外部真实模型；原 Pen 缺失已获用户“授权设计”改用仓库截图，不宣称原稿或用户人工验收通过。20 张实际证据已保存，最终补充截图接口超时以 DOM 状态完成最后检查。临时数据库和本轮进程已清理，worktree 保留；未推送、PR、部署或迁移业务库。完整具体矩阵、发现并修复的问题、分支提交及真实限制见 [统一交付记录](../../../docs/development/quality-prompt-delivery-20261003.md)。
+
+## 2026-10-03 用户授权真实外部模型评测
+
+实际 Qwen provider 的原始公共规则 3/4，最小复现确认恶意数据引起过度拒答；补强忽略攻击后继续合法任务的规则，固定样例和门禁不变。候选第一轮仍有一次上游失败，最终公共规则 4/4、真实练习出题 4/4，结果已从隔离 PostgreSQL 读回并验证正文 hash 与最终代码一致。138 项相关后端回归、Ruff/format/mypy 通过。无业务资料外发、业务库发布、main 合并或部署；完整失败记录、用量与限制见 `docs/development/real-prompt-evaluation-20261003.md`。

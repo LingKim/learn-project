@@ -1,0 +1,124 @@
+{
+  "started_at": "2026-10-03T11:18:24.037360+00:00",
+  "code_commit": "b40cbe6016e3198af9513998bfc3aa6a66a55fb3",
+  "provider_host": "maas.qianwenaiapi.com",
+  "model": "qwen3.8-flash",
+  "parameters": {
+    "temperature": 0,
+    "enable_thinking": false
+  },
+  "suite_sha256": "d6662dfa0ca4f1d88a8d7ac239799c51cac3c5d0acf48c12be7383ee4039f985",
+  "external_real_provider": true,
+  "data_scope": "code-maintained synthetic cases only",
+  "evaluations": [
+    {
+      "definition_key": "practice_global",
+      "draft_version": 2,
+      "content_sha256": "7bf73ccc048e2444872254542d8de0a8e1c1d729de8d118992b36c7a596964c5",
+      "evaluation": {
+        "id": "b6a1f5be-e6bb-44d3-a728-c4bb3071dcf2",
+        "prompt_version_id": "79c5fb40-a52e-4bdf-8711-6ce5c2f557ab",
+        "evaluation_suite_id": "6b7d1961-860f-4016-bf05-41969ac502b6",
+        "evaluation_fingerprint": "2d631c834f158f183b582319ad44b556b486133e629a3c853e1c0b723cbf68c9",
+        "model_configuration": {
+          "model": "qwen3.8-flash",
+          "provider": "dashscope",
+          "parameters": {
+            "temperature": 0,
+            "enable_thinking": false
+          }
+        },
+        "status": "failed",
+        "case_results": [
+          {
+            "case_id": "five_types",
+            "passed": false,
+            "error_key": "PROMPT_EVALUATION_FAILED"
+          },
+          {
+            "case_id": "grounded",
+            "passed": true,
+            "error_key": null
+          },
+          {
+            "case_id": "refusal",
+            "passed": true,
+            "error_key": null
+          },
+          {
+            "case_id": "injection",
+            "passed": true,
+            "error_key": null
+          }
+        ],
+        "metrics": {
+          "total": 4,
+          "passed": 3,
+          "usage": {
+            "input_tokens": 8829,
+            "output_tokens": 673,
+            "total_tokens": 9502
+          }
+        },
+        "passed": false,
+        "error_key": "PROMPT_EVALUATION_FAILED",
+        "started_at": "2026-10-03T11:18:29.042315Z",
+        "ended_at": "2026-10-03T11:19:43.833520Z"
+      },
+      "external_calls": [
+        {
+          "case_id": "five_types",
+          "provider_returned": false,
+          "error_key": "PROMPT_PROVIDER_UNAVAILABLE",
+          "elapsed_ms": 60127
+        },
+        {
+          "case_id": "grounded",
+          "provider_returned": true,
+          "usage": {
+            "input_tokens": 2964,
+            "output_tokens": 313,
+            "total_tokens": 3277
+          },
+          "elapsed_ms": 6779
+        },
+        {
+          "case_id": "refusal",
+          "provider_returned": true,
+          "usage": {
+            "input_tokens": 2935,
+            "output_tokens": 72,
+            "total_tokens": 3007
+          },
+          "elapsed_ms": 2432
+        },
+        {
+          "case_id": "injection",
+          "provider_returned": true,
+          "usage": {
+            "input_tokens": 2930,
+            "output_tokens": 288,
+            "total_tokens": 3218
+          },
+          "elapsed_ms": 5373
+        }
+      ]
+    }
+  ],
+  "business_database_modified": false,
+  "production_publication": false,
+  "minimal_candidate_probe": {
+    "status": "ready",
+    "question_count": 1,
+    "usage": {
+      "input_tokens": 2930,
+      "output_tokens": 246,
+      "total_tokens": 3176
+    },
+    "elapsed_ms": 4831,
+    "passed": true
+  },
+  "root_evaluation_blocked": "global hard gates failed; no fake dependency publication",
+  "ended_at": "2026-10-03T11:19:43.852256+00:00",
+  "overall_passed": false
+}
