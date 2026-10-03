@@ -239,6 +239,27 @@ async def test_failed_generation_preserves_previous_revision_and_replay(domain):
     assert (await domain.regenerate(obj.id, body)).id == run.id
 
 
+@pytest.mark.parametrize("retryable", [False, True])
+async def test_failed_run_persists_retry_decision_and_enforces_retry_endpoint(domain, retryable):
+    obj = await domain.create(SetCreate(config=PracticeConfig(topic="事务"), request_key=uuid4()))
+    run = await domain.plan(obj.id, PlanRequest(expected_version=obj.version, request_key=uuid4()))
+    claim = await domain.claim_run("retry-policy-test")
+    assert await domain.fail_run(
+        run.id, claim.lease_token, "PRACTICE_PROVIDER_UNAVAILABLE", retryable
+    )
+    restored = await domain.get_run(run.id)
+    assert restored.status == "failed" and restored.retryable is retryable
+    request = RetryRequest(request_key=run.request_key, input_digest=run.input_digest)
+    if retryable:
+        retried = await domain.retry(run.id, request)
+        assert retried.status == "pending" and retried.id == run.id
+    else:
+        with pytest.raises(ConflictError) as failure:
+            await domain.retry(run.id, request)
+        assert failure.value.error_key == "PRACTICE_RETRY_UNAVAILABLE"
+        assert (await domain.get_run(run.id)).status == "failed"
+
+
 async def material_fixture(domain):
     from xuemian_ai.document_processing.models import (
         BackgroundTask,

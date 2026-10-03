@@ -1653,10 +1653,12 @@ class PracticeService:
             ):
                 return False
             run.status = "cancelled" if run.status == "cancel_requested" else "failed"
+            # 执行器可以进一步禁止重试；来源、版本和取消等业务约束仍具有最终否决权。
             run.stage, run.error_key, run.retryable, run.ended_at = (
                 run.status,
                 error_key,
                 run.status == "failed"
+                and retryable
                 and error_key
                 not in {
                     "PRACTICE_SOURCE_CHANGED",
