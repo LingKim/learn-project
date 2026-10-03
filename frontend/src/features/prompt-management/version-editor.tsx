@@ -429,7 +429,8 @@ export function VersionEditor({
                     .filter((item) => item.id !== version.id)
                     .map((item) => (
                       <SelectItem key={item.id} value={item.id}>
-                        v{item.version} · {item.status}
+                        v{item.version} ·{" "}
+                        {{ draft: "草稿", published: "已发布", retired: "已退役" }[item.status]}
                       </SelectItem>
                     ))}
                 </SelectContent>
