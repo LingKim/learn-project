@@ -46,3 +46,10 @@
 - 尚未实现数据库迁移、Agent 注册表、模板解析器、管理 API、管理页面、模型评测或真实 AgentRun 接入。
 - 当前环境没有 OpenSpec CLI 可执行证据；只能执行规格结构检查、冲突词扫描和 `git diff --check`，这些不能冒充 strict validate。
 - 本轮不运行 Next.js build、Docker build、后端测试、前端测试、真实 curl 或浏览器验收，因为只有需求和规格变更。
+
+
+## 2026-10-03 本地实施核验补充
+
+本机 `main@57629ef` 已有真实问答、练习与学习资产执行器和检索 Trace，原文“尚无真实业务 Agent”等表述属于历史记录，不代表当前基线。当前仍没有本变更的领域模型/API/页面。具体首批范围、公共契约、迁移顺序、文件归属与验收条件见本目录 `implementation-plan-20261003.md` 及 `docs/development/parallel-next-batch-20261003.md`；方案待用户批准，尚未开始本变更实现。
+
+已修正文档的 OpenSpec delta 头及 Requirement/Scenario 标点解析格式，未改产品规则；当前 CLI strict validate 通过。原规格的 AgentRun“扩展”需落为实际新增模型并与既有持久任务绑定；受管场景、动态输出 Schema 与入队快照契约须在实施批准前同步设计/spec。不将解析通过当成功能交付。
