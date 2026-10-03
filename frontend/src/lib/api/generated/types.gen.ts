@@ -37,6 +37,28 @@ export type AiConsentView = {
 };
 
 /**
+ * AccessRequest
+ */
+export type AccessRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Chunk Ids
+     */
+    chunk_ids: Array<string>;
+    /**
+     * Duration Days
+     */
+    duration_days?: number;
+};
+
+/**
  * ActiveWeaknessView
  */
 export type ActiveWeaknessView = {
@@ -68,6 +90,119 @@ export type ActiveWeaknessView = {
      * Last Verified At
      */
     last_verified_at?: string | null;
+};
+
+/**
+ * AdminCaseDetail
+ */
+export type AdminCaseDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Case Number
+     */
+    case_number: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Source Type
+     */
+    source_type: 'learning_turn';
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Category
+     */
+    category: 'not_found' | 'irrelevant_source' | 'wrong_answer' | 'wrong_citation' | 'outdated_content' | 'slow' | 'other';
+    /**
+     * Status
+     */
+    status: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Strategy Version
+     */
+    strategy_version: string;
+    /**
+     * Assignee Id
+     */
+    assignee_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Resolved At
+     */
+    resolved_at: string | null;
+    /**
+     * Closed At
+     */
+    closed_at: string | null;
+    /**
+     * Resolution Code
+     */
+    resolution_code: 'parsing_gap' | 'stale_index' | 'fts_filter' | 'vector_recall' | 'fusion' | 'rerank' | 'evidence_gate' | 'generation' | 'citation' | 'source_outdated' | 'latency' | 'not_reproduced' | 'user_expectation' | 'unknown' | null;
+    /**
+     * Resolution Summary
+     */
+    resolution_summary: string | null;
+    trace: TraceMetadata | null;
+    /**
+     * Source Error
+     */
+    source_error: string | null;
+    /**
+     * Grants
+     */
+    grants: Array<GrantView>;
+    /**
+     * Events
+     */
+    events: Array<EventView>;
+    /**
+     * Replays
+     */
+    replays: Array<ReplayView>;
+    /**
+     * Audits
+     */
+    audits: Array<XuemianAiAiQualitySchemasAuditView>;
+};
+
+/**
+ * AdminMessageCreate
+ */
+export type AdminMessageCreate = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Visibility
+     */
+    visibility: 'user' | 'admin';
 };
 
 /**
@@ -216,6 +351,21 @@ export type ApiResponseAiConsentView = {
 };
 
 /**
+ * ApiResponse[AdminCaseDetail]
+ */
+export type ApiResponseAdminCaseDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: AdminCaseDetail;
+};
+
+/**
  * ApiResponse[AttemptView]
  */
 export type ApiResponseAttemptView = {
@@ -306,6 +456,21 @@ export type ApiResponseConversationView = {
 };
 
 /**
+ * ApiResponse[DefinitionView]
+ */
+export type ApiResponseDefinitionView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: DefinitionView;
+};
+
+/**
  * ApiResponse[DeleteResult]
  */
 export type ApiResponseDeleteResult = {
@@ -336,6 +501,21 @@ export type ApiResponseDeletionImpactView = {
 };
 
 /**
+ * ApiResponse[DiffView]
+ */
+export type ApiResponseDiffView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: DiffView;
+};
+
+/**
  * ApiResponse[DownloadUrlView]
  */
 export type ApiResponseDownloadUrlView = {
@@ -348,6 +528,21 @@ export type ApiResponseDownloadUrlView = {
      */
     message: string;
     data: DownloadUrlView;
+};
+
+/**
+ * ApiResponse[EvaluationView]
+ */
+export type ApiResponseEvaluationView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: EvaluationView;
 };
 
 /**
@@ -549,6 +744,21 @@ export type ApiResponsePlanView = {
 };
 
 /**
+ * ApiResponse[PreviewView]
+ */
+export type ApiResponsePreviewView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: PreviewView;
+};
+
+/**
  * ApiResponse[ProcessingTaskView]
  */
 export type ApiResponseProcessingTaskView = {
@@ -561,6 +771,21 @@ export type ApiResponseProcessingTaskView = {
      */
     message: string;
     data: ProcessingTaskView;
+};
+
+/**
+ * ApiResponse[QualityOverview]
+ */
+export type ApiResponseQualityOverview = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: QualityOverview;
 };
 
 /**
@@ -654,6 +879,21 @@ export type ApiResponseSetView = {
 };
 
 /**
+ * ApiResponse[SnapshotView]
+ */
+export type ApiResponseSnapshotView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: SnapshotView;
+};
+
+/**
  * ApiResponse[SourcePreview]
  */
 export type ApiResponseSourcePreview = {
@@ -744,6 +984,21 @@ export type ApiResponseUploadSessionView = {
 };
 
 /**
+ * ApiResponse[UserCaseDetail]
+ */
+export type ApiResponseUserCaseDetail = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: UserCaseDetail;
+};
+
+/**
  * ApiResponse[UserProfileView]
  */
 export type ApiResponseUserProfileView = {
@@ -771,6 +1026,21 @@ export type ApiResponseUserView = {
      */
     message: string;
     data: UserView;
+};
+
+/**
+ * ApiResponse[VersionView]
+ */
+export type ApiResponseVersionView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    data: VersionView;
 };
 
 /**
@@ -837,6 +1107,20 @@ export type ApiResponseListSignedPart = {
      * Data
      */
     data: Array<SignedPart>;
+};
+
+/**
+ * AssignmentRequest
+ */
+export type AssignmentRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Assignee Id
+     */
+    assignee_id?: string | null;
 };
 
 /**
@@ -1037,6 +1321,118 @@ export type BooleanAnswer = {
 };
 
 /**
+ * CaseCreate
+ */
+export type CaseCreate = {
+    /**
+     * Source Type
+     */
+    source_type?: 'learning_turn';
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Request Key
+     */
+    request_key: string;
+    /**
+     * Category
+     */
+    category: 'not_found' | 'irrelevant_source' | 'wrong_answer' | 'wrong_citation' | 'outdated_content' | 'slow' | 'other';
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Expected Result
+     */
+    expected_result?: string | null;
+    /**
+     * Basic Access Confirmed
+     */
+    basic_access_confirmed: true;
+};
+
+/**
+ * CaseView
+ */
+export type CaseView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Case Number
+     */
+    case_number: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Source Type
+     */
+    source_type: 'learning_turn';
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Category
+     */
+    category: 'not_found' | 'irrelevant_source' | 'wrong_answer' | 'wrong_citation' | 'outdated_content' | 'slow' | 'other';
+    /**
+     * Status
+     */
+    status: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Strategy Version
+     */
+    strategy_version: string;
+    /**
+     * Assignee Id
+     */
+    assignee_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Resolved At
+     */
+    resolved_at: string | null;
+    /**
+     * Closed At
+     */
+    closed_at: string | null;
+    /**
+     * Resolution Code
+     */
+    resolution_code: 'parsing_gap' | 'stale_index' | 'fts_filter' | 'vector_recall' | 'fusion' | 'rerank' | 'evidence_gate' | 'generation' | 'citation' | 'source_outdated' | 'latency' | 'not_reproduced' | 'user_expectation' | 'unknown' | null;
+    /**
+     * Resolution Summary
+     */
+    resolution_summary: string | null;
+};
+
+/**
  * CodeTextQuestion
  */
 export type CodeTextQuestion = {
@@ -1176,6 +1572,66 @@ export type ConversationView = {
 };
 
 /**
+ * DefinitionView
+ */
+export type DefinitionView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Definition Key
+     */
+    definition_key: string;
+    /**
+     * Agent Key
+     */
+    agent_key: string;
+    /**
+     * Scene Key
+     */
+    scene_key: string;
+    /**
+     * Template Kind
+     */
+    template_kind: 'shared' | 'agent' | 'task';
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Runtime Status
+     */
+    runtime_status: 'enabled' | 'disabled';
+    /**
+     * Active Version Id
+     */
+    active_version_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Contract Sha256
+     */
+    contract_sha256?: string | null;
+    /**
+     * Registered Contract
+     */
+    registered_contract?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
  * DeleteRequest
  */
 export type DeleteRequest = {
@@ -1256,6 +1712,76 @@ export type DependencyCheck = {
 };
 
 /**
+ * DependencyInput
+ */
+export type DependencyInput = {
+    /**
+     * Version Id
+     */
+    version_id: string;
+    /**
+     * Slot
+     */
+    slot: 'global' | 'agent';
+    /**
+     * Position
+     */
+    position?: number;
+};
+
+/**
+ * DependencyView
+ */
+export type DependencyView = {
+    /**
+     * Version Id
+     */
+    version_id: string;
+    /**
+     * Slot
+     */
+    slot: 'global' | 'agent' | 'task';
+    /**
+     * Position
+     */
+    position?: number;
+    /**
+     * Definition Key
+     */
+    definition_key: string;
+    /**
+     * Sha256
+     */
+    sha256: string;
+};
+
+/**
+ * DiffView
+ */
+export type DiffView = {
+    /**
+     * Version Id
+     */
+    version_id: string;
+    /**
+     * Base Version Id
+     */
+    base_version_id: string | null;
+    /**
+     * Content Diff
+     */
+    content_diff: string;
+    /**
+     * Variables Changed
+     */
+    variables_changed: boolean;
+    /**
+     * Dependencies Changed
+     */
+    dependencies_changed: boolean;
+};
+
+/**
  * DimensionGrade
  */
 export type DimensionGrade = {
@@ -1296,6 +1822,58 @@ export type DownloadUrlView = {
 };
 
 /**
+ * DraftCreate
+ */
+export type DraftCreate = {
+    /**
+     * Expected Active Version Id
+     */
+    expected_active_version_id: string | null;
+    /**
+     * Source Version Id
+     */
+    source_version_id?: string | null;
+    /**
+     * Content
+     */
+    content?: string | null;
+    /**
+     * Change Description
+     */
+    change_description: string;
+    /**
+     * Dependencies
+     */
+    dependencies?: Array<DependencyInput> | null;
+};
+
+/**
+ * DraftPatch
+ */
+export type DraftPatch = {
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Variables
+     */
+    variables: Array<Variable>;
+    /**
+     * Dependencies
+     */
+    dependencies: Array<DependencyInput>;
+    /**
+     * Change Description
+     */
+    change_description: string;
+};
+
+/**
  * DuplicateResolutionRequest
  */
 export type DuplicateResolutionRequest = {
@@ -1303,6 +1881,100 @@ export type DuplicateResolutionRequest = {
      * Action
      */
     action: 'LINK' | 'MOVE' | 'CANCEL';
+};
+
+/**
+ * EvaluationView
+ */
+export type EvaluationView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Prompt Version Id
+     */
+    prompt_version_id: string;
+    /**
+     * Evaluation Suite Id
+     */
+    evaluation_suite_id: string;
+    /**
+     * Evaluation Fingerprint
+     */
+    evaluation_fingerprint: string;
+    /**
+     * Model Configuration
+     */
+    model_configuration: {
+        [key: string]: unknown;
+    };
+    /**
+     * Status
+     */
+    status: 'processing' | 'succeeded' | 'failed';
+    /**
+     * Case Results
+     */
+    case_results: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Metrics
+     */
+    metrics: {
+        [key: string]: unknown;
+    };
+    /**
+     * Passed
+     */
+    passed: boolean;
+    /**
+     * Error Key
+     */
+    error_key: string | null;
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Ended At
+     */
+    ended_at: string | null;
+};
+
+/**
+ * EventView
+ */
+export type EventView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * Visibility
+     */
+    visibility: 'user' | 'admin';
+    /**
+     * Actor Id
+     */
+    actor_id: string | null;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Content
+     */
+    content: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -1889,6 +2561,84 @@ export type GradeView = {
 };
 
 /**
+ * GrantDecision
+ */
+export type GrantDecision = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Expected Grant Version
+     */
+    expected_grant_version: number;
+    /**
+     * Approved
+     */
+    approved: boolean;
+};
+
+/**
+ * GrantRevoke
+ */
+export type GrantRevoke = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Expected Grant Version
+     */
+    expected_grant_version: number;
+};
+
+/**
+ * GrantView
+ */
+export type GrantView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Status
+     */
+    status: 'pending' | 'active' | 'expired' | 'revoked' | 'rejected';
+    /**
+     * Fields
+     */
+    fields: Array<'query' | 'final_output' | 'final_citations' | 'candidate_excerpts'>;
+    /**
+     * Chunk Ids
+     */
+    chunk_ids: Array<string>;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Requester Id
+     */
+    requester_id: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Confirmed At
+     */
+    confirmed_at: string | null;
+    /**
+     * Revoked At
+     */
+    revoked_at: string | null;
+};
+
+/**
  * KnowledgeBaseCreate
  */
 export type KnowledgeBaseCreate = {
@@ -2319,6 +3069,20 @@ export type MasteryRequest = {
 };
 
 /**
+ * MessageCreate
+ */
+export type MessageCreate = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Content
+     */
+    content: string;
+};
+
+/**
  * MultipleAnswer
  */
 export type MultipleAnswer = {
@@ -2415,6 +3179,44 @@ export type PageMeta = {
 };
 
 /**
+ * PageResponse[AuditView]
+ */
+export type PageResponseAuditView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<XuemianAiPromptManagementSchemasAuditView>;
+    meta: PageMeta;
+};
+
+/**
+ * PageResponse[CaseView]
+ */
+export type PageResponseCaseView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<CaseView>;
+    meta: PageMeta;
+};
+
+/**
  * PageResponse[ConversationView]
  */
 export type PageResponseConversationView = {
@@ -2430,6 +3232,25 @@ export type PageResponseConversationView = {
      * Data
      */
     data: Array<ConversationView>;
+    meta: PageMeta;
+};
+
+/**
+ * PageResponse[DefinitionView]
+ */
+export type PageResponseDefinitionView = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<DefinitionView>;
     meta: PageMeta;
 };
 
@@ -2525,6 +3346,25 @@ export type PageResponseSetView = {
      * Data
      */
     data: Array<SetView>;
+    meta: PageMeta;
+};
+
+/**
+ * PageResponse[VersionSummary]
+ */
+export type PageResponseVersionSummary = {
+    /**
+     * Code
+     */
+    code: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Data
+     */
+    data: Array<VersionSummary>;
     meta: PageMeta;
 };
 
@@ -2687,6 +3527,50 @@ export type PracticeConfig = {
 };
 
 /**
+ * PreviewRequest
+ */
+export type PreviewRequest = {
+    /**
+     * Variables
+     */
+    variables?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * PreviewView
+ */
+export type PreviewView = {
+    /**
+     * System Messages
+     */
+    system_messages: Array<string>;
+    /**
+     * Data Message
+     */
+    data_message: {
+        [key: string]: unknown;
+    };
+    /**
+     * Composition
+     */
+    composition: Array<DependencyView>;
+    /**
+     * Contract Sha256
+     */
+    contract_sha256: string;
+    /**
+     * Output Schema Sha256
+     */
+    output_schema_sha256: string;
+    /**
+     * Message Lengths
+     */
+    message_lengths: Array<number>;
+};
+
+/**
  * ProblemDetails
  */
 export type ProblemDetails = {
@@ -2818,6 +3702,80 @@ export type ProcessingVersionView = {
 };
 
 /**
+ * PublishRequest
+ */
+export type PublishRequest = {
+    /**
+     * Expected Active Version Id
+     */
+    expected_active_version_id: string | null;
+    /**
+     * Expected Revision
+     */
+    expected_revision: number;
+};
+
+/**
+ * QualityOverview
+ */
+export type QualityOverview = {
+    /**
+     * Counts By Status
+     */
+    counts_by_status: {
+        [key: string]: number;
+    };
+    /**
+     * Counts By Category
+     */
+    counts_by_category: {
+        [key: string]: number;
+    };
+    /**
+     * Counts By Source
+     */
+    counts_by_source: {
+        [key: string]: number;
+    };
+    /**
+     * Counts By Strategy
+     */
+    counts_by_strategy: {
+        [key: string]: number;
+    };
+    /**
+     * Daily Counts
+     */
+    daily_counts: {
+        [key: string]: number;
+    };
+    /**
+     * First Response Seconds
+     */
+    first_response_seconds: {
+        [key: string]: number | null;
+    };
+    /**
+     * Resolution Seconds
+     */
+    resolution_seconds: {
+        [key: string]: number | null;
+    };
+    /**
+     * Backlog Seconds
+     */
+    backlog_seconds: {
+        [key: string]: number | null;
+    };
+    /**
+     * Error Counts
+     */
+    error_counts: {
+        [key: string]: number;
+    };
+};
+
+/**
  * QuestionEdit
  */
 export type QuestionEdit = {
@@ -2842,6 +3800,24 @@ export type QuestionEdit = {
 };
 
 /**
+ * RankingEntry
+ */
+export type RankingEntry = {
+    /**
+     * Chunk Id
+     */
+    chunk_id: string;
+    /**
+     * Rank
+     */
+    rank: number;
+    /**
+     * Score
+     */
+    score: number;
+};
+
+/**
  * ReadyResponse
  */
 export type ReadyResponse = {
@@ -2855,6 +3831,28 @@ export type ReadyResponse = {
     checks: {
         [key: string]: DependencyCheck;
     };
+};
+
+/**
+ * RecordedStageMetadata
+ */
+export type RecordedStageMetadata = {
+    /**
+     * Stage
+     */
+    stage: string;
+    /**
+     * Candidate Count
+     */
+    candidate_count: number;
+    /**
+     * Count
+     */
+    count: number | null;
+    /**
+     * Elapsed Ms
+     */
+    elapsed_ms: number | null;
 };
 
 /**
@@ -2909,6 +3907,96 @@ export type RegradeRequest = {
      * Request Key
      */
     request_key: string;
+};
+
+/**
+ * ReplayRequest
+ */
+export type ReplayRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Grant Id
+     */
+    grant_id: string;
+    /**
+     * Expected Grant Version
+     */
+    expected_grant_version: number;
+    /**
+     * Mode
+     */
+    mode: 'fts_only' | 'vector_only' | 'hybrid_only' | 'without_rerank' | 'full';
+    /**
+     * Target Chunk Ids
+     */
+    target_chunk_ids?: Array<string>;
+};
+
+/**
+ * ReplayView
+ */
+export type ReplayView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Mode
+     */
+    mode: 'fts_only' | 'vector_only' | 'hybrid_only' | 'without_rerank' | 'full';
+    /**
+     * Status
+     */
+    status: 'succeeded' | 'failed';
+    /**
+     * Strategy Version
+     */
+    strategy_version: string;
+    /**
+     * Ranking
+     */
+    ranking: Array<RankingEntry>;
+    /**
+     * Final Chunk Ids
+     */
+    final_chunk_ids: Array<string>;
+    /**
+     * Metrics
+     */
+    metrics: {
+        [key: string]: number | null;
+    };
+    /**
+     * Comparison Kind
+     */
+    comparison_kind: 'recorded_candidates_offline';
+    /**
+     * Independent Latency Ms
+     */
+    independent_latency_ms?: null;
+    /**
+     * Causal Claim
+     */
+    causal_claim?: false;
+    /**
+     * Note
+     */
+    note: string;
+    /**
+     * Recorded Stage Metadata
+     */
+    recorded_stage_metadata: Array<RecordedStageMetadata>;
+    /**
+     * Error Key
+     */
+    error_key?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -3174,6 +4262,24 @@ export type RevisionView = {
      * Created At
      */
     created_at: string;
+};
+
+/**
+ * RollbackRequest
+ */
+export type RollbackRequest = {
+    /**
+     * Expected Active Version Id
+     */
+    expected_active_version_id: string | null;
+    /**
+     * Target Version Id
+     */
+    target_version_id: string;
+    /**
+     * Reason
+     */
+    reason: string;
 };
 
 /**
@@ -3481,6 +4587,42 @@ export type SingleChoiceQuestion = {
 };
 
 /**
+ * SnapshotView
+ */
+export type SnapshotView = {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Grant Id
+     */
+    grant_id: string;
+    /**
+     * Grant Version
+     */
+    grant_version: number;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Values
+     */
+    values: {
+        [key: string]: unknown;
+    };
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Expected Result
+     */
+    expected_result?: string | null;
+};
+
+/**
  * SourcePreview
  */
 export type SourcePreview = {
@@ -3539,6 +4681,20 @@ export type SourceRef = {
      * Paragraph End
      */
     paragraph_end?: number | null;
+};
+
+/**
+ * StatusRequest
+ */
+export type StatusRequest = {
+    /**
+     * Expected Active Version Id
+     */
+    expected_active_version_id: string | null;
+    /**
+     * Runtime Status
+     */
+    runtime_status: 'enabled' | 'disabled';
 };
 
 /**
@@ -3648,6 +4804,122 @@ export type TopicReport = {
      * Suggestions
      */
     suggestions?: Array<string>;
+};
+
+/**
+ * TraceCandidate
+ */
+export type TraceCandidate = {
+    /**
+     * Chunk Id
+     */
+    chunk_id: string;
+    /**
+     * Rank
+     */
+    rank: number;
+    /**
+     * Score
+     */
+    score: number;
+};
+
+/**
+ * TraceMetadata
+ */
+export type TraceMetadata = {
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Strategy Version
+     */
+    strategy_version: string;
+    /**
+     * Stages
+     */
+    stages: Array<TraceStageMetadata>;
+    /**
+     * Final Chunk Ids
+     */
+    final_chunk_ids: Array<string>;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Error Code
+     */
+    error_code: string | null;
+    /**
+     * Prompt Manifest
+     */
+    prompt_manifest: {
+        [key: string]: unknown;
+    };
+    /**
+     * Model Parameters
+     */
+    model_parameters: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * TraceStageMetadata
+ */
+export type TraceStageMetadata = {
+    /**
+     * Stage
+     */
+    stage: string;
+    /**
+     * Elapsed Ms
+     */
+    elapsed_ms?: number | null;
+    /**
+     * Candidates
+     */
+    candidates?: Array<TraceCandidate>;
+    /**
+     * Count
+     */
+    count?: number | null;
+};
+
+/**
+ * TransitionRequest
+ */
+export type TransitionRequest = {
+    /**
+     * Expected Version
+     */
+    expected_version: number;
+    /**
+     * Status
+     */
+    status: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed';
+    /**
+     * Resolution Code
+     */
+    resolution_code?: 'parsing_gap' | 'stale_index' | 'fts_filter' | 'vector_recall' | 'fusion' | 'rerank' | 'evidence_gate' | 'generation' | 'citation' | 'source_outdated' | 'latency' | 'not_reproduced' | 'user_expectation' | 'unknown' | null;
+    /**
+     * Resolution Summary
+     */
+    resolution_summary?: string | null;
+    /**
+     * Replay Id
+     */
+    replay_id?: string | null;
+    /**
+     * Deterministic Error Code
+     */
+    deterministic_error_code?: 'TRACE_INCOMPLETE' | 'SOURCE_UNAVAILABLE' | null;
 };
 
 /**
@@ -3893,6 +5165,96 @@ export type UploadSessionView = {
 };
 
 /**
+ * UserCaseDetail
+ */
+export type UserCaseDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Case Number
+     */
+    case_number: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Source Type
+     */
+    source_type: 'learning_turn';
+    /**
+     * Source Id
+     */
+    source_id: string;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Category
+     */
+    category: 'not_found' | 'irrelevant_source' | 'wrong_answer' | 'wrong_citation' | 'outdated_content' | 'slow' | 'other';
+    /**
+     * Status
+     */
+    status: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed';
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Strategy Version
+     */
+    strategy_version: string;
+    /**
+     * Assignee Id
+     */
+    assignee_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Resolved At
+     */
+    resolved_at: string | null;
+    /**
+     * Closed At
+     */
+    closed_at: string | null;
+    /**
+     * Resolution Code
+     */
+    resolution_code: 'parsing_gap' | 'stale_index' | 'fts_filter' | 'vector_recall' | 'fusion' | 'rerank' | 'evidence_gate' | 'generation' | 'citation' | 'source_outdated' | 'latency' | 'not_reproduced' | 'user_expectation' | 'unknown' | null;
+    /**
+     * Resolution Summary
+     */
+    resolution_summary: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Expected Result
+     */
+    expected_result: string | null;
+    /**
+     * Events
+     */
+    events: Array<EventView>;
+    /**
+     * Grants
+     */
+    grants: Array<GrantView>;
+};
+
+/**
  * UserProfilePatch
  */
 export type UserProfilePatch = {
@@ -4045,6 +5407,36 @@ export type ValidationIssue = {
 };
 
 /**
+ * Variable
+ */
+export type Variable = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Type
+     */
+    type: 'string' | 'object';
+    /**
+     * Required
+     */
+    required?: boolean;
+    /**
+     * Max Length
+     */
+    max_length?: number;
+    /**
+     * Sources
+     */
+    sources?: Array<'default'>;
+    /**
+     * Sensitive
+     */
+    sensitive?: boolean;
+};
+
+/**
  * VersionRequest
  */
 export type VersionRequest = {
@@ -4052,6 +5444,120 @@ export type VersionRequest = {
      * Expected Version
      */
     expected_version: number;
+};
+
+/**
+ * VersionSummary
+ */
+export type VersionSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Definition Id
+     */
+    definition_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Revision
+     */
+    revision: number;
+    /**
+     * Status
+     */
+    status: 'draft' | 'published' | 'retired';
+    /**
+     * Content Sha256
+     */
+    content_sha256: string;
+    /**
+     * Change Description
+     */
+    change_description: string;
+    /**
+     * Base Active Version Id
+     */
+    base_active_version_id: string | null;
+    /**
+     * Rollback From Version Id
+     */
+    rollback_from_version_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    latest_evaluation?: EvaluationView | null;
+};
+
+/**
+ * VersionView
+ */
+export type VersionView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Definition Id
+     */
+    definition_id: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Revision
+     */
+    revision: number;
+    /**
+     * Status
+     */
+    status: 'draft' | 'published' | 'retired';
+    /**
+     * Content Sha256
+     */
+    content_sha256: string;
+    /**
+     * Change Description
+     */
+    change_description: string;
+    /**
+     * Base Active Version Id
+     */
+    base_active_version_id: string | null;
+    /**
+     * Rollback From Version Id
+     */
+    rollback_from_version_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    latest_evaluation?: EvaluationView | null;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Variables
+     */
+    variables: Array<Variable>;
+    /**
+     * Dependencies
+     */
+    dependencies: Array<DependencyView>;
 };
 
 /**
@@ -4356,6 +5862,36 @@ export type WeaknessView = {
 };
 
 /**
+ * AuditView
+ */
+export type XuemianAiAiQualitySchemasAuditView = {
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * Outcome
+     */
+    outcome: string;
+    /**
+     * Reason Code
+     */
+    reason_code: string | null;
+    /**
+     * Actor Id
+     */
+    actor_id: string | null;
+    /**
+     * Fields
+     */
+    fields: Array<'query' | 'final_output' | 'final_citations' | 'candidate_excerpts'>;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+};
+
+/**
  * FeedbackRequest
  */
 export type XuemianAiLearningSchemasFeedbackRequest = {
@@ -4385,6 +5921,44 @@ export type XuemianAiPracticeSchemasFeedbackRequest = {
      * Feedback
      */
     feedback: 'helpful' | 'unhelpful' | null;
+};
+
+/**
+ * AuditView
+ */
+export type XuemianAiPromptManagementSchemasAuditView = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Actor User Id
+     */
+    actor_user_id: string | null;
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * Outcome
+     */
+    outcome: string;
+    /**
+     * Target Id
+     */
+    target_id: string | null;
+    /**
+     * Version
+     */
+    version: number | null;
+    /**
+     * Request Id
+     */
+    request_id: string;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
@@ -4912,6 +6486,1319 @@ export type AuthLogoutResponses = {
 };
 
 export type AuthLogoutResponse = AuthLogoutResponses[keyof AuthLogoutResponses];
+
+export type QualityCaseListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Status
+         */
+        status?: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed' | null;
+    };
+    url: '/api/v1/ai-quality-cases';
+};
+
+export type QualityCaseListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseListError = QualityCaseListErrors[keyof QualityCaseListErrors];
+
+export type QualityCaseListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseCaseView;
+};
+
+export type QualityCaseListResponse = QualityCaseListResponses[keyof QualityCaseListResponses];
+
+export type QualityCaseCreateData = {
+    body: CaseCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/ai-quality-cases';
+};
+
+export type QualityCaseCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseCreateError = QualityCaseCreateErrors[keyof QualityCaseCreateErrors];
+
+export type QualityCaseCreateResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseUserCaseDetail;
+};
+
+export type QualityCaseCreateResponse = QualityCaseCreateResponses[keyof QualityCaseCreateResponses];
+
+export type QualityCaseWithdrawData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}';
+};
+
+export type QualityCaseWithdrawErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseWithdrawError = QualityCaseWithdrawErrors[keyof QualityCaseWithdrawErrors];
+
+export type QualityCaseWithdrawResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityCaseWithdrawResponse = QualityCaseWithdrawResponses[keyof QualityCaseWithdrawResponses];
+
+export type QualityCaseDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}';
+};
+
+export type QualityCaseDetailErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseDetailError = QualityCaseDetailErrors[keyof QualityCaseDetailErrors];
+
+export type QualityCaseDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityCaseDetailResponse = QualityCaseDetailResponses[keyof QualityCaseDetailResponses];
+
+export type QualityCaseMessageData = {
+    body: MessageCreate;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}/messages';
+};
+
+export type QualityCaseMessageErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseMessageError = QualityCaseMessageErrors[keyof QualityCaseMessageErrors];
+
+export type QualityCaseMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityCaseMessageResponse = QualityCaseMessageResponses[keyof QualityCaseMessageResponses];
+
+export type QualityGrantDecisionData = {
+    body: GrantDecision;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+        /**
+         * Grant Id
+         */
+        grant_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}/grants/{grant_id}/decision';
+};
+
+export type QualityGrantDecisionErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityGrantDecisionError = QualityGrantDecisionErrors[keyof QualityGrantDecisionErrors];
+
+export type QualityGrantDecisionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityGrantDecisionResponse = QualityGrantDecisionResponses[keyof QualityGrantDecisionResponses];
+
+export type QualityGrantRevokeData = {
+    body: GrantRevoke;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+        /**
+         * Grant Id
+         */
+        grant_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}/grants/{grant_id}';
+};
+
+export type QualityGrantRevokeErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityGrantRevokeError = QualityGrantRevokeErrors[keyof QualityGrantRevokeErrors];
+
+export type QualityGrantRevokeResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityGrantRevokeResponse = QualityGrantRevokeResponses[keyof QualityGrantRevokeResponses];
+
+export type QualityCaseCloseData = {
+    body: VersionRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/ai-quality-cases/{case_id}/close';
+};
+
+export type QualityCaseCloseErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityCaseCloseError = QualityCaseCloseErrors[keyof QualityCaseCloseErrors];
+
+export type QualityCaseCloseResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseUserCaseDetail;
+};
+
+export type QualityCaseCloseResponse = QualityCaseCloseResponses[keyof QualityCaseCloseResponses];
+
+export type QualityAdminOverviewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/admin/ai-quality/overview';
+};
+
+export type QualityAdminOverviewErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminOverviewError = QualityAdminOverviewErrors[keyof QualityAdminOverviewErrors];
+
+export type QualityAdminOverviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseQualityOverview;
+};
+
+export type QualityAdminOverviewResponse = QualityAdminOverviewResponses[keyof QualityAdminOverviewResponses];
+
+export type QualityAdminQueueData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Status
+         */
+        status?: 'submitted' | 'triaging' | 'waiting_user' | 'investigating' | 'resolved' | 'closed' | null;
+        /**
+         * Category
+         */
+        category?: 'not_found' | 'irrelevant_source' | 'wrong_answer' | 'wrong_citation' | 'outdated_content' | 'slow' | 'other' | null;
+        /**
+         * Source Type
+         */
+        source_type?: 'learning_turn' | null;
+        /**
+         * Strategy Version
+         */
+        strategy_version?: string | null;
+        /**
+         * Assignee Id
+         */
+        assignee_id?: string | null;
+        /**
+         * Created After
+         */
+        created_after?: string | null;
+        /**
+         * Created Before
+         */
+        created_before?: string | null;
+        /**
+         * Sort
+         */
+        sort?: 'oldest' | 'updated' | 'newest';
+    };
+    url: '/api/v1/admin/ai-quality/cases';
+};
+
+export type QualityAdminQueueErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminQueueError = QualityAdminQueueErrors[keyof QualityAdminQueueErrors];
+
+export type QualityAdminQueueResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseCaseView;
+};
+
+export type QualityAdminQueueResponse = QualityAdminQueueResponses[keyof QualityAdminQueueResponses];
+
+export type QualityAdminDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}';
+};
+
+export type QualityAdminDetailErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminDetailError = QualityAdminDetailErrors[keyof QualityAdminDetailErrors];
+
+export type QualityAdminDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminDetailResponse = QualityAdminDetailResponses[keyof QualityAdminDetailResponses];
+
+export type QualityAdminSnapshotData = {
+    body?: never;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query: {
+        /**
+         * Grant Id
+         */
+        grant_id: string;
+        /**
+         * Expected Grant Version
+         */
+        expected_grant_version: number;
+        /**
+         * Fields
+         */
+        fields: Array<'query' | 'final_output' | 'final_citations' | 'candidate_excerpts'>;
+    };
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/snapshot';
+};
+
+export type QualityAdminSnapshotErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminSnapshotError = QualityAdminSnapshotErrors[keyof QualityAdminSnapshotErrors];
+
+export type QualityAdminSnapshotResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseSnapshotView;
+};
+
+export type QualityAdminSnapshotResponse = QualityAdminSnapshotResponses[keyof QualityAdminSnapshotResponses];
+
+export type QualityAdminAssignData = {
+    body: AssignmentRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/assign';
+};
+
+export type QualityAdminAssignErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminAssignError = QualityAdminAssignErrors[keyof QualityAdminAssignErrors];
+
+export type QualityAdminAssignResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminAssignResponse = QualityAdminAssignResponses[keyof QualityAdminAssignResponses];
+
+export type QualityAdminAccessRequestData = {
+    body: AccessRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/access-requests';
+};
+
+export type QualityAdminAccessRequestErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminAccessRequestError = QualityAdminAccessRequestErrors[keyof QualityAdminAccessRequestErrors];
+
+export type QualityAdminAccessRequestResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminAccessRequestResponse = QualityAdminAccessRequestResponses[keyof QualityAdminAccessRequestResponses];
+
+export type QualityAdminReplayData = {
+    body: ReplayRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/replays';
+};
+
+export type QualityAdminReplayErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminReplayError = QualityAdminReplayErrors[keyof QualityAdminReplayErrors];
+
+export type QualityAdminReplayResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminReplayResponse = QualityAdminReplayResponses[keyof QualityAdminReplayResponses];
+
+export type QualityAdminMessageData = {
+    body: AdminMessageCreate;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/messages';
+};
+
+export type QualityAdminMessageErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminMessageError = QualityAdminMessageErrors[keyof QualityAdminMessageErrors];
+
+export type QualityAdminMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminMessageResponse = QualityAdminMessageResponses[keyof QualityAdminMessageResponses];
+
+export type QualityAdminTransitionData = {
+    body: TransitionRequest;
+    path: {
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/transitions';
+};
+
+export type QualityAdminTransitionErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type QualityAdminTransitionError = QualityAdminTransitionErrors[keyof QualityAdminTransitionErrors];
+
+export type QualityAdminTransitionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseAdminCaseDetail;
+};
+
+export type QualityAdminTransitionResponse = QualityAdminTransitionResponses[keyof QualityAdminTransitionResponses];
 
 export type KnowledgeBasesListData = {
     body?: never;
@@ -10519,6 +13406,1011 @@ export type PracticeSourcePreviewResponses = {
 };
 
 export type PracticeSourcePreviewResponse = PracticeSourcePreviewResponses[keyof PracticeSourcePreviewResponses];
+
+export type PromptDefinitionsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Agent Key
+         */
+        agent_key?: string | null;
+        /**
+         * Scene Key
+         */
+        scene_key?: string | null;
+        /**
+         * Template Kind
+         */
+        template_kind?: string | null;
+        /**
+         * Runtime Status
+         */
+        runtime_status?: string | null;
+    };
+    url: '/api/v1/admin/prompt-definitions';
+};
+
+export type PromptDefinitionsListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDefinitionsListError = PromptDefinitionsListErrors[keyof PromptDefinitionsListErrors];
+
+export type PromptDefinitionsListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseDefinitionView;
+};
+
+export type PromptDefinitionsListResponse = PromptDefinitionsListResponses[keyof PromptDefinitionsListResponses];
+
+export type PromptDefinitionGetData = {
+    body?: never;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-definitions/{definition_id}';
+};
+
+export type PromptDefinitionGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDefinitionGetError = PromptDefinitionGetErrors[keyof PromptDefinitionGetErrors];
+
+export type PromptDefinitionGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDefinitionView;
+};
+
+export type PromptDefinitionGetResponse = PromptDefinitionGetResponses[keyof PromptDefinitionGetResponses];
+
+export type PromptVersionsListData = {
+    body?: never;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/versions';
+};
+
+export type PromptVersionsListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptVersionsListError = PromptVersionsListErrors[keyof PromptVersionsListErrors];
+
+export type PromptVersionsListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseVersionSummary;
+};
+
+export type PromptVersionsListResponse = PromptVersionsListResponses[keyof PromptVersionsListResponses];
+
+export type PromptDraftCreateData = {
+    body: DraftCreate;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/versions';
+};
+
+export type PromptDraftCreateErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDraftCreateError = PromptDraftCreateErrors[keyof PromptDraftCreateErrors];
+
+export type PromptDraftCreateResponses = {
+    /**
+     * Successful Response
+     */
+    201: ApiResponseVersionView;
+};
+
+export type PromptDraftCreateResponse = PromptDraftCreateResponses[keyof PromptDraftCreateResponses];
+
+export type PromptVersionGetData = {
+    body?: never;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-versions/{version_id}';
+};
+
+export type PromptVersionGetErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptVersionGetError = PromptVersionGetErrors[keyof PromptVersionGetErrors];
+
+export type PromptVersionGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseVersionView;
+};
+
+export type PromptVersionGetResponse = PromptVersionGetResponses[keyof PromptVersionGetResponses];
+
+export type PromptDraftPatchData = {
+    body: DraftPatch;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-versions/{version_id}';
+};
+
+export type PromptDraftPatchErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDraftPatchError = PromptDraftPatchErrors[keyof PromptDraftPatchErrors];
+
+export type PromptDraftPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseVersionView;
+};
+
+export type PromptDraftPatchResponse = PromptDraftPatchResponses[keyof PromptDraftPatchResponses];
+
+export type PromptVersionDiffData = {
+    body?: never;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: {
+        /**
+         * Base Version Id
+         */
+        base_version_id?: string | null;
+    };
+    url: '/api/v1/admin/prompt-versions/{version_id}/diff';
+};
+
+export type PromptVersionDiffErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptVersionDiffError = PromptVersionDiffErrors[keyof PromptVersionDiffErrors];
+
+export type PromptVersionDiffResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDiffView;
+};
+
+export type PromptVersionDiffResponse = PromptVersionDiffResponses[keyof PromptVersionDiffResponses];
+
+export type PromptVersionPreviewData = {
+    body: PreviewRequest;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-versions/{version_id}/preview';
+};
+
+export type PromptVersionPreviewErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptVersionPreviewError = PromptVersionPreviewErrors[keyof PromptVersionPreviewErrors];
+
+export type PromptVersionPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponsePreviewView;
+};
+
+export type PromptVersionPreviewResponse = PromptVersionPreviewResponses[keyof PromptVersionPreviewResponses];
+
+export type PromptEvaluationRunData = {
+    body?: never;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-versions/{version_id}/evaluation-runs';
+};
+
+export type PromptEvaluationRunErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptEvaluationRunError = PromptEvaluationRunErrors[keyof PromptEvaluationRunErrors];
+
+export type PromptEvaluationRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseEvaluationView;
+};
+
+export type PromptEvaluationRunResponse = PromptEvaluationRunResponses[keyof PromptEvaluationRunResponses];
+
+export type PromptVersionPublishData = {
+    body: PublishRequest;
+    path: {
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-versions/{version_id}/publish';
+};
+
+export type PromptVersionPublishErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptVersionPublishError = PromptVersionPublishErrors[keyof PromptVersionPublishErrors];
+
+export type PromptVersionPublishResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseVersionView;
+};
+
+export type PromptVersionPublishResponse = PromptVersionPublishResponses[keyof PromptVersionPublishResponses];
+
+export type PromptDefinitionRollbackData = {
+    body: RollbackRequest;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/rollbacks';
+};
+
+export type PromptDefinitionRollbackErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDefinitionRollbackError = PromptDefinitionRollbackErrors[keyof PromptDefinitionRollbackErrors];
+
+export type PromptDefinitionRollbackResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseVersionView;
+};
+
+export type PromptDefinitionRollbackResponse = PromptDefinitionRollbackResponses[keyof PromptDefinitionRollbackResponses];
+
+export type PromptDefinitionStatusData = {
+    body: StatusRequest;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: never;
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/status';
+};
+
+export type PromptDefinitionStatusErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptDefinitionStatusError = PromptDefinitionStatusErrors[keyof PromptDefinitionStatusErrors];
+
+export type PromptDefinitionStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiResponseDefinitionView;
+};
+
+export type PromptDefinitionStatusResponse = PromptDefinitionStatusResponses[keyof PromptDefinitionStatusResponses];
+
+export type PromptAuditListData = {
+    body?: never;
+    path: {
+        /**
+         * Definition Id
+         */
+        definition_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+    };
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/audit-events';
+};
+
+export type PromptAuditListErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type PromptAuditListError = PromptAuditListErrors[keyof PromptAuditListErrors];
+
+export type PromptAuditListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageResponseAuditView;
+};
+
+export type PromptAuditListResponse = PromptAuditListResponses[keyof PromptAuditListResponses];
 
 export type WeaknessListData = {
     body?: never;

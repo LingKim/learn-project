@@ -11,7 +11,7 @@
     "format:check": "oxfmt --ignore-path .oxfmtignore --check .",
     "boundaries:check": "node scripts/check-api-boundaries.mjs",
     "lint": "pnpm boundaries:check && oxlint --type-aware --deny-warnings --ignore-pattern 'src/lib/api/generated/**' src",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "../scripts/run-auth-e2e.sh",

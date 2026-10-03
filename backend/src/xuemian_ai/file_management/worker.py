@@ -375,9 +375,12 @@ class FileScheduler:
                     max_attempts=8,
                     priority=100,
                 )
+            from xuemian_ai.ai_quality.maintenance import maintain_quality
             from xuemian_ai.learning.attachments import expire_attachments
 
             await expire_attachments(session, now)
+            # 复用已有单实例日清理事务；授权立即失效，正文清除和元数据保留独立执行。
+            await maintain_quality(session, self._settings, now=now)
             await self._purge_expired_metadata(session, now)
 
     async def run_reconciliation(self) -> None:

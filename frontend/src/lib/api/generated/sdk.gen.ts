@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type ServerSentEventsResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AiProcessingConsentConfirmData, AiProcessingConsentConfirmErrors, AiProcessingConsentConfirmResponses, AiProcessingConsentGetData, AiProcessingConsentGetErrors, AiProcessingConsentGetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, AvatarUploadSessionsCompleteData, AvatarUploadSessionsCompleteErrors, AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCreateData, AvatarUploadSessionsCreateErrors, AvatarUploadSessionsCreateResponses, DocumentProcessingTaskCancelData, DocumentProcessingTaskCancelErrors, DocumentProcessingTaskCancelResponses, DocumentProcessingTaskCreateData, DocumentProcessingTaskCreateErrors, DocumentProcessingTaskCreateResponses, DocumentProcessingTaskGetData, DocumentProcessingTaskGetErrors, DocumentProcessingTaskGetResponses, DocumentRetrievalSearchData, DocumentRetrievalSearchErrors, DocumentRetrievalSearchResponses, ExplanationCardData, ExplanationCardErrors, ExplanationCardResponses, ExplanationCreateData, ExplanationCreateErrors, ExplanationCreateResponses, ExplanationDeleteData, ExplanationDeleteErrors, ExplanationDeleteResponses, ExplanationDetailData, ExplanationDetailErrors, ExplanationDetailResponses, ExplanationListData, ExplanationListErrors, ExplanationListResponses, ExplanationRegenerateData, ExplanationRegenerateErrors, ExplanationRegenerateResponses, ExplanationReviewsData, ExplanationReviewsErrors, ExplanationReviewsResponses, ExplanationSourcePreviewData, ExplanationSourcePreviewErrors, ExplanationSourcePreviewResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesStatisticsData, KnowledgeBasesStatisticsErrors, KnowledgeBasesStatisticsResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses, KnowledgeRunCancelData, KnowledgeRunCancelErrors, KnowledgeRunCancelResponses, KnowledgeRunGetData, KnowledgeRunGetErrors, KnowledgeRunGetResponses, KnowledgeRunLookupData, KnowledgeRunLookupErrors, KnowledgeRunLookupResponses, KnowledgeRunRetryData, KnowledgeRunRetryErrors, KnowledgeRunRetryResponses, LearningAnswersCreateData, LearningAnswersCreateErrors, LearningAnswersCreateResponses, LearningAnswersFeedbackData, LearningAnswersFeedbackErrors, LearningAnswersFeedbackResponses, LearningAnswersStreamData, LearningAnswersStreamErrors, LearningAnswersStreamResponse, LearningAnswersStreamResponses, LearningAttachmentsContentData, LearningAttachmentsContentErrors, LearningAttachmentsContentResponses, LearningAttachmentsDeleteData, LearningAttachmentsDeleteErrors, LearningAttachmentsDeleteResponses, LearningAttachmentsUploadData, LearningAttachmentsUploadErrors, LearningAttachmentsUploadResponses, LearningConsentConfirmData, LearningConsentConfirmErrors, LearningConsentConfirmResponses, LearningConsentGetData, LearningConsentGetErrors, LearningConsentGetResponses, LearningConversationsCreateData, LearningConversationsCreateErrors, LearningConversationsCreateResponses, LearningConversationsDeleteData, LearningConversationsDeleteErrors, LearningConversationsDeleteResponses, LearningConversationsGetData, LearningConversationsGetErrors, LearningConversationsGetResponses, LearningConversationsListData, LearningConversationsListErrors, LearningConversationsListResponses, LearningConversationsRenameData, LearningConversationsRenameErrors, LearningConversationsRenameResponses, PracticeAnswerSaveData, PracticeAnswerSaveErrors, PracticeAnswerSaveResponses, PracticeAttemptCreateData, PracticeAttemptCreateErrors, PracticeAttemptCreateResponses, PracticeAttemptGetData, PracticeAttemptGetErrors, PracticeAttemptGetResponses, PracticeCancelData, PracticeCancelErrors, PracticeCancelResponses, PracticeCompleteData, PracticeCompleteErrors, PracticeCompleteResponses, PracticeCreateData, PracticeCreateErrors, PracticeCreateResponses, PracticeDeleteData, PracticeDeleteErrors, PracticeDeleteResponses, PracticeDetailData, PracticeDetailErrors, PracticeDetailResponses, PracticeFeedbackData, PracticeFeedbackErrors, PracticeFeedbackResponses, PracticeGenerateData, PracticeGenerateErrors, PracticeGenerateResponses, PracticeGradeGetData, PracticeGradeGetErrors, PracticeGradeGetResponses, PracticeListData, PracticeListErrors, PracticeListResponses, PracticePatchData, PracticePatchErrors, PracticePatchResponses, PracticePlanData, PracticePlanErrors, PracticePlanGetData, PracticePlanGetErrors, PracticePlanGetResponses, PracticePlanResponses, PracticeQuestionDeleteData, PracticeQuestionDeleteErrors, PracticeQuestionDeleteResponses, PracticeQuestionEditData, PracticeQuestionEditErrors, PracticeQuestionEditResponses, PracticeRegenerateData, PracticeRegenerateErrors, PracticeRegenerateResponses, PracticeRegradeData, PracticeRegradeErrors, PracticeRegradeResponses, PracticeReportData, PracticeReportErrors, PracticeReportResponses, PracticeRetryData, PracticeRetryErrors, PracticeRetryResponses, PracticeRevisionGetData, PracticeRevisionGetErrors, PracticeRevisionGetResponses, PracticeRunGetData, PracticeRunGetErrors, PracticeRunGetResponses, PracticeRunLookupData, PracticeRunLookupErrors, PracticeRunLookupResponses, PracticeSourcePreviewData, PracticeSourcePreviewErrors, PracticeSourcePreviewResponses, PracticeSubmitData, PracticeSubmitErrors, PracticeSubmitResponses, UserAvatarDeleteData, UserAvatarDeleteErrors, UserAvatarDeleteResponses, UserAvatarGetData, UserAvatarGetErrors, UserAvatarGetResponses, UserProfileGetData, UserProfileGetErrors, UserProfileGetResponses, UserProfileUpdateData, UserProfileUpdateErrors, UserProfileUpdateResponses, WeaknessConfirmData, WeaknessConfirmErrors, WeaknessConfirmResponses, WeaknessCreateData, WeaknessCreateErrors, WeaknessCreateResponses, WeaknessDeleteData, WeaknessDeleteErrors, WeaknessDeleteResponses, WeaknessDetailData, WeaknessDetailErrors, WeaknessDetailResponses, WeaknessIgnoreData, WeaknessIgnoreErrors, WeaknessIgnoreResponses, WeaknessListData, WeaknessListErrors, WeaknessListResponses, WeaknessMasteryData, WeaknessMasteryErrors, WeaknessMasteryResponses, WeaknessPatchData, WeaknessPatchErrors, WeaknessPatchResponses, WeaknessReviewsData, WeaknessReviewsErrors, WeaknessReviewsResponses, WeaknessRevokeData, WeaknessRevokeErrors, WeaknessRevokeResponses } from './types.gen';
+import type { AdminFilePolicyVersionsCreateData, AdminFilePolicyVersionsCreateErrors, AdminFilePolicyVersionsCreateResponses, AdminFilePolicyVersionsListData, AdminFilePolicyVersionsListErrors, AdminFilePolicyVersionsListResponses, AdminFilePolicyVersionsPublishData, AdminFilePolicyVersionsPublishErrors, AdminFilePolicyVersionsPublishResponses, AdminFilePolicyVersionsUpdateData, AdminFilePolicyVersionsUpdateErrors, AdminFilePolicyVersionsUpdateResponses, AiProcessingConsentConfirmData, AiProcessingConsentConfirmErrors, AiProcessingConsentConfirmResponses, AiProcessingConsentGetData, AiProcessingConsentGetErrors, AiProcessingConsentGetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthRegisterData, AuthRegisterErrors, AuthRegisterResponses, AvatarUploadSessionsCompleteData, AvatarUploadSessionsCompleteErrors, AvatarUploadSessionsCompleteResponses, AvatarUploadSessionsCreateData, AvatarUploadSessionsCreateErrors, AvatarUploadSessionsCreateResponses, DocumentProcessingTaskCancelData, DocumentProcessingTaskCancelErrors, DocumentProcessingTaskCancelResponses, DocumentProcessingTaskCreateData, DocumentProcessingTaskCreateErrors, DocumentProcessingTaskCreateResponses, DocumentProcessingTaskGetData, DocumentProcessingTaskGetErrors, DocumentProcessingTaskGetResponses, DocumentRetrievalSearchData, DocumentRetrievalSearchErrors, DocumentRetrievalSearchResponses, ExplanationCardData, ExplanationCardErrors, ExplanationCardResponses, ExplanationCreateData, ExplanationCreateErrors, ExplanationCreateResponses, ExplanationDeleteData, ExplanationDeleteErrors, ExplanationDeleteResponses, ExplanationDetailData, ExplanationDetailErrors, ExplanationDetailResponses, ExplanationListData, ExplanationListErrors, ExplanationListResponses, ExplanationRegenerateData, ExplanationRegenerateErrors, ExplanationRegenerateResponses, ExplanationReviewsData, ExplanationReviewsErrors, ExplanationReviewsResponses, ExplanationSourcePreviewData, ExplanationSourcePreviewErrors, ExplanationSourcePreviewResponses, FilePoliciesEffectiveData, FilePoliciesEffectiveErrors, FilePoliciesEffectiveResponses, FileUploadSessionsCancelData, FileUploadSessionsCancelErrors, FileUploadSessionsCancelResponses, FileUploadSessionsCompleteData, FileUploadSessionsCompleteErrors, FileUploadSessionsCompleteResponses, FileUploadSessionsCreateData, FileUploadSessionsCreateErrors, FileUploadSessionsCreateResponses, FileUploadSessionsGetData, FileUploadSessionsGetErrors, FileUploadSessionsGetResponses, FileUploadSessionsRenewData, FileUploadSessionsRenewErrors, FileUploadSessionsRenewResponses, FileUploadSessionsResolveDuplicateData, FileUploadSessionsResolveDuplicateErrors, FileUploadSessionsResolveDuplicateResponses, FileUploadSessionsSignPartsData, FileUploadSessionsSignPartsErrors, FileUploadSessionsSignPartsResponses, HealthLiveData, HealthLiveErrors, HealthLiveResponses, HealthReadyData, HealthReadyErrors, HealthReadyResponses, KnowledgeBaseFilesDeleteData, KnowledgeBaseFilesDeleteErrors, KnowledgeBaseFilesDeleteResponses, KnowledgeBaseFilesDeletionImpactData, KnowledgeBaseFilesDeletionImpactErrors, KnowledgeBaseFilesDeletionImpactResponses, KnowledgeBaseFilesDownloadUrlData, KnowledgeBaseFilesDownloadUrlErrors, KnowledgeBaseFilesDownloadUrlResponses, KnowledgeBaseFilesListData, KnowledgeBaseFilesListErrors, KnowledgeBaseFilesListResponses, KnowledgeBaseFilesMoveData, KnowledgeBaseFilesMoveErrors, KnowledgeBaseFilesMoveResponses, KnowledgeBaseFilesUpdateData, KnowledgeBaseFilesUpdateErrors, KnowledgeBaseFilesUpdateResponses, KnowledgeBasesCreateData, KnowledgeBasesCreateErrors, KnowledgeBasesCreateResponses, KnowledgeBasesDeleteData, KnowledgeBasesDeleteErrors, KnowledgeBasesDeleteResponses, KnowledgeBasesDeletionImpactData, KnowledgeBasesDeletionImpactErrors, KnowledgeBasesDeletionImpactResponses, KnowledgeBasesListData, KnowledgeBasesListErrors, KnowledgeBasesListResponses, KnowledgeBasesStatisticsData, KnowledgeBasesStatisticsErrors, KnowledgeBasesStatisticsResponses, KnowledgeBasesUpdateData, KnowledgeBasesUpdateErrors, KnowledgeBasesUpdateResponses, KnowledgeRunCancelData, KnowledgeRunCancelErrors, KnowledgeRunCancelResponses, KnowledgeRunGetData, KnowledgeRunGetErrors, KnowledgeRunGetResponses, KnowledgeRunLookupData, KnowledgeRunLookupErrors, KnowledgeRunLookupResponses, KnowledgeRunRetryData, KnowledgeRunRetryErrors, KnowledgeRunRetryResponses, LearningAnswersCreateData, LearningAnswersCreateErrors, LearningAnswersCreateResponses, LearningAnswersFeedbackData, LearningAnswersFeedbackErrors, LearningAnswersFeedbackResponses, LearningAnswersStreamData, LearningAnswersStreamErrors, LearningAnswersStreamResponse, LearningAnswersStreamResponses, LearningAttachmentsContentData, LearningAttachmentsContentErrors, LearningAttachmentsContentResponses, LearningAttachmentsDeleteData, LearningAttachmentsDeleteErrors, LearningAttachmentsDeleteResponses, LearningAttachmentsUploadData, LearningAttachmentsUploadErrors, LearningAttachmentsUploadResponses, LearningConsentConfirmData, LearningConsentConfirmErrors, LearningConsentConfirmResponses, LearningConsentGetData, LearningConsentGetErrors, LearningConsentGetResponses, LearningConversationsCreateData, LearningConversationsCreateErrors, LearningConversationsCreateResponses, LearningConversationsDeleteData, LearningConversationsDeleteErrors, LearningConversationsDeleteResponses, LearningConversationsGetData, LearningConversationsGetErrors, LearningConversationsGetResponses, LearningConversationsListData, LearningConversationsListErrors, LearningConversationsListResponses, LearningConversationsRenameData, LearningConversationsRenameErrors, LearningConversationsRenameResponses, PracticeAnswerSaveData, PracticeAnswerSaveErrors, PracticeAnswerSaveResponses, PracticeAttemptCreateData, PracticeAttemptCreateErrors, PracticeAttemptCreateResponses, PracticeAttemptGetData, PracticeAttemptGetErrors, PracticeAttemptGetResponses, PracticeCancelData, PracticeCancelErrors, PracticeCancelResponses, PracticeCompleteData, PracticeCompleteErrors, PracticeCompleteResponses, PracticeCreateData, PracticeCreateErrors, PracticeCreateResponses, PracticeDeleteData, PracticeDeleteErrors, PracticeDeleteResponses, PracticeDetailData, PracticeDetailErrors, PracticeDetailResponses, PracticeFeedbackData, PracticeFeedbackErrors, PracticeFeedbackResponses, PracticeGenerateData, PracticeGenerateErrors, PracticeGenerateResponses, PracticeGradeGetData, PracticeGradeGetErrors, PracticeGradeGetResponses, PracticeListData, PracticeListErrors, PracticeListResponses, PracticePatchData, PracticePatchErrors, PracticePatchResponses, PracticePlanData, PracticePlanErrors, PracticePlanGetData, PracticePlanGetErrors, PracticePlanGetResponses, PracticePlanResponses, PracticeQuestionDeleteData, PracticeQuestionDeleteErrors, PracticeQuestionDeleteResponses, PracticeQuestionEditData, PracticeQuestionEditErrors, PracticeQuestionEditResponses, PracticeRegenerateData, PracticeRegenerateErrors, PracticeRegenerateResponses, PracticeRegradeData, PracticeRegradeErrors, PracticeRegradeResponses, PracticeReportData, PracticeReportErrors, PracticeReportResponses, PracticeRetryData, PracticeRetryErrors, PracticeRetryResponses, PracticeRevisionGetData, PracticeRevisionGetErrors, PracticeRevisionGetResponses, PracticeRunGetData, PracticeRunGetErrors, PracticeRunGetResponses, PracticeRunLookupData, PracticeRunLookupErrors, PracticeRunLookupResponses, PracticeSourcePreviewData, PracticeSourcePreviewErrors, PracticeSourcePreviewResponses, PracticeSubmitData, PracticeSubmitErrors, PracticeSubmitResponses, PromptAuditListData, PromptAuditListErrors, PromptAuditListResponses, PromptDefinitionGetData, PromptDefinitionGetErrors, PromptDefinitionGetResponses, PromptDefinitionRollbackData, PromptDefinitionRollbackErrors, PromptDefinitionRollbackResponses, PromptDefinitionsListData, PromptDefinitionsListErrors, PromptDefinitionsListResponses, PromptDefinitionStatusData, PromptDefinitionStatusErrors, PromptDefinitionStatusResponses, PromptDraftCreateData, PromptDraftCreateErrors, PromptDraftCreateResponses, PromptDraftPatchData, PromptDraftPatchErrors, PromptDraftPatchResponses, PromptEvaluationRunData, PromptEvaluationRunErrors, PromptEvaluationRunResponses, PromptVersionDiffData, PromptVersionDiffErrors, PromptVersionDiffResponses, PromptVersionGetData, PromptVersionGetErrors, PromptVersionGetResponses, PromptVersionPreviewData, PromptVersionPreviewErrors, PromptVersionPreviewResponses, PromptVersionPublishData, PromptVersionPublishErrors, PromptVersionPublishResponses, PromptVersionsListData, PromptVersionsListErrors, PromptVersionsListResponses, QualityAdminAccessRequestData, QualityAdminAccessRequestErrors, QualityAdminAccessRequestResponses, QualityAdminAssignData, QualityAdminAssignErrors, QualityAdminAssignResponses, QualityAdminDetailData, QualityAdminDetailErrors, QualityAdminDetailResponses, QualityAdminMessageData, QualityAdminMessageErrors, QualityAdminMessageResponses, QualityAdminOverviewData, QualityAdminOverviewErrors, QualityAdminOverviewResponses, QualityAdminQueueData, QualityAdminQueueErrors, QualityAdminQueueResponses, QualityAdminReplayData, QualityAdminReplayErrors, QualityAdminReplayResponses, QualityAdminSnapshotData, QualityAdminSnapshotErrors, QualityAdminSnapshotResponses, QualityAdminTransitionData, QualityAdminTransitionErrors, QualityAdminTransitionResponses, QualityCaseCloseData, QualityCaseCloseErrors, QualityCaseCloseResponses, QualityCaseCreateData, QualityCaseCreateErrors, QualityCaseCreateResponses, QualityCaseDetailData, QualityCaseDetailErrors, QualityCaseDetailResponses, QualityCaseListData, QualityCaseListErrors, QualityCaseListResponses, QualityCaseMessageData, QualityCaseMessageErrors, QualityCaseMessageResponses, QualityCaseWithdrawData, QualityCaseWithdrawErrors, QualityCaseWithdrawResponses, QualityGrantDecisionData, QualityGrantDecisionErrors, QualityGrantDecisionResponses, QualityGrantRevokeData, QualityGrantRevokeErrors, QualityGrantRevokeResponses, UserAvatarDeleteData, UserAvatarDeleteErrors, UserAvatarDeleteResponses, UserAvatarGetData, UserAvatarGetErrors, UserAvatarGetResponses, UserProfileGetData, UserProfileGetErrors, UserProfileGetResponses, UserProfileUpdateData, UserProfileUpdateErrors, UserProfileUpdateResponses, WeaknessConfirmData, WeaknessConfirmErrors, WeaknessConfirmResponses, WeaknessCreateData, WeaknessCreateErrors, WeaknessCreateResponses, WeaknessDeleteData, WeaknessDeleteErrors, WeaknessDeleteResponses, WeaknessDetailData, WeaknessDetailErrors, WeaknessDetailResponses, WeaknessIgnoreData, WeaknessIgnoreErrors, WeaknessIgnoreResponses, WeaknessListData, WeaknessListErrors, WeaknessListResponses, WeaknessMasteryData, WeaknessMasteryErrors, WeaknessMasteryResponses, WeaknessPatchData, WeaknessPatchErrors, WeaknessPatchResponses, WeaknessReviewsData, WeaknessReviewsErrors, WeaknessReviewsResponses, WeaknessRevokeData, WeaknessRevokeErrors, WeaknessRevokeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -70,6 +70,203 @@ export const authMe = <ThrowOnError extends boolean = false>(options?: Options<A
  * Logout
  */
 export const authLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutData, ThrowOnError>): RequestResult<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError> => (options?.client ?? client).post<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError>({ url: '/api/v1/auth/logout', ...options });
+
+/**
+ * User List
+ */
+export const qualityCaseList = <ThrowOnError extends boolean = false>(options?: Options<QualityCaseListData, ThrowOnError>): RequestResult<QualityCaseListResponses, QualityCaseListErrors, ThrowOnError> => (options?.client ?? client).get<QualityCaseListResponses, QualityCaseListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases',
+    ...options
+});
+
+/**
+ * Create
+ */
+export const qualityCaseCreate = <ThrowOnError extends boolean = false>(options: Options<QualityCaseCreateData, ThrowOnError>): RequestResult<QualityCaseCreateResponses, QualityCaseCreateErrors, ThrowOnError> => (options.client ?? client).post<QualityCaseCreateResponses, QualityCaseCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Withdraw
+ */
+export const qualityCaseWithdraw = <ThrowOnError extends boolean = false>(options: Options<QualityCaseWithdrawData, ThrowOnError>): RequestResult<QualityCaseWithdrawResponses, QualityCaseWithdrawErrors, ThrowOnError> => (options.client ?? client).delete<QualityCaseWithdrawResponses, QualityCaseWithdrawErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * User Detail
+ */
+export const qualityCaseDetail = <ThrowOnError extends boolean = false>(options: Options<QualityCaseDetailData, ThrowOnError>): RequestResult<QualityCaseDetailResponses, QualityCaseDetailErrors, ThrowOnError> => (options.client ?? client).get<QualityCaseDetailResponses, QualityCaseDetailErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}',
+    ...options
+});
+
+/**
+ * User Message
+ */
+export const qualityCaseMessage = <ThrowOnError extends boolean = false>(options: Options<QualityCaseMessageData, ThrowOnError>): RequestResult<QualityCaseMessageResponses, QualityCaseMessageErrors, ThrowOnError> => (options.client ?? client).post<QualityCaseMessageResponses, QualityCaseMessageErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Grant Decision
+ */
+export const qualityGrantDecision = <ThrowOnError extends boolean = false>(options: Options<QualityGrantDecisionData, ThrowOnError>): RequestResult<QualityGrantDecisionResponses, QualityGrantDecisionErrors, ThrowOnError> => (options.client ?? client).post<QualityGrantDecisionResponses, QualityGrantDecisionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}/grants/{grant_id}/decision',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Grant Revoke
+ */
+export const qualityGrantRevoke = <ThrowOnError extends boolean = false>(options: Options<QualityGrantRevokeData, ThrowOnError>): RequestResult<QualityGrantRevokeResponses, QualityGrantRevokeErrors, ThrowOnError> => (options.client ?? client).delete<QualityGrantRevokeResponses, QualityGrantRevokeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}/grants/{grant_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Close
+ */
+export const qualityCaseClose = <ThrowOnError extends boolean = false>(options: Options<QualityCaseCloseData, ThrowOnError>): RequestResult<QualityCaseCloseResponses, QualityCaseCloseErrors, ThrowOnError> => (options.client ?? client).post<QualityCaseCloseResponses, QualityCaseCloseErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/ai-quality-cases/{case_id}/close',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Overview
+ */
+export const qualityAdminOverview = <ThrowOnError extends boolean = false>(options?: Options<QualityAdminOverviewData, ThrowOnError>): RequestResult<QualityAdminOverviewResponses, QualityAdminOverviewErrors, ThrowOnError> => (options?.client ?? client).get<QualityAdminOverviewResponses, QualityAdminOverviewErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/overview',
+    ...options
+});
+
+/**
+ * Queue
+ */
+export const qualityAdminQueue = <ThrowOnError extends boolean = false>(options?: Options<QualityAdminQueueData, ThrowOnError>): RequestResult<QualityAdminQueueResponses, QualityAdminQueueErrors, ThrowOnError> => (options?.client ?? client).get<QualityAdminQueueResponses, QualityAdminQueueErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases',
+    ...options
+});
+
+/**
+ * Admin Detail
+ */
+export const qualityAdminDetail = <ThrowOnError extends boolean = false>(options: Options<QualityAdminDetailData, ThrowOnError>): RequestResult<QualityAdminDetailResponses, QualityAdminDetailErrors, ThrowOnError> => (options.client ?? client).get<QualityAdminDetailResponses, QualityAdminDetailErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}',
+    ...options
+});
+
+/**
+ * Snapshot
+ */
+export const qualityAdminSnapshot = <ThrowOnError extends boolean = false>(options: Options<QualityAdminSnapshotData, ThrowOnError>): RequestResult<QualityAdminSnapshotResponses, QualityAdminSnapshotErrors, ThrowOnError> => (options.client ?? client).get<QualityAdminSnapshotResponses, QualityAdminSnapshotErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/snapshot',
+    ...options
+});
+
+/**
+ * Assign
+ */
+export const qualityAdminAssign = <ThrowOnError extends boolean = false>(options: Options<QualityAdminAssignData, ThrowOnError>): RequestResult<QualityAdminAssignResponses, QualityAdminAssignErrors, ThrowOnError> => (options.client ?? client).post<QualityAdminAssignResponses, QualityAdminAssignErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/assign',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Access Request
+ */
+export const qualityAdminAccessRequest = <ThrowOnError extends boolean = false>(options: Options<QualityAdminAccessRequestData, ThrowOnError>): RequestResult<QualityAdminAccessRequestResponses, QualityAdminAccessRequestErrors, ThrowOnError> => (options.client ?? client).post<QualityAdminAccessRequestResponses, QualityAdminAccessRequestErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/access-requests',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Replay
+ */
+export const qualityAdminReplay = <ThrowOnError extends boolean = false>(options: Options<QualityAdminReplayData, ThrowOnError>): RequestResult<QualityAdminReplayResponses, QualityAdminReplayErrors, ThrowOnError> => (options.client ?? client).post<QualityAdminReplayResponses, QualityAdminReplayErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/replays',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Admin Message
+ */
+export const qualityAdminMessage = <ThrowOnError extends boolean = false>(options: Options<QualityAdminMessageData, ThrowOnError>): RequestResult<QualityAdminMessageResponses, QualityAdminMessageErrors, ThrowOnError> => (options.client ?? client).post<QualityAdminMessageResponses, QualityAdminMessageErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Transition
+ */
+export const qualityAdminTransition = <ThrowOnError extends boolean = false>(options: Options<QualityAdminTransitionData, ThrowOnError>): RequestResult<QualityAdminTransitionResponses, QualityAdminTransitionErrors, ThrowOnError> => (options.client ?? client).post<QualityAdminTransitionResponses, QualityAdminTransitionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/ai-quality/cases/{case_id}/transitions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Knowledge Bases
@@ -904,6 +1101,147 @@ export const practiceSubmit = <ThrowOnError extends boolean = false>(options: Op
 export const practiceSourcePreview = <ThrowOnError extends boolean = false>(options: Options<PracticeSourcePreviewData, ThrowOnError>): RequestResult<PracticeSourcePreviewResponses, PracticeSourcePreviewErrors, ThrowOnError> => (options.client ?? client).get<PracticeSourcePreviewResponses, PracticeSourcePreviewErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/api/v1/learning/practice/sets/{set_id}/revisions/{revision_id}/questions/{question_id}/sources/{source_id}',
+    ...options
+});
+
+/**
+ * Definitions
+ */
+export const promptDefinitionsList = <ThrowOnError extends boolean = false>(options?: Options<PromptDefinitionsListData, ThrowOnError>): RequestResult<PromptDefinitionsListResponses, PromptDefinitionsListErrors, ThrowOnError> => (options?.client ?? client).get<PromptDefinitionsListResponses, PromptDefinitionsListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions',
+    ...options
+});
+
+/**
+ * Definition
+ */
+export const promptDefinitionGet = <ThrowOnError extends boolean = false>(options: Options<PromptDefinitionGetData, ThrowOnError>): RequestResult<PromptDefinitionGetResponses, PromptDefinitionGetErrors, ThrowOnError> => (options.client ?? client).get<PromptDefinitionGetResponses, PromptDefinitionGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}',
+    ...options
+});
+
+/**
+ * Versions
+ */
+export const promptVersionsList = <ThrowOnError extends boolean = false>(options: Options<PromptVersionsListData, ThrowOnError>): RequestResult<PromptVersionsListResponses, PromptVersionsListErrors, ThrowOnError> => (options.client ?? client).get<PromptVersionsListResponses, PromptVersionsListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/versions',
+    ...options
+});
+
+/**
+ * Create
+ */
+export const promptDraftCreate = <ThrowOnError extends boolean = false>(options: Options<PromptDraftCreateData, ThrowOnError>): RequestResult<PromptDraftCreateResponses, PromptDraftCreateErrors, ThrowOnError> => (options.client ?? client).post<PromptDraftCreateResponses, PromptDraftCreateErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/versions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Version
+ */
+export const promptVersionGet = <ThrowOnError extends boolean = false>(options: Options<PromptVersionGetData, ThrowOnError>): RequestResult<PromptVersionGetResponses, PromptVersionGetErrors, ThrowOnError> => (options.client ?? client).get<PromptVersionGetResponses, PromptVersionGetErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}',
+    ...options
+});
+
+/**
+ * Patch
+ */
+export const promptDraftPatch = <ThrowOnError extends boolean = false>(options: Options<PromptDraftPatchData, ThrowOnError>): RequestResult<PromptDraftPatchResponses, PromptDraftPatchErrors, ThrowOnError> => (options.client ?? client).patch<PromptDraftPatchResponses, PromptDraftPatchErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Diff
+ */
+export const promptVersionDiff = <ThrowOnError extends boolean = false>(options: Options<PromptVersionDiffData, ThrowOnError>): RequestResult<PromptVersionDiffResponses, PromptVersionDiffErrors, ThrowOnError> => (options.client ?? client).get<PromptVersionDiffResponses, PromptVersionDiffErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}/diff',
+    ...options
+});
+
+/**
+ * Preview
+ */
+export const promptVersionPreview = <ThrowOnError extends boolean = false>(options: Options<PromptVersionPreviewData, ThrowOnError>): RequestResult<PromptVersionPreviewResponses, PromptVersionPreviewErrors, ThrowOnError> => (options.client ?? client).post<PromptVersionPreviewResponses, PromptVersionPreviewErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Evaluate
+ */
+export const promptEvaluationRun = <ThrowOnError extends boolean = false>(options: Options<PromptEvaluationRunData, ThrowOnError>): RequestResult<PromptEvaluationRunResponses, PromptEvaluationRunErrors, ThrowOnError> => (options.client ?? client).post<PromptEvaluationRunResponses, PromptEvaluationRunErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}/evaluation-runs',
+    ...options
+});
+
+/**
+ * Publish
+ */
+export const promptVersionPublish = <ThrowOnError extends boolean = false>(options: Options<PromptVersionPublishData, ThrowOnError>): RequestResult<PromptVersionPublishResponses, PromptVersionPublishErrors, ThrowOnError> => (options.client ?? client).post<PromptVersionPublishResponses, PromptVersionPublishErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-versions/{version_id}/publish',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Rollback
+ */
+export const promptDefinitionRollback = <ThrowOnError extends boolean = false>(options: Options<PromptDefinitionRollbackData, ThrowOnError>): RequestResult<PromptDefinitionRollbackResponses, PromptDefinitionRollbackErrors, ThrowOnError> => (options.client ?? client).post<PromptDefinitionRollbackResponses, PromptDefinitionRollbackErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/rollbacks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Status
+ */
+export const promptDefinitionStatus = <ThrowOnError extends boolean = false>(options: Options<PromptDefinitionStatusData, ThrowOnError>): RequestResult<PromptDefinitionStatusResponses, PromptDefinitionStatusErrors, ThrowOnError> => (options.client ?? client).post<PromptDefinitionStatusResponses, PromptDefinitionStatusErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/status',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Audits
+ */
+export const promptAuditList = <ThrowOnError extends boolean = false>(options: Options<PromptAuditListData, ThrowOnError>): RequestResult<PromptAuditListResponses, PromptAuditListErrors, ThrowOnError> => (options.client ?? client).get<PromptAuditListResponses, PromptAuditListErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/api/v1/admin/prompt-definitions/{definition_id}/audit-events',
     ...options
 });
 
