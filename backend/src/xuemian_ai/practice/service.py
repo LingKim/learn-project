@@ -9,6 +9,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from xuemian_ai.accounts.models import User
+from xuemian_ai.agent_runs.models import AgentRun
+from xuemian_ai.core.config import get_settings
 from xuemian_ai.core.errors import ConflictError, NotFoundError, ValidationAppError
 from xuemian_ai.core.responses import PageResponse, page_response
 from xuemian_ai.document_processing.models import DocumentChunk, DocumentProcessingVersion
@@ -103,6 +105,19 @@ def version_check(actual: int, expected: int) -> None:
 
 def run_view(run: PracticeRun) -> RunView:
     return RunView.model_validate({key: getattr(run, key) for key in RunView.model_fields})
+
+
+async def sync_agent_run(session: AsyncSession, run: PracticeRun) -> None:
+    """与业务任务同事务更新运行元数据；不接受或复制题目/Prompt正文。"""
+    if not run.input_snapshot or "managed_prompt" not in run.input_snapshot:
+        return
+    agent = await session.scalar(select(AgentRun).where(AgentRun.practice_run_id == run.id))
+    if agent is None:
+        raise conflict("PROMPT_RUN_SNAPSHOT_INVALID")
+    agent.status = "processing" if run.status == "cancel_requested" else run.status
+    agent.started_at, agent.ended_at, agent.error_key = run.started_at, run.ended_at, run.error_key
+    agent.output_reference = run.result_ref
+    agent.trace_ids = list(run.manifest.get("trace_ids", []))
 
 
 class PracticeService:
@@ -578,6 +593,13 @@ class PracticeService:
                     "expected_version": obj.version,
                     "plan_id": str(plan.id),
                 },
+            )
+            # Prompt与模型在入队事务中固化；无已发布版本时整笔入队回滚。
+            from xuemian_ai.practice.generation import generation_schema
+            from xuemian_ai.prompt_management.runtime import freeze_practice_run
+
+            await freeze_practice_run(
+                session, run, self.settings or get_settings(), generation_schema(selected_config)
             )
             await session.flush()
             return run_view(run)
@@ -1511,6 +1533,7 @@ class PracticeService:
                 run.status = "cancel_requested"
             elif run.status != "cancel_requested":
                 raise conflict("PRACTICE_RUN_TERMINAL")
+            await sync_agent_run(session, run)
             return run_view(run)
 
     async def retry(self, run_id: UUID, body: RetryRequest) -> RunView:
@@ -1544,6 +1567,7 @@ class PracticeService:
             run.status, run.stage, run.error_key = "pending", "waiting", None
             run.lease_token, run.lease_expires_at, run.ended_at = None, None, None
             run.retryable = False
+            await sync_agent_run(session, run)
             return run_view(run)
 
     async def claim_run(self, worker_id: str, lease_seconds: int = 30) -> PracticeRun | None:
@@ -1566,6 +1590,7 @@ class PracticeService:
             )
             run.lease_expires_at, run.started_at = now + timedelta(seconds=lease_seconds), now
             run.attempt_count += 1
+            await sync_agent_run(session, run)
             await session.flush()
             return run
 
@@ -1634,6 +1659,7 @@ class PracticeService:
                 run.stage, run.error_key, run.ended_at = run.status, "PRACTICE_RUN_TIMEOUT", now
                 run.retryable = run.status == "failed"
                 run.lease_token = None
+                await sync_agent_run(session, run)
             return len(runs)
 
     async def fail_run(
@@ -1675,6 +1701,7 @@ class PracticeService:
                 datetime.now(UTC),
             )
             run.lease_token = None
+            await sync_agent_run(session, run)
             return True
 
     async def publish_run(
@@ -1718,6 +1745,7 @@ class PracticeService:
                     now,
                     None,
                 )
+                await sync_agent_run(session, run)
                 return False
             user = await session.scalar(
                 select(User).where(
@@ -1733,6 +1761,7 @@ class PracticeService:
                     None,
                 )
                 run.retryable = False
+                await sync_agent_run(session, run)
                 return False
             domain = PracticeService(self.sessions, owner, self.settings)
             snapshot = run.input_snapshot
@@ -1882,5 +1911,6 @@ class PracticeService:
                 None,
             )
             run.result_ref, run.manifest = ref.model_dump(mode="json"), manifest or {}
+            await sync_agent_run(session, run)
             await session.flush()
             return True

@@ -2,6 +2,14 @@
 
 from xuemian_ai.accounts.models import AuthAuditEvent, AuthSession, User
 from xuemian_ai.agent_runs.models import AgentRun
+from xuemian_ai.ai_quality.models import (
+    AIQualityCase,
+    AIQualityCaseEvent,
+    DiagnosticAccessGrant,
+    DiagnosticAudit,
+    DiagnosticReplay,
+    DiagnosticSnapshot,
+)
 from xuemian_ai.document_processing.models import (
     AIProcessingConsent,
     BackgroundTask,
@@ -48,9 +56,29 @@ from xuemian_ai.practice.models import (
     PracticeSubmission,
 )
 from xuemian_ai.profiles.models import UserProfile
+from xuemian_ai.prompt_management.models import (
+    PromptAuditEvent,
+    PromptDefinition,
+    PromptEvaluationRun,
+    PromptEvaluationSuite,
+    PromptVersion,
+    PromptVersionDependency,
+)
 
 __all__ = [
     "AgentRun",
+    "AIQualityCase",
+    "AIQualityCaseEvent",
+    "DiagnosticAccessGrant",
+    "DiagnosticAudit",
+    "DiagnosticReplay",
+    "DiagnosticSnapshot",
+    "PromptAuditEvent",
+    "PromptDefinition",
+    "PromptEvaluationRun",
+    "PromptEvaluationSuite",
+    "PromptVersion",
+    "PromptVersionDependency",
     "KnowledgeCardVersion",
     "KnowledgeExplanation",
     "KnowledgeRun",

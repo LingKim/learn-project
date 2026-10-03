@@ -17,6 +17,7 @@ from langchain_openai import ChatOpenAI
 from langsmith import tracing_context
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
+from xuemian_ai.agent_runs.contracts import RenderedManagedPrompt, canonical_hash
 from xuemian_ai.core.config import Settings
 from xuemian_ai.core.errors import UpstreamServiceError, ValidationAppError
 from xuemian_ai.document_processing.schemas import EvidenceChunk
@@ -118,8 +119,24 @@ class QwenPracticeProvider:
                 1 if operation == "plan" else 3 if operation in {"grade", "regrade"} else 2
             ],
         ]
+        managed_payload = payload.get("_managed_prompt")
+        managed = RenderedManagedPrompt.model_validate(managed_payload) if managed_payload else None
+        if managed is not None and operation != "generate":
+            raise ValidationAppError(error_key="PROMPT_RUN_SNAPSHOT_INVALID")
+        # 内部执行配置不能进入发给模型的用户data消息。
+        payload = {key: value for key, value in payload.items() if key != "_managed_prompt"}
         if operation in {"generate", "regenerate"}:
             payload = {**payload, "output_schema": generation_schema(payload.get("config"))}
+        if managed is not None and (
+            managed.snapshot.output_schema_sha256 != canonical_hash(payload["output_schema"])
+            or managed.snapshot.model_parameters != {"temperature": 0, "enable_thinking": False}
+        ):
+            raise ValidationAppError(error_key="PROMPT_RUN_SNAPSHOT_INVALID")
+        if managed is not None:
+            from xuemian_ai.prompt_management.rendering import bounded_data
+
+            # 同一受管场景对生产与评测data执行相同长度/深度限制。
+            bounded_data(payload)
         if operation in {"grade", "regrade"}:
             answer = payload.get("answer", {})
             if isinstance(answer, dict) and isinstance(answer.get("text"), str):
@@ -142,7 +159,9 @@ class QwenPracticeProvider:
                     )
                 )
                 model = ChatOpenAI(
-                    model=self.settings.learning_answer_model,
+                    model=managed.snapshot.model
+                    if managed
+                    else self.settings.learning_answer_model,
                     api_key=self.settings.dashscope_api_key,
                     base_url=str(self.settings.ai_base_url).rstrip("/"),
                     timeout=self.settings.learning_model_timeout_seconds,
@@ -155,7 +174,14 @@ class QwenPracticeProvider:
                 with tracing_context(enabled=False):
                     response = await model.ainvoke(
                         [
-                            SystemMessage("\n".join(part[2] for part in selected)),
+                            *[
+                                SystemMessage(text)
+                                for text in (
+                                    managed.system_messages
+                                    if managed
+                                    else ["\n".join(part[2] for part in selected)]
+                                )
+                            ],
                             HumanMessage(
                                 json.dumps({"operation": operation, **payload}, ensure_ascii=False)
                             ),

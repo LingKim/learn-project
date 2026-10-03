@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from xuemian_ai.accounts.models import User
 from xuemian_ai.core.errors import ConflictError, NotFoundError
 from xuemian_ai.document_processing.models import RetrievalTrace
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
@@ -22,6 +23,7 @@ class MemorySession:
 
 def source() -> tuple[AsyncSession, LearningTurn, LearningConversation, RetrievalTrace]:
     owner, kb_id, conversation_id, trace_id = uuid4(), uuid4(), uuid4(), uuid4()
+    user = User(id=owner, status="active", deleted_at=None)
     base = KnowledgeBase(id=kb_id, owner_user_id=owner, deleted_at=None)
     conversation = LearningConversation(
         id=conversation_id,
@@ -54,7 +56,7 @@ def source() -> tuple[AsyncSession, LearningTurn, LearningConversation, Retrieva
         error_code=None,
     )
     return (
-        cast(AsyncSession, MemorySession([base, conversation, turn, trace])),
+        cast(AsyncSession, MemorySession([user, base, conversation, turn, trace])),
         turn,
         conversation,
         trace,

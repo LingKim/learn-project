@@ -28,8 +28,9 @@ class AgentRun(UuidPrimaryKeyMixin, TimestampMixin, Base):
     )
     agent_key: Mapped[str] = mapped_column(String(64))
     scene_key: Mapped[str] = mapped_column(String(64))
-    # 不在公共迁移中依赖尚未创建的 Prompt 表；最终迁移补充 RESTRICT 外键。
-    root_prompt_version_id: Mapped[UUID]
+    root_prompt_version_id: Mapped[UUID] = mapped_column(
+        ForeignKey("prompt_versions.id", name="fk_agent_run_prompt_version", ondelete="RESTRICT")
+    )
     snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB)
     input_reference: Mapped[dict[str, Any]] = mapped_column(JSONB)
     output_reference: Mapped[dict[str, Any] | None] = mapped_column(JSONB)

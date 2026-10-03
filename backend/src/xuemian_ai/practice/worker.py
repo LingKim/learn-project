@@ -12,6 +12,7 @@ from langgraph.graph import END, START, StateGraph
 from pydantic import TypeAdapter
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from xuemian_ai.agent_runs.contracts import ManagedPromptSnapshot, canonical_hash
 from xuemian_ai.core.config import Settings, get_settings
 from xuemian_ai.core.errors import AppError, UpstreamServiceError, ValidationAppError
 from xuemian_ai.core.logging import bind_context, configure_logging, get_logger
@@ -187,6 +188,31 @@ class PracticeWorker:
         manifest = prompt_manifest(operation, schema)
         manifest["model"] = self.settings.learning_answer_model
         manifest["retrieval_strategy"] = "protected_retrieval_v1"
+        managed = None
+        if operation == "generate" and "managed_prompt" in snapshot:
+            from xuemian_ai.prompt_management.runtime import load_practice_prompt
+
+            frozen = ManagedPromptSnapshot.model_validate(snapshot["managed_prompt"])
+            if frozen.output_schema_sha256 != canonical_hash(schema):
+                raise ValidationAppError(error_key="PROMPT_RUN_SNAPSHOT_INVALID")
+            async with self.sessions() as session:
+                managed = await load_practice_prompt(session, frozen, self.settings)
+            # 保留旧manifest键，同时记录真正消费的版本；正文只留于调用栈内存。
+            manifest.update(
+                agent_key=frozen.agent_key,
+                scene_key=frozen.scene_key,
+                agent_run_id=str(frozen.agent_run_id),
+                root_prompt_version_id=str(frozen.root_prompt_version_id),
+                parts=[
+                    {"key": p.definition_key, "version_id": str(p.version_id), "sha256": p.sha256}
+                    for p in frozen.composition
+                ],
+                sha256=canonical_hash([p.sha256 for p in frozen.composition]),
+                contract_sha256=frozen.contract_sha256,
+                output_schema=frozen.output_schema_sha256,
+                model=frozen.model,
+                model_parameters=frozen.model_parameters,
+            )
 
         async def resolve(state: ExecutionState) -> ExecutionState:
             await self.checkpoint(run, "resolving_context")
@@ -233,6 +259,8 @@ class PracticeWorker:
             }
             if operation in {"grade", "regrade"}:
                 payload.update(question=snapshot["question"], answer=snapshot["answer"])
+            if managed is not None:
+                payload["_managed_prompt"] = managed.model_dump(mode="json")
             return {"raw": await self.provider.invoke(operation, payload)}
 
         async def validate(state: ExecutionState) -> ExecutionState:

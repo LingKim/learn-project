@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from xuemian_ai.accounts.models import User
 from xuemian_ai.core.errors import ConflictError, NotFoundError
 from xuemian_ai.document_processing.models import RetrievalTrace
 from xuemian_ai.knowledge_bases.models import KnowledgeBase
@@ -66,6 +67,9 @@ class LearningResultSource(BaseModel):
 async def load_learning_result(
     session: AsyncSession, owner_user_id: UUID, source_id: UUID, trace_id: UUID
 ) -> LearningResultSource:
+    owner = await session.get(User, owner_user_id)
+    if owner is None or owner.deleted_at is not None or owner.status != "active":
+        raise NotFoundError(error_key="SOURCE_UNAVAILABLE")
     turn = await session.get(LearningTurn, source_id)
     conversation = await session.get(LearningConversation, turn.conversation_id) if turn else None
     if (
