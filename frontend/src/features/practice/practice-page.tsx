@@ -83,18 +83,29 @@ export function PracticePage({
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<PracticeQuestion | null>(null);
   const [posting, setPosting] = useState(false);
-  const [request, setRequest] = useState<PendingPracticeRequest | null>(() =>
+  const requestContext = JSON.stringify([owner, setId, requestKey, runId]);
+  const linkedRequest: PendingPracticeRequest | null =
     requestKey || runId
       ? { requestKey, runId: runId || undefined, operation: "", targetId: setId }
-      : null,
-  );
-  const recovered = useRef("");
+      : null;
+  const [requestState, setRequestState] = useState(() => ({
+    context: requestContext,
+    value: linkedRequest,
+  }));
+  // 页面可被路由复用；旧账号或旧题集的恢复指针不能用于当前上下文的查询。
+  const request = requestState.context === requestContext ? requestState.value : linkedRequest;
+  const activeContext = useRef(requestContext);
+  activeContext.current = requestContext;
   const processed = useRef("");
   const createKey = useRef<{ digest: string; key: string } | null>(null);
   useEffect(() => {
-    if (!owner || !setId || recovered.current === `${owner}:${setId}`) return;
-    recovered.current = `${owner}:${setId}`;
-    if (!requestKey && !runId) setRequest(readPendingRequest(sessionStorage, owner, setId));
+    const value =
+      requestKey || runId
+        ? { requestKey, runId: runId || undefined, operation: "", targetId: setId }
+        : owner && setId
+          ? readPendingRequest(sessionStorage, owner, setId)
+          : null;
+    setRequestState({ context: JSON.stringify([owner, setId, requestKey, runId]), value });
   }, [owner, setId, requestKey, runId]);
   const runQuery = useQuery(practiceRunOptions(request?.runId ?? ""));
   const lookup = useQuery(
@@ -150,7 +161,9 @@ export function PracticePage({
     ]);
   }, [run, result, setId, attemptId, client]);
   function remember(ref: PendingPracticeRequest | null, id = setId) {
-    setRequest(ref);
+    // 离开旧上下文后的迟到响应不能重写当前页面或跳回旧题集。
+    if (activeContext.current !== requestContext) return;
+    setRequestState({ context: requestContext, value: ref });
     if (owner && id) writePendingRequest(sessionStorage, owner, id, ref);
     if (id) {
       const query = new URLSearchParams();

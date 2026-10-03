@@ -138,6 +138,45 @@ function mount(props: React.ComponentProps<typeof PracticePage>) {
   );
 }
 describe("配置确认与异步恢复", () => {
+  it("同一组件切换题集和URL任务后只读取新题集的run", async () => {
+    vi.mocked(api.getPracticeRun).mockImplementation(async (id) => ({ ...pendingRun, id }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(
+      <QueryClientProvider client={client}>
+        <PracticePage setId="set" runId="first-run" />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(api.getPracticeRun).toHaveBeenCalledWith("first-run"));
+    view.rerender(
+      <QueryClientProvider client={client}>
+        <PracticePage setId="other-set" runId="second-run" />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(api.getPracticeRun).toHaveBeenCalledWith("second-run"));
+  });
+  it("切换账号后不继续用前一个账号的session恢复指针", async () => {
+    sessionStorage.setItem(
+      "practice-request:v1:owner:set",
+      JSON.stringify({
+        version: 1,
+        requestKey: "owner-request",
+        operation: "plan",
+        targetId: "set",
+        runId: "owner-run",
+      }),
+    );
+    vi.mocked(api.getPracticeRun).mockResolvedValue(pendingRun);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <PracticePage setId="set" />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(api.getPracticeRun).toHaveBeenCalledWith("owner-run"));
+    client.setQueryData(["profile"], { username: "other-owner", preferred_language: "zh-CN" });
+    await waitFor(() => expect(screen.queryByText("等待处理")).not.toBeInTheDocument());
+    expect(api.lookupPracticeRun).not.toHaveBeenCalledWith("owner-request", "set");
+  });
   it("展示不可变方案后按所选候选摘要确认，未确认前不生成", async () => {
     vi.mocked(api.getPracticeRun).mockResolvedValue({
       ...pendingRun,

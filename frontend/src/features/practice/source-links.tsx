@@ -10,6 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AnswerContent } from "@/features/learning/answer-content";
+import { ApiError } from "@/lib/api/errors";
 import type { PracticeQuestion } from "./api";
 import { practiceKeys, practiceSourceOptions } from "./queries";
 export function SourceLinks({
@@ -24,18 +25,28 @@ export function SourceLinks({
   available: boolean;
 }) {
   const [sourceId, setSourceId] = useState("");
+  const [unavailableMessage, setUnavailableMessage] = useState("");
   const client = useQueryClient();
   const options = practiceSourceOptions(setId, revisionId, question.question_id, sourceId);
   const query = useQuery({ ...options, enabled: available && options.enabled });
   useEffect(() => {
-    if (available) return;
+    const invalidResponse =
+      query.error instanceof ApiError && [404, 409].includes(query.error.status ?? 0);
+    if (available && !invalidResponse) return;
+    if (invalidResponse)
+      setUnavailableMessage(query.error?.message ?? "来源已失效，原文预览不可用。");
     setSourceId("");
     const queryKey = [...practiceKeys.revision(setId, revisionId), "source", question.question_id];
     void client.cancelQueries({ queryKey });
     client.removeQueries({ queryKey });
-  }, [available, client, setId, revisionId, question.question_id]);
+  }, [available, client, setId, revisionId, question.question_id, query.error]);
   return (
     <div className="space-y-2">
+      {unavailableMessage ? (
+        <p role="alert" className="text-xs text-danger">
+          {unavailableMessage}
+        </p>
+      ) : null}
       {question.source_refs?.length ? (
         <div className="flex flex-wrap gap-2">
           {question.source_refs.map((s) => (
@@ -44,7 +55,10 @@ export function SourceLinks({
               variant="outline"
               size="sm"
               disabled={!available}
-              onClick={() => setSourceId(s.source_id)}
+              onClick={() => {
+                setUnavailableMessage("");
+                setSourceId(s.source_id);
+              }}
             >
               {available ? s.display_name : "来源已失效"}
               {available && s.page_start

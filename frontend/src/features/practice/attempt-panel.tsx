@@ -160,8 +160,11 @@ export function AttemptPanel({
     }, 500);
   }
   async function flush() {
-    await saveScheduled();
-    await queue.flush();
+    // 提交和切题必须等到等待期间产生的新草稿也保存，才能使用服务器确认的答案版本。
+    do {
+      await saveScheduled();
+      await queue.flush();
+    } while (scheduled.current);
   }
   async function navigate(id: string) {
     try {

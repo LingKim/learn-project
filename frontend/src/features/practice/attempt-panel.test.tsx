@@ -193,6 +193,58 @@ describe("练习保存与提交边界", () => {
     );
     expect(screen.getByRole("status", { name: "答案保存状态" })).toHaveTextContent("已保存");
   });
+  it("提交等待保存期间的新输入必须保存后再提交，不能提交较旧答案", async () => {
+    let finish!: (value: Awaited<ReturnType<typeof api.savePracticeAnswer>>) => void;
+    vi.mocked(api.savePracticeAnswer)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      )
+      .mockResolvedValue({
+        data: {
+          ...emptyAttempt,
+          version: 3,
+          answers: [
+            {
+              question_id: textQuestion.question_id,
+              version: 2,
+              answer: { type: "short_answer", text: "最终输入" },
+            },
+          ],
+        },
+        message: "ok",
+      });
+    mount();
+    fireEvent.change(screen.getByLabelText("简答答案"), { target: { value: "较旧输入" } });
+    fireEvent.click(screen.getByRole("button", { name: "提交本题" }));
+    await waitFor(() => expect(api.savePracticeAnswer).toHaveBeenCalledTimes(1));
+    fireEvent.change(screen.getByLabelText("简答答案"), { target: { value: "最终输入" } });
+    await act(async () => {
+      finish({
+        data: {
+          ...emptyAttempt,
+          version: 2,
+          answers: [
+            {
+              question_id: textQuestion.question_id,
+              version: 1,
+              answer: { type: "short_answer", text: "较旧输入" },
+            },
+          ],
+        },
+        message: "ok",
+      });
+    });
+    await waitFor(() => expect(api.submitPracticeAnswer).toHaveBeenCalled());
+    expect(api.submitPracticeAnswer).toHaveBeenCalledWith(
+      "attempt",
+      textQuestion.question_id,
+      expect.objectContaining({ expected_version: 3, answer_version: 2 }),
+    );
+    expect(api.savePracticeAnswer).toHaveBeenCalledTimes(2);
+  });
   it("保存冲突保留本地答案并阻止提交，明确读取最新版本后再保存", async () => {
     vi.mocked(api.savePracticeAnswer).mockRejectedValueOnce(
       new ApiError("其他页面已更新", { status: 409, errorKey: "PRACTICE_VERSION_CONFLICT" }),

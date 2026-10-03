@@ -33,17 +33,48 @@ import {
 } from "./queries";
 
 export function ExplanationDetailPage({ id, runId = "" }: { id: string; runId?: string }) {
+  const profile = useQuery(userProfileQueryOptions());
+  const owner = profile.data?.username ?? "";
+  // 账号和精讲决定恢复、历史选择及编辑快照的归属；路由复用不能把这些状态带到另一份精讲。
+  return (
+    <ExplanationDetailContent
+      key={JSON.stringify([owner, id])}
+      id={id}
+      runId={runId}
+      owner={owner}
+    />
+  );
+}
+
+function ExplanationDetailContent({
+  id,
+  runId,
+  owner,
+}: {
+  id: string;
+  runId: string;
+  owner: string;
+}) {
   const client = useQueryClient();
   const router = useRouter();
   const detail = useQuery(explanationOptions(id));
   const item = detail.data;
-  const profile = useQuery(userProfileQueryOptions());
-  const owner = profile.data?.username ?? "";
   const checkedSince = useRef(Date.now());
   const [recoveryKey, setRecoveryKey] = useState("");
   const lookup = useQuery(knowledgeLookupOptions(recoveryKey));
   const linkedWeakness = useQuery(weaknessOptions(item?.weakness_id ?? ""));
-  const [runOverride, setRunOverride] = useState(runId);
+  const [runState, setRunState] = useState({ linkedRunId: runId, value: runId });
+  const runOverride = runState.linkedRunId === runId ? runState.value : runId;
+  function setRunOverride(value: string) {
+    setRunState({ linkedRunId: runId, value });
+  }
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const runQuery = useQuery(knowledgeRunOptions(runOverride));
   const run =
     runOverride && runOverride !== runId
@@ -104,6 +135,7 @@ export function ExplanationDetailPage({ id, runId = "" }: { id: string; runId?: 
       throw error;
     }
     writeKnowledgeRequest(sessionStorage, owner, id, "");
+    if (!active.current) return;
     setRecoveryKey("");
     client.setQueryData(learningAssetKeys.run(result.data.run.id), result.data.run);
     client.setQueryData<ExplanationDetail>(learningAssetKeys.explanation(id), (old) =>
