@@ -89,7 +89,7 @@ function FeedbackForm({ sourceId, traceId, onOpenChange, onCreated }: FeedbackPr
       </div>
       <fieldset>
         <legend className="mb-2 text-sm">问题类型 *</legend>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex max-w-[400px] flex-wrap gap-2">
           {Object.entries(categories).map(([value, label]) => (
             <label key={value} className="cursor-pointer">
               <input
