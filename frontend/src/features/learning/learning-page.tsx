@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   MessageCircle,
   Plus,
@@ -14,10 +14,14 @@ import {
   Pencil,
   Trash2,
   FileText,
+  Copy,
+  ArrowDown,
+  RotateCcw,
+  LoaderCircle,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnswerContent } from "./answer-content";
-import { CheckboxField } from "@/components/ui/checkbox-field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -41,23 +45,23 @@ import {
   knowledgeFileListQueryOptions,
 } from "@/features/file-management/queries";
 import { ApiError } from "@/lib/api/errors";
-import type { TurnView } from "./api";
+import type { TurnView, ConversationCreate, ConversationDetail } from "./api";
 import {
   conversationsQueryOptions,
   conversationQueryOptions,
-  learningConsentQueryOptions,
   createConversationMutationOptions,
-  sendQuestionMutationOptions,
+  streamQuestionMutationOptions,
   deleteConversationMutationOptions,
   renameConversationMutationOptions,
-  confirmLearningConsentMutationOptions,
   feedbackMutationOptions,
+  learningKeys,
 } from "./queries";
 
 export function answerError(code: string | null | undefined) {
   if (code === "ANSWER_SOURCE_CHANGED") return "资料发生变化，请重新提问。";
   if (code === "ANSWER_LEASE_EXPIRED" || code === "ANSWER_TIMEOUT") return "回答超时，请重试。";
   if (code === "ANSWER_LANGUAGE_INVALID") return "回答语言未通过校验，请重试。";
+  if (code === "ANSWER_MARKDOWN_INVALID") return "回答格式未通过校验，请重试。";
   if (code === "ANSWER_CITATION_INVALID") return "回答未通过引用校验，请重试。";
   return "回答未完成，请重试。";
 }
@@ -69,11 +73,19 @@ export function LearningPage() {
   const [mode, setMode] = useState<"materials" | "general">("materials");
   const [kb, setKb] = useState("");
   const [files, setFiles] = useState<string[]>([]);
-  const [language, setLanguage] = useState<"zh" | "en">("zh");
   const [question, setQuestion] = useState("");
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const [noticeOpen, setNoticeOpen] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
+  const [local, setLocal] = useState<{
+    turn: TurnView;
+    conversationId: string;
+    scope: ConversationCreate;
+  } | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [awayFromBottom, setAwayFromBottom] = useState(false);
+  const controller = useRef<AbortController | null>(null);
+  const messageList = useRef<HTMLDivElement>(null);
+  const follow = useRef(true);
+  useEffect(() => () => controller.current?.abort(), []);
   const [renameOpen, setRenameOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -85,65 +97,183 @@ export function LearningPage() {
     ...knowledgeFileListQueryOptions(kb, 1, 100),
     enabled: Boolean(kb && !selected),
   });
-  const consent = useQuery(learningConsentQueryOptions());
   const create = useMutation(createConversationMutationOptions(client));
-  const send = useMutation(sendQuestionMutationOptions(client));
+  const send = useMutation(streamQuestionMutationOptions(client));
   const rename = useMutation(renameConversationMutationOptions(client));
   const remove = useMutation(deleteConversationMutationOptions(client));
-  const confirm = useMutation(confirmLearningConsentMutationOptions(client));
   const feedback = useMutation(feedbackMutationOptions(client));
   const active = detail.data?.conversation;
-  const turns = detail.data?.turns ?? [];
-  const processing =
-    send.isPending || create.isPending || turns.some((t) => t.status === "processing");
-  const lastFailed = turns.findLast((t) => t.status === "failed");
+  const storedTurns = detail.data?.turns ?? [];
+  const visibleLocal =
+    local &&
+    (!selected || local.conversationId === selected) &&
+    !(
+      local.turn.status === "succeeded" &&
+      storedTurns.some(
+        (turn) => turn.request_key === local.turn.request_key && turn.status === "succeeded",
+      )
+    )
+      ? local
+      : null;
+  const turns = visibleLocal
+    ? [
+        ...storedTurns.filter((turn) => turn.request_key !== visibleLocal.turn.request_key),
+        visibleLocal.turn,
+      ]
+    : storedTurns;
+  const processing = turns.some((turn) => turn.status === "processing");
+  const hasConversation = Boolean(selected || visibleLocal);
 
+  useEffect(() => {
+    if (follow.current && messageList.current) {
+      messageList.current.scrollTop = messageList.current.scrollHeight;
+    }
+  }, [selected, local, detail.data]);
+
+  function cancel() {
+    controller.current?.abort();
+    controller.current = null;
+    setLocal(null);
+    setStreamError(null);
+    send.reset();
+  }
   function reset() {
+    cancel();
     setSelected("");
     setQuestion("");
-    setPendingKey(null);
-    setLanguage("zh");
     setFiles([]);
-    send.reset();
+    follow.current = true;
+    setAwayFromBottom(false);
   }
   function selectConversation(id: string) {
+    cancel();
     setSelected(id);
     setQuestion("");
-    setPendingKey(null);
-    send.reset();
+    follow.current = true;
+    setAwayFromBottom(false);
   }
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!question.trim() || processing) return;
-    if (!consent.data?.confirmed) {
-      setConfirmed(false);
-      setNoticeOpen(true);
+  async function ask(text: string, retry?: TurnView) {
+    if (
+      !text.trim() ||
+      processing ||
+      controller.current ||
+      (!selected && mode === "materials" && !kb) ||
+      (selected && !active)
+    )
       return;
-    }
+    const abort = new AbortController();
+    controller.current = abort;
+    const key = retry?.request_key ?? crypto.randomUUID();
+    const scope =
+      visibleLocal?.turn.request_key === key
+        ? visibleLocal.scope
+        : ({
+            mode,
+            knowledge_base_id: mode === "materials" ? kb : null,
+            file_ids: mode === "materials" ? files : [],
+          } satisfies ConversationCreate);
+    const snapshot: TurnView = {
+      id: retry?.id ?? key,
+      request_key: key,
+      question: text.trim(),
+      language: retry?.language ?? "zh",
+      status: "processing",
+      answer: null,
+      refused: false,
+      source_label:
+        active?.mode === "materials" || (!selected && mode === "materials")
+          ? "用户资料"
+          : "模型通用知识",
+      citations: [],
+      trace_id: null,
+      trace_complete: false,
+      error_code: null,
+      feedback: null,
+      created_at: retry?.created_at ?? new Date().toISOString(),
+    };
     let id = selected;
-    const key = pendingKey ?? crypto.randomUUID();
-    setPendingKey(key);
+    setLocal({ turn: snapshot, conversationId: id, scope });
+    setQuestion("");
+    setStreamError(null);
+    follow.current = true;
+    setAwayFromBottom(false);
     try {
       if (!id) {
-        const result = await create.mutateAsync({
-          mode,
-          knowledge_base_id: mode === "materials" ? kb : null,
-          file_ids: mode === "materials" ? files : [],
-        });
+        const result = await create.mutateAsync(scope);
+        if (controller.current !== abort || abort.signal.aborted) return;
         id = result.data.id;
+        client.setQueryData(conversationQueryOptions(id).queryKey, {
+          conversation: result.data,
+          turns: [],
+        });
         setSelected(id);
+        setLocal((value) => (value ? { ...value, conversationId: id } : value));
       }
       await send.mutateAsync({
         id,
-        body: { request_key: key, question: question.trim(), language },
+        body: { request_key: key, question: snapshot.question },
+        signal: abort.signal,
+        receive: (event) => {
+          if (controller.current !== abort || abort.signal.aborted) return;
+          if (event.turn && event.turn.request_key !== key)
+            throw new ApiError("回答与当前问题不一致");
+          if (event.type === "completed" && event.turn) {
+            const finalTurn = event.turn;
+            client.setQueryData<ConversationDetail>(learningKeys.detail(id), (value) =>
+              value
+                ? {
+                    ...value,
+                    turns: [...value.turns.filter((turn) => turn.request_key !== key), finalTurn],
+                  }
+                : value,
+            );
+          }
+          setLocal((value) => {
+            if (!value || value.turn.request_key !== key) return value;
+            if (event.type === "delta")
+              return {
+                ...value,
+                turn: { ...value.turn, answer: (value.turn.answer ?? "") + (event.delta ?? "") },
+              };
+            if (event.turn) return { ...value, turn: event.turn };
+            return value;
+          });
+          if (event.type === "completed") controller.current = null;
+        },
       });
-      setQuestion("");
-      setPendingKey(null);
-    } catch {
-      /* Query 显示错误，保留问题与幂等 key。 */
+    } catch (error) {
+      if (controller.current !== abort || abort.signal.aborted) return;
+      setLocal((value) =>
+        value
+          ? {
+              ...value,
+              turn: {
+                ...value.turn,
+                status: "failed",
+                answer: null,
+                error_code: error instanceof ApiError ? (error.errorKey ?? null) : null,
+              },
+            }
+          : value,
+      );
+      setStreamError(error instanceof ApiError ? error.message : "请求失败，请重试。");
+    } finally {
+      if (controller.current === abort) controller.current = null;
+      abort.abort();
     }
   }
-  const error = create.error ?? send.error;
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    void ask(question);
+  }
+  async function copyAnswer(turn: TurnView) {
+    try {
+      await navigator.clipboard.writeText(turn.answer ?? "");
+      setCopied(turn.id);
+    } catch {
+      setStreamError("复制失败，请手动选择回答内容复制。");
+    }
+  }
 
   return (
     <ContentShell>
@@ -152,12 +282,7 @@ export function LearningPage() {
           className="flex shrink-0 flex-col gap-5 border-b border-border bg-sidebar px-5 py-6 lg:w-[312px] lg:border-r lg:border-b-0"
           aria-label="问答历史"
         >
-          <Button
-            variant="brand"
-            className="w-full justify-start"
-            onClick={reset}
-            disabled={processing}
-          >
+          <Button variant="brand" className="w-full justify-start" onClick={reset}>
             <Plus className="size-4" />
             新建会话
           </Button>
@@ -181,7 +306,6 @@ export function LearningPage() {
                     <li key={item.id}>
                       <button
                         className={`flex w-full items-start gap-2 rounded-md px-3 py-3 text-left ${selected === item.id ? "bg-muted" : "hover:bg-surface"}`}
-                        disabled={processing}
                         aria-label={item.title}
                         onClick={() => selectConversation(item.id)}
                       >
@@ -259,9 +383,9 @@ export function LearningPage() {
         </aside>
         <section className="flex min-w-0 flex-1 flex-col" aria-label="快速回答">
           <header
-            className={`shrink-0 ${selected ? "border-b border-border bg-surface px-5 py-[18px] lg:px-10" : "px-5 pt-7 lg:px-11"}`}
+            className={`shrink-0 ${hasConversation ? "border-b border-border bg-surface px-5 py-[18px] lg:h-[125px] lg:px-10 lg:py-3" : "px-5 pt-7 lg:px-11"}`}
           >
-            {!selected ? (
+            {!hasConversation ? (
               <div className="mb-[22px]">
                 <h1 className="text-[26px] font-semibold">学习室</h1>
                 <p className="mt-2 text-[13px] text-muted-foreground">
@@ -297,12 +421,12 @@ export function LearningPage() {
                   disabled={!enabled}
                   aria-pressed={enabled}
                   title={enabled ? undefined : `${label}尚未开放`}
-                  className={`m-1 flex min-h-16 items-start gap-2 rounded-md px-3 py-3 text-left ${enabled ? "border border-border bg-surface" : "text-muted-foreground"}`}
+                  className={`m-1 flex min-h-16 items-start gap-2 rounded-md px-3 py-3 text-left ${hasConversation ? "lg:h-14 lg:min-h-14 lg:py-2" : ""} ${enabled ? "border border-border bg-surface" : "text-muted-foreground"}`}
                 >
                   <Icon className="mt-0.5 size-4 shrink-0" />
-                  <span>
-                    <span className="block text-sm font-medium">{label}</span>
-                    <span className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">{label}</span>
+                    <span className="mt-1 hidden truncate text-[11px] text-muted-foreground sm:block">
                       {description}
                       {enabled ? "" : " · 尚未开放"}
                     </span>
@@ -310,14 +434,19 @@ export function LearningPage() {
                 </button>
               ))}
             </div>
-            {selected ? (
+            {hasConversation ? (
               <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>
-                  {active?.mode === "materials"
+                <span className="min-w-0 truncate">
+                  {(active?.mode ?? mode) === "materials"
                     ? `资料模式 · ${bases.data?.data.find((base) => base.id === active?.knowledge_base_id)?.name ?? "当前知识库"} · ${active?.file_ids.length ? `${active.file_ids.length} 个文件` : "整个知识库"}`
                     : "通用模式 · 模型通用知识"}
                 </span>
-                <Button variant="ghost" size="sm" disabled={processing} onClick={reset}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:h-6 lg:min-h-6 lg:px-2"
+                  onClick={reset}
+                >
                   新建以修改来源
                 </Button>
               </div>
@@ -342,7 +471,7 @@ export function LearningPage() {
                           setKb("");
                           setFiles([]);
                           setQuestion("");
-                          setPendingKey(null);
+                          setStreamError(null);
                           send.reset();
                         }}
                       >
@@ -363,7 +492,7 @@ export function LearningPage() {
                           setKb(value);
                           setFiles([]);
                           setQuestion("");
-                          setPendingKey(null);
+                          setStreamError(null);
                         }}
                       >
                         <SelectTrigger aria-labelledby="knowledge-base-label">
@@ -414,7 +543,7 @@ export function LearningPage() {
                                           : [...current, file.id],
                                       );
                                       setQuestion("");
-                                      setPendingKey(null);
+                                      setStreamError(null);
                                     }}
                                     className={`inline-flex max-w-full items-center gap-1 rounded border border-border px-2 py-1 text-[11px] ${files.includes(file.id) ? "bg-muted" : "bg-surface"}`}
                                   >
@@ -447,8 +576,16 @@ export function LearningPage() {
             )}
           </header>
           <div
-            className="min-h-64 flex-1 space-y-[18px] overflow-y-auto px-5 py-[22px] lg:min-h-0 lg:px-10"
-            aria-live="polite"
+            className="min-h-64 flex-1 space-y-[18px] overflow-y-auto px-4 py-[22px] lg:min-h-0 lg:px-6"
+            ref={messageList}
+            role="log"
+            aria-label="消息列表"
+            onScroll={() => {
+              const element = messageList.current;
+              if (!element) return;
+              follow.current = element.scrollHeight - element.scrollTop - element.clientHeight < 96;
+              setAwayFromBottom(!follow.current);
+            }}
           >
             {selected && detail.isError ? (
               <p role="alert">
@@ -458,7 +595,9 @@ export function LearningPage() {
                 </Button>
               </p>
             ) : null}
-            {selected && detail.isPending ? <p role="status">正在读取会话…</p> : null}
+            {selected && detail.isPending && !visibleLocal ? (
+              <p role="status">正在读取会话…</p>
+            ) : null}
             {!turns.length && !selected ? (
               <div className="flex h-full min-h-48 flex-col items-center justify-center text-center">
                 <span className="mb-4 grid size-12 place-items-center rounded-xl bg-muted">
@@ -473,20 +612,38 @@ export function LearningPage() {
               </div>
             ) : null}
             {turns.map((turn) => (
-              <article key={turn.id} className="space-y-[18px]">
-                <div className="ml-auto max-w-[85%]">
+              <article key={turn.id} className="w-full min-w-0 space-y-4">
+                <div
+                  data-message-role="user"
+                  className="relative ml-auto w-fit max-w-[95%] pr-12 sm:max-w-[80%] xl:max-w-[min(80%,1200px)]"
+                >
+                  <span
+                    className="absolute top-5 right-0 grid size-9 place-items-center rounded-full bg-sidebar"
+                    aria-hidden="true"
+                  >
+                    <UserRound className="size-4" />
+                  </span>
                   <span className="mb-1 block text-right text-[11px] text-muted-foreground">
                     你
                   </span>
-                  <p className="rounded-md bg-[#F0F0EC] px-4 py-3 text-[13px] whitespace-pre-wrap break-words">
+                  <p className="rounded-md bg-[#F0F0EC] px-4 py-3 text-sm leading-7 whitespace-pre-wrap break-words">
                     {turn.question}
                   </p>
                 </div>
-                <div className="max-w-[90%]">
+                <div
+                  data-message-role="assistant"
+                  className="relative w-fit min-w-0 max-w-full pl-12 lg:max-w-[min(92%,1440px)]"
+                >
+                  <span
+                    className="absolute top-5 left-0 grid size-9 place-items-center rounded-full bg-primary"
+                    aria-hidden="true"
+                  >
+                    <Sparkles className="size-4" />
+                  </span>
                   <span className="mb-1 block text-[11px] text-muted-foreground">
                     学面通AI · <span>{turn.source_label}</span>
                   </span>
-                  <div className="rounded-md border border-[#F2C94C]/35 bg-[#FFF4D6] p-4">
+                  <div className="rounded-md border border-[#F2C94C]/35 bg-[#FFF4D6] px-5 py-4 text-sm leading-7">
                     {turn.status === "succeeded" ? (
                       <>
                         <AnswerContent content={turn.answer ?? ""} />
@@ -519,81 +676,171 @@ export function LearningPage() {
                         ) : null}
                       </>
                     ) : turn.status === "processing" ? (
-                      <p role="status" className="text-sm text-muted-foreground">
-                        正在检索与生成回答，请稍候…
-                      </p>
+                      <div role="status" aria-label="正在回答">
+                        {turn.answer ? <AnswerContent content={turn.answer} /> : null}
+                        <span className="mt-1 inline-flex items-center gap-2 text-xs text-muted-foreground">
+                          <LoaderCircle className="size-3.5 animate-spin" />
+                          {turn.answer ? "正在生成…" : "正在思考…"}
+                        </span>
+                      </div>
                     ) : (
-                      <p className="text-sm text-destructive">{answerError(turn.error_code)}</p>
+                      <div>
+                        <p role="alert" className="text-sm text-destructive">
+                          {visibleLocal?.turn.id === turn.id && streamError
+                            ? streamError
+                            : answerError(turn.error_code)}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          title="重试回答"
+                          aria-label="重试回答"
+                          disabled={processing}
+                          onClick={() => void ask(turn.question, turn)}
+                        >
+                          <RotateCcw className="size-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                   {turn.status === "succeeded" ? (
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Button
-                        size="sm"
-                        variant="brand"
+                        size="icon"
+                        className="size-9 min-h-9"
+                        variant="ghost"
+                        title="继续追问"
+                        aria-label="继续追问"
                         onClick={() => document.getElementById("learning-question")?.focus()}
                       >
                         <MessageCircle className="size-3.5" />
-                        继续追问
                       </Button>
                       <Button
-                        size="sm"
-                        variant={turn.feedback === "helpful" ? "brand" : "outline"}
+                        size="icon"
+                        className="size-9 min-h-9"
+                        variant={turn.feedback === "helpful" ? "brand" : "ghost"}
+                        title="有帮助"
+                        aria-label="有帮助"
                         aria-pressed={turn.feedback === "helpful"}
                         disabled={feedback.isPending}
                         onClick={() =>
-                          feedback.mutate({
-                            id: selected,
-                            turnId: turn.id,
-                            feedback: turn.feedback === "helpful" ? null : "helpful",
-                          })
+                          feedback.mutate(
+                            {
+                              id: selected,
+                              turnId: turn.id,
+                              feedback: turn.feedback === "helpful" ? null : "helpful",
+                            },
+                            {
+                              onSuccess: (result) =>
+                                setLocal((value) =>
+                                  value?.turn.id === turn.id
+                                    ? { ...value, turn: result.data }
+                                    : value,
+                                ),
+                            },
+                          )
                         }
                       >
                         <ThumbsUp className="size-3.5" />
-                        有帮助
                       </Button>
                       <Button
-                        size="sm"
-                        variant={turn.feedback === "unhelpful" ? "brand" : "outline"}
+                        size="icon"
+                        className="size-9 min-h-9"
+                        variant={turn.feedback === "unhelpful" ? "brand" : "ghost"}
+                        title="无帮助"
+                        aria-label="无帮助"
                         aria-pressed={turn.feedback === "unhelpful"}
                         disabled={feedback.isPending}
                         onClick={() =>
-                          feedback.mutate({
-                            id: selected,
-                            turnId: turn.id,
-                            feedback: turn.feedback === "unhelpful" ? null : "unhelpful",
-                          })
+                          feedback.mutate(
+                            {
+                              id: selected,
+                              turnId: turn.id,
+                              feedback: turn.feedback === "unhelpful" ? null : "unhelpful",
+                            },
+                            {
+                              onSuccess: (result) =>
+                                setLocal((value) =>
+                                  value?.turn.id === turn.id
+                                    ? { ...value, turn: result.data }
+                                    : value,
+                                ),
+                            },
+                          )
                         }
                       >
                         <ThumbsDown className="size-3.5" />
-                        无帮助
                       </Button>
-                      <Button size="sm" variant="outline" disabled title="生成笔记尚未开放">
-                        生成笔记
+                      <Button
+                        size="icon"
+                        className="size-9 min-h-9"
+                        variant="ghost"
+                        title={copied === turn.id ? "已复制" : "复制回答"}
+                        aria-label="复制回答"
+                        onClick={() => void copyAnswer(turn)}
+                      >
+                        <Copy className="size-4" />
                       </Button>
+                      {copied === turn.id ? (
+                        <span role="status" className="self-center text-xs text-muted-foreground">
+                          已复制
+                        </span>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
               </article>
             ))}
           </div>
+          {awayFromBottom ? (
+            <Button
+              type="button"
+              className="mx-auto mb-2"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                follow.current = true;
+                setAwayFromBottom(false);
+                if (messageList.current)
+                  messageList.current.scrollTop = messageList.current.scrollHeight;
+              }}
+            >
+              <ArrowDown className="size-4" />
+              回到底部
+            </Button>
+          ) : null}
+          {streamError && visibleLocal?.turn.status !== "failed" ? (
+            <p role="alert" className="px-5 py-2 text-sm text-destructive lg:px-10">
+              {streamError}
+            </p>
+          ) : null}
           <div
-            className={`shrink-0 px-5 pb-7 lg:px-11 ${selected ? "border-t border-border bg-surface pt-3" : ""}`}
+            className={`shrink-0 px-5 pb-7 lg:px-11 ${hasConversation ? "border-t border-border bg-surface pt-3 lg:h-[88px] lg:px-10 lg:pt-2.5 lg:pb-2.5" : ""}`}
           >
-            <form onSubmit={submit} className="rounded-md border border-border bg-surface p-3">
+            <form
+              onSubmit={submit}
+              className={`rounded-md border border-border bg-surface p-3 ${hasConversation ? "lg:flex lg:h-[66px] lg:items-center lg:gap-3 lg:p-2" : ""}`}
+            >
               <label htmlFor="learning-question" className="sr-only">
-                {selected ? "继续提问" : "您的问题"}
+                {hasConversation ? "继续提问" : "您的问题"}
               </label>
               <Textarea
                 id="learning-question"
                 value={question}
                 maxLength={2000}
-                rows={selected ? 2 : 3}
-                className={`resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 ${selected ? "min-h-12" : "min-h-20"}`}
+                rows={hasConversation ? 2 : 3}
+                className={`resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 ${hasConversation ? "min-h-12 lg:h-12 lg:min-h-12 lg:flex-1 lg:py-1" : "min-h-20"}`}
                 disabled={processing || (Boolean(selected) && !active)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    void ask(question);
+                  }
+                }}
                 onChange={(event) => {
                   setQuestion(event.target.value);
-                  setPendingKey(null);
+                  setStreamError(null);
                   send.reset();
                 }}
                 placeholder={
@@ -602,111 +849,36 @@ export function LearningPage() {
                     : "输入你的问题，支持粘贴代码、错误信息或具体场景…"
                 }
               />
-              {error ? (
-                <p role="alert" className="my-2 text-sm text-destructive">
-                  {error instanceof ApiError ? error.message : "请求失败，请重试。"}
+              <div
+                className={`mt-2 flex flex-wrap items-center justify-between gap-2 ${hasConversation ? "lg:mt-0 lg:shrink-0" : ""}`}
+              >
+                <p
+                  className={`text-[11px] text-muted-foreground ${hasConversation ? "lg:hidden" : ""}`}
+                >
+                  AI 回答可能有误，请结合来源核对。
                 </p>
-              ) : null}
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span id="answer-language-label" className="sr-only">
-                    回答语言
-                  </span>
-                  <Select
-                    value={language}
-                    onValueChange={(value) => {
-                      setLanguage(value as "zh" | "en");
-                      setPendingKey(null);
-                    }}
-                    disabled={processing}
-                  >
-                    <SelectTrigger
-                      className="h-8 w-28 text-xs"
-                      aria-labelledby="answer-language-label"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="zh">中文</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="hidden text-[11px] text-muted-foreground xl:block">
-                    AI 回答可能有误，请结合来源核对。
-                  </p>
-                </div>
                 <div className="flex gap-2">
-                  {lastFailed && !processing ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setQuestion(lastFailed.question);
-                        setLanguage(lastFailed.language);
-                        setPendingKey(lastFailed.request_key);
-                        send.reset();
-                      }}
-                    >
-                      重试上次问题
-                    </Button>
-                  ) : null}
                   <Button
                     type="submit"
-                    size="sm"
+                    size="icon"
+                    className="size-9 min-h-9"
+                    title={processing ? "正在回答" : "发送问题"}
+                    aria-label={processing ? "正在回答" : "发送问题"}
                     disabled={
                       processing ||
                       !question.trim() ||
-                      consent.isPending ||
-                      consent.isError ||
                       (!selected && mode === "materials" && !kb) ||
                       (Boolean(selected) && !active)
                     }
                   >
                     <Send className="size-3.5" />
-                    {processing ? "正在回答…" : "发送问题"}
                   </Button>
                 </div>
               </div>
-              {consent.isError ? (
-                <p role="alert">
-                  AI 说明读取失败
-                  <Button variant="ghost" type="button" onClick={() => void consent.refetch()}>
-                    重试
-                  </Button>
-                </p>
-              ) : null}
             </form>
           </div>
         </section>
       </div>
-      <Dialog open={noticeOpen} onOpenChange={setNoticeOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>确认 AI 问答处理说明</DialogTitle>
-            <DialogDescription>{consent.data?.notice}</DialogDescription>
-          </DialogHeader>
-          <CheckboxField
-            checked={confirmed}
-            onCheckedChange={(value) => setConfirmed(value === true)}
-            label="我已阅读并确认有权处理这些内容"
-          />
-          <DialogFooter>
-            <Button
-              disabled={!confirmed || confirm.isPending || !consent.data}
-              onClick={() => {
-                if (consent.data)
-                  confirm.mutate(
-                    { confirmed: true, terms_version: consent.data.terms_version },
-                    { onSuccess: () => setNoticeOpen(false) },
-                  );
-              }}
-            >
-              确认
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent>
           <DialogHeader>

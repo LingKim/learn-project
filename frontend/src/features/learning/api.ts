@@ -8,9 +8,11 @@ import {
   learningConversationsRename,
   learningConversationsDelete,
   learningAnswersCreate,
+  learningAnswersStream,
   learningAnswersFeedback,
 } from "@/lib/api/generated/sdk.gen";
 import type {
+  AnswerStreamEvent,
   AiConsentView,
   AiConsentRequest,
   AnswerRequest,
@@ -26,7 +28,17 @@ import {
   requestQueryData,
   requestPageData,
 } from "@/lib/api/protocol";
-export type { AnswerRequest, ConversationCreate, ConversationView, ConversationDetail, TurnView };
+export type {
+  AnswerStreamEvent,
+  AnswerRequest,
+  ConversationCreate,
+  ConversationView,
+  ConversationDetail,
+  TurnView,
+};
+import { consumeStream, streamFetch } from "@/lib/api/stream";
+import { ApiError } from "@/lib/api/errors";
+
 async function options() {
   return {
     baseUrl: API_BASE_URL,
@@ -81,5 +93,48 @@ export async function setFeedback(id: string, turnId: string, body: FeedbackRequ
   const auth = await options();
   return requestMutation<TurnView>(() =>
     learningAnswersFeedback({ ...auth, path: { conversation_id: id, turn_id: turnId }, body }),
+  );
+}
+
+export async function streamQuestion(
+  id: string,
+  body: AnswerRequest,
+  signal: AbortSignal,
+  receive: (event: AnswerStreamEvent) => void,
+) {
+  const auth = await options();
+  await consumeStream<AnswerStreamEvent>(
+    async (onSseError) =>
+      learningAnswersStream({
+        ...auth,
+        baseUrl: new URL(API_BASE_URL, window.location.origin).toString(),
+        path: { conversation_id: id },
+        body,
+        signal,
+        fetch: streamFetch,
+        sseMaxRetryAttempts: 1,
+        onSseError,
+      }),
+    (event) => {
+      if (!event || !["started", "delta", "completed", "failed"].includes(event.type)) {
+        throw new ApiError("流式事件格式不符合约定", { errorKey: "API_CONTRACT_MISMATCH" });
+      }
+      if (event.type === "failed")
+        throw new ApiError(event.message ?? "回答未完成，请重试。", {
+          errorKey: event.error_code ?? "ANSWER_FAILED",
+        });
+      if ((event.type === "started" || event.type === "completed") && !event.turn) {
+        throw new ApiError("回答事件缺少消息", { errorKey: "API_CONTRACT_MISMATCH" });
+      }
+      if (
+        (event.type === "delta" && typeof event.delta !== "string") ||
+        (event.type === "completed" && event.turn?.status !== "succeeded")
+      ) {
+        throw new ApiError("流式终态格式不符合约定", { errorKey: "API_CONTRACT_MISMATCH" });
+      }
+      receive(event);
+      return event.type === "completed";
+    },
+    signal,
   );
 }

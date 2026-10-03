@@ -38,7 +38,6 @@ async def setup(context, mode="general"):
     )
     retrieval = RetrievalService(sessions, settings, user.id, None, store)
     service = LearningService(sessions, settings, user.id, provider=provider, retrieval=retrieval)
-    await service.consent(settings.learning_consent_version)
     conversation = await service.create(
         ConversationCreate(mode=mode, knowledge_base_id=kb if mode == "materials" else None)
     )
@@ -156,7 +155,7 @@ async def test_version_change_during_model_call_rejects_answer(context) -> None:
     assert error.value.error_key == "ANSWER_SOURCE_CHANGED"
 
 
-async def test_no_evidence_skips_generation_and_consent_is_required(context) -> None:
+async def test_no_evidence_skips_generation_without_learning_consent(context) -> None:
     service, conversation, provider, _, _ = await setup(context, "materials")
     service.retrieval = AsyncMock()
     service.retrieval.search.return_value = RetrievalResult(
@@ -171,9 +170,10 @@ async def test_no_evidence_skips_generation_and_consent_is_required(context) -> 
         update={"learning_consent_version": "unconfirmed-new-version"}
     )
     other = LearningService(service.sessions, settings, service.user_id, provider=provider)
-    with pytest.raises(ConflictError) as error:
-        await other.answer(conversation.id, AnswerRequest(request_key=uuid4(), question="问题"))
-    assert error.value.error_key == "LEARNING_CONSENT_REQUIRED"
+    result = await other.answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="问题")
+    )
+    assert result.status == "succeeded"
 
 
 @pytest.mark.skipif(
@@ -197,3 +197,277 @@ async def test_real_qwen_flash_general_and_material_answer(context) -> None:
     )
     assert answer.status == "succeeded" and answer.citations and not answer.refused
     assert re.search(r"[\u4e00-\u9fff]", answer.answer)
+
+
+async def test_stream_progress_is_not_persisted_and_success_replay_uses_profile_language(context):
+    from types import SimpleNamespace
+
+    from xuemian_ai.profiles.models import UserProfile
+
+    service, conversation, _, _, _ = await setup(context)
+    async with service.sessions() as session, session.begin():
+        session.add(UserProfile(user_id=service.user_id, preferred_language="en-US"))
+
+    async def streaming(context):
+        assert context.answer_language == "en"
+        yield "Partial "
+        async with service.sessions() as session:
+            turn = await session.scalar(
+                select(LearningTurn).where(LearningTurn.conversation_id == conversation.id)
+            )
+            assert turn.status == "processing" and turn.answer is None
+        yield "answer"
+        yield GeneratedAnswer(answer="Partial answer", refused=False, citation_ids=[])
+
+    service.provider = SimpleNamespace(stream=streaming)
+    body = AnswerRequest(request_key=uuid4(), question="Synthetic question")
+    events = [
+        event
+        async for event in service.stream_answer(
+            await service.prepare_answer(conversation.id, body)
+        )
+    ]
+    assert [event.type for event in events] == ["started", "delta", "delta", "completed"]
+    assert events[-1].turn.answer == "Partial answer"
+    async with service.sessions() as session, session.begin():
+        await session.execute(
+            update(UserProfile)
+            .where(UserProfile.user_id == service.user_id)
+            .values(preferred_language="zh-CN")
+        )
+    replay = [
+        event
+        async for event in service.stream_answer(
+            await service.prepare_answer(conversation.id, body)
+        )
+    ]
+    assert [event.type for event in replay] == ["started", "completed"]
+    assert replay[-1].turn.language == "en" and replay[-1].turn.id == events[-1].turn.id
+    stranger = LearningService(service.sessions, service.settings, uuid4())
+    with pytest.raises(NotFoundError):
+        await stranger.prepare_answer(conversation.id, body)
+
+
+@pytest.mark.parametrize(
+    "final,error_key",
+    [
+        (
+            GeneratedAnswer(answer="无效回答 [99]", refused=False, citation_ids=[99]),
+            "ANSWER_CITATION_INVALID",
+        ),
+        (
+            GeneratedAnswer(
+                answer="说明：### 1. 用法```javascriptimport { watch } from 'vue';```",
+                refused=False,
+                citation_ids=[],
+            ),
+            "ANSWER_MARKDOWN_INVALID",
+        ),
+    ],
+)
+async def test_stream_invalid_final_does_not_publish_partial_and_retries_same_turn(
+    context, final, error_key
+):
+    from types import SimpleNamespace
+
+    service, conversation, _, _, _ = await setup(context)
+
+    async def invalid(_):
+        yield "未校验正文"
+        yield final
+
+    service.provider = SimpleNamespace(stream=invalid)
+    body = AnswerRequest(request_key=uuid4(), question="问题")
+    prepared = await service.prepare_answer(conversation.id, body)
+    events = [event async for event in service.stream_answer(prepared)]
+    assert [event.type for event in events] == ["started", "delta", "failed"]
+    assert events[-1].error_code == error_key
+    detail = await service.detail(conversation.id)
+    assert detail.turns[0].status == "failed" and detail.turns[0].answer is None
+
+    async def valid(_):
+        yield "已校验"
+        yield GeneratedAnswer(answer="已校验", refused=False, citation_ids=[])
+
+    service.provider = SimpleNamespace(stream=valid)
+    retry = [
+        event
+        async for event in service.stream_answer(
+            await service.prepare_answer(conversation.id, body)
+        )
+    ]
+    assert retry[-1].turn.status == "succeeded" and retry[-1].turn.id == prepared.turn_id
+    assert len((await service.detail(conversation.id)).turns) == 1
+
+
+async def test_stream_disconnect_closes_upstream_and_releases_owned_lease(context):
+    from types import SimpleNamespace
+
+    service, conversation, _, _, _ = await setup(context)
+    closed = asyncio.Event()
+
+    async def blocked(_):
+        try:
+            yield "临时"
+            await asyncio.Event().wait()
+        finally:
+            closed.set()
+
+    service.provider = SimpleNamespace(stream=blocked)
+    body = AnswerRequest(request_key=uuid4(), question="问题")
+    stream = service.stream_answer(await service.prepare_answer(conversation.id, body))
+    assert (await anext(stream)).type == "started"
+    assert (await anext(stream)).type == "delta"
+    await stream.aclose()
+    assert closed.is_set()
+    detail = await service.detail(conversation.id)
+    assert detail.turns[0].status == "failed"
+    assert detail.turns[0].answer is None and detail.turns[0].error_code == "ANSWER_CANCELLED"
+    assert (await service.prepare_answer(conversation.id, body)).turn_id == detail.turns[0].id
+
+
+async def test_stream_revoked_source_after_delta_is_not_published(context):
+    from types import SimpleNamespace
+
+    service, conversation, _, _, file = await setup(context, "materials")
+
+    async def revoked(_):
+        yield "资料回答 [1]"
+        async with service.sessions() as session, session.begin():
+            binding = await session.get(KnowledgeBaseFile, file)
+            binding.deleted_at = datetime.now(UTC)
+        yield "撤权后必须不发送"
+        yield GeneratedAnswer(answer="资料回答 [1]", refused=False, citation_ids=[1])
+
+    service.provider = SimpleNamespace(stream=revoked)
+    prepared = await service.prepare_answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="transaction isolation")
+    )
+    events = [event async for event in service.stream_answer(prepared)]
+    assert [event.delta for event in events if event.type == "delta"] == ["资料回答 [1]"]
+    assert events[-1].type == "failed" and events[-1].error_code in {
+        "ANSWER_SOURCE_CHANGED",
+        "KNOWLEDGE_FILE_NOT_FOUND",
+    }
+    assert (await service.detail(conversation.id)).turns[0].answer is None
+
+
+async def test_stream_task_cancellation_closes_provider_and_marks_failure(context):
+    from types import SimpleNamespace
+
+    service, conversation, _, _, _ = await setup(context)
+    entered, closed = asyncio.Event(), asyncio.Event()
+
+    async def blocked(_):
+        try:
+            entered.set()
+            await asyncio.Event().wait()
+            yield "unreachable"
+        finally:
+            closed.set()
+
+    service.provider = SimpleNamespace(stream=blocked)
+    prepared = await service.prepare_answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="问题")
+    )
+
+    async def consume():
+        return [event async for event in service.stream_answer(prepared)]
+
+    task = asyncio.create_task(consume())
+    await entered.wait()
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert closed.is_set()
+    turn = (await service.detail(conversation.id)).turns[0]
+    assert turn.status == "failed" and turn.answer is None and turn.error_code == "ANSWER_CANCELLED"
+
+
+async def test_stream_deactivated_user_stops_before_next_delta(context):
+    from types import SimpleNamespace
+
+    from xuemian_ai.accounts.models import User
+
+    service, conversation, _, _, _ = await setup(context)
+
+    async def changed(_):
+        yield "授权时正文"
+        async with service.sessions() as session, session.begin():
+            await session.execute(
+                update(User).where(User.id == service.user_id).values(deleted_at=datetime.now(UTC))
+            )
+        yield "撤权后正文"
+        yield GeneratedAnswer(answer="完整正文", refused=False, citation_ids=[])
+
+    service.provider = SimpleNamespace(stream=changed)
+    prepared = await service.prepare_answer(
+        conversation.id, AnswerRequest(request_key=uuid4(), question="问题")
+    )
+    events = [event async for event in service.stream_answer(prepared)]
+    assert [event.delta for event in events if event.type == "delta"] == ["授权时正文"]
+    assert events[-1].type == "failed" and events[-1].error_code == "USER_NOT_FOUND"
+    async with service.sessions() as session:
+        turn = await session.get(LearningTurn, prepared.turn_id)
+        assert turn.status == "failed" and turn.answer is None
+
+
+async def test_replay_rechecks_deleted_conversation_before_emitting(context):
+    service, conversation, _, _, _ = await setup(context)
+    body = AnswerRequest(request_key=uuid4(), question="问题")
+    await service.answer(conversation.id, body)
+    prepared = await service.prepare_answer(conversation.id, body)
+    await service.delete(conversation.id)
+    events = [event async for event in service.stream_answer(prepared)]
+    assert [event.type for event in events] == ["failed"]
+    assert events[0].error_code == "LEARNING_CONVERSATION_NOT_FOUND"
+    assert events[0].turn is None
+
+
+async def test_replay_refreshes_revoked_citations_before_emitting(context):
+    service, conversation, _, _, file = await setup(context, "materials")
+    body = AnswerRequest(request_key=uuid4(), question="transaction isolation")
+    answer = await service.answer(conversation.id, body)
+    assert answer.citations[0].available
+    prepared = await service.prepare_answer(conversation.id, body)
+    async with service.sessions() as session, session.begin():
+        binding = await session.get(KnowledgeBaseFile, file)
+        binding.deleted_at = datetime.now(UTC)
+    events = [event async for event in service.stream_answer(prepared)]
+    assert [event.type for event in events] == ["started", "completed"]
+    assert not events[0].turn.citations[0].available
+    assert events[0].turn.citations[0].evidence is None
+
+
+async def test_response_cleanup_releases_lease_without_starting_iterator(context):
+    from xuemian_ai.api.learning import AnswerEventResponse
+
+    service, conversation, _, _, _ = await setup(context)
+    body = AnswerRequest(request_key=uuid4(), question="问题")
+    prepared = await service.prepare_answer(conversation.id, body)
+    entered = False
+
+    async def untouched():
+        nonlocal entered
+        entered = True
+        yield "unreachable"
+
+    stream = untouched()
+    await stream.aclose()
+    response = AnswerEventResponse(stream, service, prepared)
+
+    async def disconnect():
+        return {"type": "http.disconnect"}
+
+    async def broken_send(_message):
+        raise RuntimeError("synthetic disconnected response")
+
+    with pytest.raises(RuntimeError):
+        await response({"type": "http", "asgi": {"spec_version": "2.4"}}, disconnect, broken_send)
+    assert not entered
+    detail = await service.detail(conversation.id)
+    assert detail.turns[0].status == "failed" and detail.turns[0].error_code == "ANSWER_CANCELLED"
+    newer = await service.prepare_answer(conversation.id, body)
+    await service.cancel_prepared(prepared)
+    assert (await service.detail(conversation.id)).turns[0].status == "processing"
+    await service.cancel_prepared(newer)

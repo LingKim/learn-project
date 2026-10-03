@@ -49,7 +49,7 @@ class ConversationRename(BaseModel):
 class AnswerRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     request_key: UUID
-    language: Literal["zh", "en"] = "zh"
+    language: Literal["zh", "en"] | None = None
     question: str = Field(min_length=1, max_length=2000)
 
     @field_validator("question")
@@ -97,3 +97,11 @@ class ConversationDetail(BaseModel):
 
 class FeedbackRequest(BaseModel):
     feedback: Literal["helpful", "unhelpful"] | None
+
+
+class AnswerStreamEvent(BaseModel):
+    type: Literal["started", "delta", "completed", "failed"]
+    turn: TurnView | None = None
+    delta: str | None = None
+    error_code: str | None = None
+    message: str | None = None

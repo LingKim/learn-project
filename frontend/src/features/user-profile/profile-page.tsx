@@ -427,7 +427,7 @@ export function UserProfilePage() {
                 </p>
               </div>
               <div className="max-w-sm space-y-2">
-                <Label htmlFor="preferred-language">默认语言</Label>
+                <Label htmlFor="preferred-language">默认回答语言</Label>
                 <Select
                   value={form.preferredLanguage}
                   disabled={busy}
@@ -443,6 +443,9 @@ export function UserProfilePage() {
                     <SelectItem value="en-US">English</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  保存后用于后续 AI 回答，已有回答的语言保持不变。
+                </p>
               </div>
             </div>
           </section>

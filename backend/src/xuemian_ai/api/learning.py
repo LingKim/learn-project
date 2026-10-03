@@ -1,7 +1,11 @@
+from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi.responses import StreamingResponse
+from starlette.types import Receive, Scope, Send
 
 from xuemian_ai.accounts.models import User
 from xuemian_ai.auth.dependencies import current_user_model
@@ -10,6 +14,7 @@ from xuemian_ai.core.responses import ApiResponse, PageResponse, success_respons
 from xuemian_ai.document_processing.schemas import AIConsentRequest, AIConsentView
 from xuemian_ai.learning.schemas import (
     AnswerRequest,
+    AnswerStreamEvent,
     ConversationCreate,
     ConversationDetail,
     ConversationRename,
@@ -17,7 +22,7 @@ from xuemian_ai.learning.schemas import (
     FeedbackRequest,
     TurnView,
 )
-from xuemian_ai.learning.service import LearningService
+from xuemian_ai.learning.service import LearningService, PreparedAnswer
 
 
 def private_response(response: Response) -> None:
@@ -143,3 +148,51 @@ async def feedback(
     learning: Annotated[LearningService, Depends(service)],
 ) -> ApiResponse[TurnView]:
     return success_response(await learning.feedback(conversation_id, turn_id, body.feedback))
+
+
+class AnswerEventResponse(StreamingResponse):
+    media_type = "text/event-stream"
+
+    def __init__(
+        self,
+        content: AsyncGenerator[str, None],
+        learning: LearningService,
+        prepared: PreparedAnswer,
+    ) -> None:
+        super().__init__(
+            content,
+            media_type=self.media_type,
+            headers={
+                "Cache-Control": "no-store, no-transform",
+                "X-Accel-Buffering": "no",
+            },
+        )
+        self.learning, self.prepared = learning, prepared
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        try:
+            await super().__call__(scope, receive, send)
+        finally:
+            await self.learning.cancel_prepared(self.prepared)
+
+
+@router.post(
+    "/conversations/{conversation_id}/answers/stream",
+    operation_id="learning_answers_stream",
+    status_code=200,
+    response_class=AnswerEventResponse,
+    responses={200: {"model": AnswerStreamEvent}},
+)
+async def answer_stream(
+    conversation_id: UUID,
+    body: AnswerRequest,
+    learning: Annotated[LearningService, Depends(service)],
+) -> StreamingResponse:
+    prepared = await learning.prepare_answer(conversation_id, body)
+
+    async def events() -> AsyncGenerator[str, None]:
+        async with aclosing(learning.stream_answer(prepared)) as stream:
+            async for event in stream:
+                yield "data: " + event.model_dump_json(exclude_none=True) + "\n\n"
+
+    return AnswerEventResponse(events(), learning, prepared)

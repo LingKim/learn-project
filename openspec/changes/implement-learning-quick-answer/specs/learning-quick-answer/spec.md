@@ -53,3 +53,7 @@
 #### Scenario: English evidence with Chinese output
 - **WHEN** 用户使用默认中文语言询问英文资料
 - **THEN** 返回中文解释及原资料引用，不直接把整段英文当作答案
+
+## 2026-10-03 后续规格
+
+本首版请求语言、发送确认与完整响应的交互由 `../../../improve-learning-chat-streaming/specs/learning-chat-streaming/spec.md` 的新要求扩展/替换；显式API language仍兼容，省略时使用用户默认语言，首问无弹窗与学习consent门禁。

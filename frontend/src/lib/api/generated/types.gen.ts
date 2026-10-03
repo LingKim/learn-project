@@ -96,11 +96,34 @@ export type AnswerRequest = {
     /**
      * Language
      */
-    language?: 'zh' | 'en';
+    language?: 'zh' | 'en' | null;
     /**
      * Question
      */
     question: string;
+};
+
+/**
+ * AnswerStreamEvent
+ */
+export type AnswerStreamEvent = {
+    /**
+     * Type
+     */
+    type: 'started' | 'delta' | 'completed' | 'failed';
+    turn?: TurnView | null;
+    /**
+     * Delta
+     */
+    delta?: string | null;
+    /**
+     * Error Code
+     */
+    error_code?: string | null;
+    /**
+     * Message
+     */
+    message?: string | null;
 };
 
 /**
@@ -5563,3 +5586,77 @@ export type LearningAnswersFeedbackResponses = {
 };
 
 export type LearningAnswersFeedbackResponse = LearningAnswersFeedbackResponses[keyof LearningAnswersFeedbackResponses];
+
+export type LearningAnswersStreamData = {
+    body: AnswerRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/learning/conversations/{conversation_id}/answers/stream';
+};
+
+export type LearningAnswersStreamErrors = {
+    /**
+     * 请求参数错误
+     */
+    400: ProblemDetails;
+    /**
+     * 身份认证失败
+     */
+    401: ProblemDetails;
+    /**
+     * 没有访问权限
+     */
+    403: ProblemDetails;
+    /**
+     * 资源不存在
+     */
+    404: ProblemDetails;
+    /**
+     * 请求方法不支持
+     */
+    405: ProblemDetails;
+    /**
+     * 资源状态冲突
+     */
+    409: ProblemDetails;
+    /**
+     * 请求参数校验失败
+     */
+    422: ProblemDetails;
+    /**
+     * 请求过于频繁
+     */
+    429: ProblemDetails;
+    /**
+     * 服务内部错误
+     */
+    500: ProblemDetails;
+    /**
+     * 上游服务异常
+     */
+    502: ProblemDetails;
+    /**
+     * 服务暂时不可用
+     */
+    503: ProblemDetails;
+    /**
+     * 上游服务超时
+     */
+    504: ProblemDetails;
+};
+
+export type LearningAnswersStreamError = LearningAnswersStreamErrors[keyof LearningAnswersStreamErrors];
+
+export type LearningAnswersStreamResponses = {
+    /**
+     * Successful Response
+     */
+    200: AnswerStreamEvent;
+};
+
+export type LearningAnswersStreamResponse = LearningAnswersStreamResponses[keyof LearningAnswersStreamResponses];

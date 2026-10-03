@@ -6,6 +6,8 @@ import {
   listConversations,
   renameConversation,
   sendQuestion,
+  streamQuestion,
+  type AnswerStreamEvent,
   getLearningConsent,
   confirmLearningConsent,
   setFeedback,
@@ -98,5 +100,25 @@ export function feedbackMutationOptions(client: QueryClient) {
     }) => setFeedback(id, turnId, { feedback }),
     onSuccess: (_data, input) => refresh(client, input.id),
     meta: { successToast: false },
+  });
+}
+
+export function streamQuestionMutationOptions(client: QueryClient) {
+  return mutationOptions({
+    mutationKey: [...learningKeys.all, "answer-stream"],
+    mutationFn: ({
+      id,
+      body,
+      signal,
+      receive,
+    }: {
+      id: string;
+      body: AnswerRequest;
+      signal: AbortSignal;
+      receive: (event: AnswerStreamEvent) => void;
+    }) => streamQuestion(id, body, signal, receive),
+    onSettled: (_data, _error, input) => refresh(client, input.id),
+    retry: false,
+    meta: { successToast: false, errorMode: "local" },
   });
 }

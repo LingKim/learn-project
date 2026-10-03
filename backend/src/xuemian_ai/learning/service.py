@@ -2,10 +2,14 @@ import asyncio
 import hashlib
 import hmac
 import time
+from collections.abc import AsyncGenerator
+from contextlib import aclosing
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Literal, cast
 from uuid import UUID, uuid4
 
+from anyio import CancelScope
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -36,12 +40,14 @@ from xuemian_ai.learning.models import LearningConversation, LearningTurn
 from xuemian_ai.learning.schemas import (
     AnswerCitation,
     AnswerRequest,
+    AnswerStreamEvent,
     ConversationCreate,
     ConversationDetail,
     ConversationView,
     GeneratedAnswer,
     TurnView,
 )
+from xuemian_ai.profiles.models import UserProfile
 
 LEARNING_NOTICE = (
     "使用 AI 问答时，您的问题、当前会话最近六条问题和选定资料中的检索片段会发送给千问，"
@@ -320,7 +326,7 @@ class LearningService:
             turn.feedback = feedback
             return await self.view(session, item, turn)
 
-    async def answer(self, identifier: UUID, body: AnswerRequest) -> TurnView:
+    async def prepare_answer(self, identifier: UUID, body: AnswerRequest) -> "PreparedAnswer":
         digest = hmac.new(
             self.settings.auth_fingerprint_secret.get_secret_value().encode(),
             body.question.encode(),
@@ -329,16 +335,6 @@ class LearningService:
         now, token = datetime.now(UTC), uuid4()
         async with self.sessions() as session, session.begin():
             item = await self.conversation(session, identifier, lock=True)
-            confirmed = await session.scalar(
-                select(AIProcessingConsent.id).where(
-                    AIProcessingConsent.user_id == self.user_id,
-                    AIProcessingConsent.terms_version == self.settings.learning_consent_version,
-                )
-            )
-            if confirmed is None:
-                raise ConflictError(
-                    "请先确认 AI 问答处理说明", error_key="LEARNING_CONSENT_REQUIRED"
-                )
             await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
             turns = list(
                 (
@@ -351,6 +347,17 @@ class LearningService:
                 ).all()
             )
             turn = next((t for t in turns if t.request_key == body.request_key), None)
+            preference = await session.scalar(
+                select(UserProfile.preferred_language).where(UserProfile.user_id == self.user_id)
+            )
+            language = body.language or (
+                cast("LiteralLanguage", turn.model_parameters.get("answer_language", "zh"))
+                if turn is not None
+                else "en"
+                if preference == "en-US"
+                else "zh"
+            )
+            body = body.model_copy(update={"language": language})
             if turn is not None and (
                 turn.question_digest != digest
                 or turn.model_parameters.get("answer_language", "zh") != body.language
@@ -359,7 +366,7 @@ class LearningService:
                     "同一请求标识不能用于不同问题", error_key="ANSWER_REQUEST_CONFLICT"
                 )
             if turn is not None and turn.status == "succeeded":
-                return await self.view(session, item, turn)
+                return PreparedAnswer(identifier, body, replay=await self.view(session, item, turn))
             for old in turns:
                 if old.status == "processing":
                     if old.lease_expires_at > now:
@@ -402,11 +409,51 @@ class LearningService:
             await session.flush()
             turn_id = turn.id
             mode, kb, files = item.mode, item.knowledge_base_id, [UUID(f) for f in item.file_ids]
+            started = await self.view(session, item, turn)
+        return PreparedAnswer(identifier, body, turn_id, token, mode, kb, files, previous, started)
+
+    async def answer(self, identifier: UUID, body: AnswerRequest) -> TurnView:
+        prepared = await self.prepare_answer(identifier, body)
+        async with aclosing(self.run_answer(prepared, streaming=False)) as stream:
+            async for event in stream:
+                if event.type == "completed" and event.turn is not None:
+                    return event.turn
+        raise UpstreamServiceError(error_key="ANSWER_FAILED")
+
+    async def stream_answer(
+        self, prepared: "PreparedAnswer"
+    ) -> AsyncGenerator[AnswerStreamEvent, None]:
+        try:
+            async with aclosing(self.run_answer(prepared, streaming=True)) as stream:
+                async for event in stream:
+                    yield event
+        except AppError as exc:
+            yield AnswerStreamEvent(type="failed", error_code=exc.error_key, message=exc.message)
+
+    async def run_answer(
+        self, prepared: "PreparedAnswer", *, streaming: bool
+    ) -> AsyncGenerator[AnswerStreamEvent, None]:
+        if prepared.replay is not None:
+            async with self.sessions() as session, session.begin():
+                await self.active_user(session)
+                item = await self.conversation(session, prepared.identifier, lock=True)
+                await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
+                turn = await session.get(LearningTurn, prepared.replay.id, with_for_update=True)
+                if turn is None or turn.status != "succeeded":
+                    raise ConflictError(error_key="ANSWER_REQUEST_CONFLICT")
+                replay = await self.view(session, item, turn)
+            yield AnswerStreamEvent(type="started", turn=replay)
+            yield AnswerStreamEvent(type="completed", turn=replay)
+            return
+        body = prepared.body
+        turn_id, token = prepared.turn_id, prepared.token
+        mode, kb, files, previous = prepared.mode, prepared.kb, prepared.files, prepared.previous
         start = time.monotonic()
         trace_id: UUID | None = None
         trace_complete = False
         evidence: list[EvidenceChunk] = []
         try:
+            yield AnswerStreamEvent(type="started", turn=prepared.started)
             async with asyncio.timeout(self.settings.learning_request_timeout_seconds):
                 if mode == "materials":
                     retrieval = self.retrieval or RetrievalService(
@@ -426,54 +473,33 @@ class LearningService:
                 context = InputContext(
                     mode=cast("LiteralMode", mode),
                     question=body.question,
-                    answer_language=body.language,
+                    answer_language=cast("LiteralLanguage", body.language),
                     previous_questions=previous,
                     evidence=evidence,
                 )
-                generated = (
-                    GeneratedAnswer(
+                if mode == "materials" and not evidence:
+                    generated = GeneratedAnswer(
                         answer=REFUSAL if body.language == "zh" else REFUSAL_EN,
                         refused=True,
                         citation_ids=[],
                     )
-                    if mode == "materials" and not evidence
-                    else validate_answer(await self.provider.generate(context), context)
-                )
+                elif streaming:
+                    generated = None
+                    async with aclosing(self.provider.stream(context)) as parts:
+                        async for part in parts:
+                            if isinstance(part, str):
+                                async with self.sessions() as session, session.begin():
+                                    await self.publication_guard(session, prepared, evidence)
+                                yield AnswerStreamEvent(type="delta", delta=part)
+                            else:
+                                generated = validate_answer(part, context)
+                    if generated is None:
+                        raise UpstreamServiceError(error_key="ANSWER_OUTPUT_INCOMPLETE")
+                else:
+                    generated = validate_answer(await self.provider.generate(context), context)
+                assert generated is not None
                 async with self.sessions() as session, session.begin():
-                    active = await session.scalar(
-                        select(User.id)
-                        .where(
-                            User.id == self.user_id,
-                            User.deleted_at.is_(None),
-                            User.status == "active",
-                        )
-                        .with_for_update()
-                    )
-                    if active is None:
-                        raise NotFoundError(error_key="USER_NOT_FOUND")
-                    item = await self.conversation(session, identifier, lock=True)
-                    turn = await session.get(LearningTurn, turn_id, with_for_update=True)
-                    if (
-                        turn is None
-                        or turn.lease_token != token
-                        or turn.status != "processing"
-                        or turn.lease_expires_at <= datetime.now(UTC)
-                    ):
-                        raise ConflictError(
-                            "回答请求已过期，请重试", error_key="ANSWER_LEASE_EXPIRED"
-                        )
-                    await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
-                    current = await self.evidence(
-                        session, item, [e.chunk_id for e in evidence], lock=True
-                    )
-                    if any(
-                        e.chunk_id not in current
-                        or current[e.chunk_id].processing_version_id != e.processing_version_id
-                        for e in evidence
-                    ):
-                        raise ConflictError(
-                            "资料已变化，请重新提问", error_key="ANSWER_SOURCE_CHANGED"
-                        )
+                    item, turn = await self.publication_guard(session, prepared, evidence)
                     turn.status, turn.answer, turn.refused = (
                         "succeeded",
                         generated.answer,
@@ -486,27 +512,96 @@ class LearningService:
                     ]
                     turn.elapsed_ms = round((time.monotonic() - start) * 1000)
                     item.updated_at = datetime.now(UTC)
-                    return await self.view(session, item, turn)
-        except (Exception, asyncio.CancelledError) as exc:
+                    completed = await self.view(session, item, turn)
+                yield AnswerStreamEvent(type="completed", turn=completed)
+        except (Exception, asyncio.CancelledError, GeneratorExit) as exc:
             code = (
                 exc.error_key
                 if isinstance(exc, AppError)
+                else "ANSWER_CANCELLED"
+                if isinstance(exc, (asyncio.CancelledError, GeneratorExit))
                 else "ANSWER_TIMEOUT"
                 if isinstance(exc, TimeoutError)
                 else "ANSWER_FAILED"
             )
-            async with self.sessions() as session, session.begin():
-                turn = await session.get(LearningTurn, turn_id, with_for_update=True)
-                if turn is not None and turn.lease_token == token and turn.status == "processing":
-                    turn.status, turn.error_code = "failed", code
-                    turn.trace_id, turn.trace_complete = trace_id, trace_complete
-                    turn.elapsed_ms = round((time.monotonic() - start) * 1000)
-            if isinstance(exc, (AppError, asyncio.CancelledError)):
+            with CancelScope(shield=True):
+                async with self.sessions() as session, session.begin():
+                    failed_turn = await session.get(LearningTurn, turn_id, with_for_update=True)
+                    if (
+                        failed_turn is not None
+                        and failed_turn.lease_token == token
+                        and failed_turn.status == "processing"
+                    ):
+                        failed_turn.status, failed_turn.error_code = "failed", code
+                        failed_turn.trace_id, failed_turn.trace_complete = trace_id, trace_complete
+                        failed_turn.elapsed_ms = round((time.monotonic() - start) * 1000)
+            if isinstance(exc, (AppError, asyncio.CancelledError, GeneratorExit)):
                 raise
             raise UpstreamServiceError("回答未完成，请重试", error_key=code) from None
+
+    async def cancel_prepared(self, prepared: "PreparedAnswer") -> None:
+        """Response lifetime cleanup also covers an iterator never entered."""
+        if prepared.turn_id is None or prepared.token is None:
+            return
+        with CancelScope(shield=True):
+            async with self.sessions() as session, session.begin():
+                turn = await session.get(LearningTurn, prepared.turn_id, with_for_update=True)
+                if (
+                    turn is not None
+                    and turn.status == "processing"
+                    and turn.lease_token == prepared.token
+                ):
+                    turn.status, turn.error_code = "failed", "ANSWER_CANCELLED"
+
+    async def active_user(self, session: AsyncSession) -> None:
+        active = await session.scalar(
+            select(User.id)
+            .where(User.id == self.user_id, User.deleted_at.is_(None), User.status == "active")
+            .with_for_update()
+        )
+        if active is None:
+            raise NotFoundError(error_key="USER_NOT_FOUND")
+
+    async def publication_guard(
+        self, session: AsyncSession, prepared: "PreparedAnswer", evidence: list[EvidenceChunk]
+    ) -> tuple[LearningConversation, LearningTurn]:
+        identifier, turn_id, token = prepared.identifier, prepared.turn_id, prepared.token
+        await self.active_user(session)
+        item = await self.conversation(session, identifier, lock=True)
+        turn = await session.get(LearningTurn, turn_id, with_for_update=True)
+        if (
+            turn is None
+            or turn.lease_token != token
+            or turn.status != "processing"
+            or turn.lease_expires_at <= datetime.now(UTC)
+        ):
+            raise ConflictError("回答请求已过期，请重试", error_key="ANSWER_LEASE_EXPIRED")
+        await self.scope(session, item.mode, item.knowledge_base_id, item.file_ids)
+        current = await self.evidence(session, item, [e.chunk_id for e in evidence], lock=True)
+        if any(
+            e.chunk_id not in current
+            or current[e.chunk_id].processing_version_id != e.processing_version_id
+            for e in evidence
+        ):
+            raise ConflictError("资料已变化，请重新提问", error_key="ANSWER_SOURCE_CHANGED")
+        return item, turn
 
 
 LiteralLanguage = Literal["zh", "en"]
 LiteralMode = Literal["materials", "general"]
 LiteralStatus = Literal["processing", "succeeded", "failed"]
 LiteralFeedback = Literal["helpful", "unhelpful"] | None
+
+
+@dataclass
+class PreparedAnswer:
+    identifier: UUID
+    body: AnswerRequest
+    turn_id: UUID | None = None
+    token: UUID | None = None
+    mode: str = "general"
+    kb: UUID | None = None
+    files: list[UUID] = field(default_factory=list)
+    previous: list[str] = field(default_factory=list)
+    started: TurnView | None = None
+    replay: TurnView | None = None
