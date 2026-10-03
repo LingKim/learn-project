@@ -31,6 +31,7 @@ import {
   isActiveRun,
 } from "./queries";
 import { createSaveQueue } from "./save-queue";
+import { useActiveContext } from "./use-active-context";
 import { QuestionInput } from "./question-input";
 import { GradePanel, FeedbackButtons, answerText } from "./grade-panel";
 import { SourceLinks } from "./source-links";
@@ -60,6 +61,7 @@ export function AttemptPanel({
   onRegrade: (id: string, reason: string) => Promise<void>;
   onComplete: () => void;
 }) {
+  const isCurrent = useActiveContext(attempt.id);
   const client = useQueryClient();
   const save = useMutation(saveAnswerOptions());
   const submit = useMutation(submitAnswerOptions());
@@ -73,14 +75,20 @@ export function AttemptPanel({
   const [current, setCurrent] = useState(
     attempt.current_question_id ?? attempt.questions[0]?.question_id ?? "",
   );
-  const [status, setStatus] = useState(() =>
+  const [status, setStatusState] = useState(() =>
     attempt.answers.some(
       (a) => a.question_id === (attempt.current_question_id ?? attempt.questions[0]?.question_id),
     )
       ? "已保存"
       : "尚未填写",
   );
-  const [error, setError] = useState<string | null>(null);
+  const [error, setErrorState] = useState<string | null>(null);
+  function setStatus(value: string) {
+    if (isCurrent()) setStatusState(value);
+  }
+  function setError(value: string | null) {
+    if (isCurrent()) setErrorState(value);
+  }
   const [selectedSubmission, setSelectedSubmission] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
   const [editing, setEditing] = useState(false);
@@ -93,6 +101,7 @@ export function AttemptPanel({
   const [queue] = useState(() =>
     createSaveQueue(
       async (input: { questionId: string; answer: PracticeAnswer; currentId: string }) => {
+        if (!isCurrent()) throw new Error("练习页面已切换");
         const result = await save.mutateAsync({
           id: attempt.id,
           questionId: input.questionId,
@@ -102,6 +111,7 @@ export function AttemptPanel({
             current_question_id: input.currentId,
           },
         });
+        if (!isCurrent()) return result.data;
         saved.current = result.data;
         client.setQueryData(practiceKeys.attempt(attempt.id), result.data);
         if (
@@ -130,6 +140,7 @@ export function AttemptPanel({
     [],
   );
   async function saveScheduled() {
+    if (!isCurrent()) return;
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
@@ -148,6 +159,7 @@ export function AttemptPanel({
     }
   }
   function change(answer: PracticeAnswer) {
+    if (!isCurrent()) return;
     dirty.current.add(current);
     const next = { ...draftRef.current, [current]: answer };
     draftRef.current = next;
@@ -162,16 +174,21 @@ export function AttemptPanel({
   async function flush() {
     // 提交和切题必须等到等待期间产生的新草稿也保存，才能使用服务器确认的答案版本。
     do {
+      if (!isCurrent()) return;
       await saveScheduled();
+      if (!isCurrent()) return;
       await queue.flush();
+      if (!isCurrent()) return;
     } while (scheduled.current);
   }
   async function navigate(id: string) {
     try {
       await flush();
+      if (!isCurrent()) return;
       const value = draftRef.current[current];
       if (value && id !== current && attempt.status !== "completed") {
         await queue.enqueue({ questionId: current, answer: value, currentId: id });
+        if (!isCurrent()) return;
       }
       setCurrent(id);
       setStatus(saved.current.answers.some((a) => a.question_id === id) ? "已保存" : "尚未填写");
@@ -189,7 +206,9 @@ export function AttemptPanel({
       /* Recovery is explicit and keeps local drafts. */
     }
     try {
+      if (!isCurrent()) return;
       const fresh = await client.fetchQuery(practiceAttemptOptions(attempt.id));
+      if (!isCurrent()) return;
       saved.current = fresh;
       queue.recover();
       setError(null);
@@ -203,6 +222,7 @@ export function AttemptPanel({
   async function send() {
     try {
       await flush();
+      if (!isCurrent()) return;
       const answer = saved.current.answers.find((a) => a.question_id === current);
       if (!answer) {
         setError("请先填写并保存答案。");
@@ -216,6 +236,7 @@ export function AttemptPanel({
       await onRequest("grade", body.request_key, attempt.id, () =>
         submit.mutateAsync({ id: attempt.id, questionId: current, body }),
       );
+      if (!isCurrent()) return;
       setEditing(false);
       setSelectedSubmission("");
       setSelectedGrade("");
@@ -227,7 +248,9 @@ export function AttemptPanel({
   async function finish() {
     try {
       await flush();
+      if (!isCurrent()) return;
       const result = await complete.mutateAsync({ id: attempt.id, version: saved.current.version });
+      if (!isCurrent()) return;
       saved.current = result.data;
       client.setQueryData(practiceKeys.attempt(attempt.id), result.data);
       onComplete();

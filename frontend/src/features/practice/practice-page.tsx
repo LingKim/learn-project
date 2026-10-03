@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2, RefreshCw, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnswerContent } from "@/features/learning/answer-content";
-import { userProfileQueryOptions } from "@/features/user-profile/queries";
+import { useAuth } from "@/features/auth/auth-provider";
 import type {
   PracticeConfig,
   PracticeQuestion,
@@ -26,6 +26,7 @@ import { ReportPanel } from "./report-panel";
 import { FeedbackButtons } from "./grade-panel";
 import { SourceLinks } from "./source-links";
 import { RunStatus } from "./run-status";
+import { useActiveContext } from "./use-active-context";
 import {
   readPendingRequest,
   writePendingRequest,
@@ -55,15 +56,7 @@ import {
   deletePracticeOptions,
 } from "./queries";
 
-export function PracticePage({
-  setId = "",
-  attemptId = "",
-  report = false,
-  requestKey = "",
-  runId = "",
-  initialConfig,
-  initialTitle,
-}: {
+type PracticePageProps = {
   setId?: string;
   attemptId?: string;
   report?: boolean;
@@ -71,19 +64,51 @@ export function PracticePage({
   runId?: string;
   initialConfig?: PracticeConfig;
   initialTitle?: string;
-}) {
+};
+
+export function PracticePage(props: PracticePageProps) {
+  const { user } = useAuth();
+  const owner = user?.username ?? "";
+  // 练习和报告是独立页面上下文，不能复用上一页的mutation忙碌状态与编辑快照。
+  return (
+    <PracticePageContent
+      key={JSON.stringify([
+        user?.id,
+        props.setId ?? "",
+        props.attemptId ?? "",
+        props.report ?? false,
+      ])}
+      {...props}
+      owner={owner}
+    />
+  );
+}
+
+function PracticePageContent({
+  setId = "",
+  attemptId = "",
+  report = false,
+  requestKey = "",
+  runId = "",
+  initialConfig,
+  initialTitle,
+  owner,
+}: PracticePageProps & { owner: string }) {
   const router = useRouter();
   const client = useQueryClient();
-  const profile = useQuery(userProfileQueryOptions());
-  const owner = profile.data?.username ?? "";
   const [page, setPage] = useState(1);
   const history = useQuery(practiceListOptions(page));
   const detail = useQuery(practiceSetOptions(setId));
   const [view, setView] = useState<"main" | "config">("main");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setErrorState] = useState<string | null>(null);
   const [editing, setEditing] = useState<PracticeQuestion | null>(null);
   const [posting, setPosting] = useState(false);
-  const requestContext = JSON.stringify([owner, setId, requestKey, runId]);
+  const requestContext = JSON.stringify([owner, setId, attemptId, report, requestKey, runId]);
+  // request/run是本页自行更新的恢复指针，不是离开页面；否则replace会使自己的请求失效。
+  const isCurrent = useActiveContext(JSON.stringify([owner, setId, attemptId, report]));
+  function setError(value: string | null) {
+    if (isCurrent()) setErrorState(value);
+  }
   const linkedRequest: PendingPracticeRequest | null =
     requestKey || runId
       ? { requestKey, runId: runId || undefined, operation: "", targetId: setId }
@@ -94,8 +119,6 @@ export function PracticePage({
   }));
   // 页面可被路由复用；旧账号或旧题集的恢复指针不能用于当前上下文的查询。
   const request = requestState.context === requestContext ? requestState.value : linkedRequest;
-  const activeContext = useRef(requestContext);
-  activeContext.current = requestContext;
   const processed = useRef("");
   const createKey = useRef<{ digest: string; key: string } | null>(null);
   useEffect(() => {
@@ -105,8 +128,11 @@ export function PracticePage({
         : owner && setId
           ? readPendingRequest(sessionStorage, owner, setId)
           : null;
-    setRequestState({ context: JSON.stringify([owner, setId, requestKey, runId]), value });
-  }, [owner, setId, requestKey, runId]);
+    setRequestState({
+      context: JSON.stringify([owner, setId, attemptId, report, requestKey, runId]),
+      value,
+    });
+  }, [owner, setId, attemptId, report, requestKey, runId]);
   const runQuery = useQuery(practiceRunOptions(request?.runId ?? ""));
   const lookup = useQuery(
     practiceLookupOptions(
@@ -162,7 +188,7 @@ export function PracticePage({
   }, [run, result, setId, attemptId, client]);
   function remember(ref: PendingPracticeRequest | null, id = setId) {
     // 离开旧上下文后的迟到响应不能重写当前页面或跳回旧题集。
-    if (activeContext.current !== requestContext) return;
+    if (!isCurrent()) return;
     setRequestState({ context: requestContext, value: ref });
     if (owner && id) writePendingRequest(sessionStorage, owner, id, ref);
     if (id) {
@@ -175,6 +201,7 @@ export function PracticePage({
     }
   }
   function changeRun(value: RunView) {
+    if (!isCurrent()) return;
     const ref = {
       requestKey: value.request_key,
       operation: value.operation,
@@ -190,11 +217,13 @@ export function PracticePage({
     targetId: string,
     action: () => Promise<MutationResult<RunView | SubmissionGradeView>>,
   ) {
+    if (!isCurrent()) throw new Error("练习页面已切换");
     remember({ requestKey: key, operation, targetId });
     setPosting(true);
     setError(null);
     try {
       const response = await action();
+      if (!isCurrent()) return response.data;
       if ("operation" in response.data) changeRun(response.data);
       else {
         remember(null);
@@ -202,9 +231,11 @@ export function PracticePage({
       }
       return response.data;
     } catch (e) {
+      if (!isCurrent()) throw e;
       // A lost response or replay conflict is recovered with a read; model calls are never retried here.
       try {
         const existing = await client.fetchQuery(practiceLookupOptions(setId, key));
+        if (!isCurrent()) return existing;
         changeRun(existing);
         return existing;
       } catch {
@@ -212,10 +243,11 @@ export function PracticePage({
         throw e;
       }
     } finally {
-      setPosting(false);
+      if (isCurrent()) setPosting(false);
     }
   }
   async function configure(config: PracticeConfig, title: string) {
+    if (!isCurrent()) return;
     setError(null);
     if (!setId) {
       const digest = JSON.stringify([title, config]);
@@ -224,6 +256,7 @@ export function PracticePage({
       createKey.current = { digest, key };
       try {
         const created = await create.mutateAsync({ title, config, request_key: key });
+        if (!isCurrent()) return;
         const planKey = crypto.randomUUID();
         if (owner)
           writePendingRequest(sessionStorage, owner, created.data.id, {
@@ -236,6 +269,7 @@ export function PracticePage({
             id: created.data.id,
             body: { expected_version: created.data.version, request_key: planKey },
           });
+          if (!isCurrent()) return;
           if (owner)
             writePendingRequest(sessionStorage, owner, created.data.id, {
               requestKey: planKey,
@@ -245,6 +279,7 @@ export function PracticePage({
             });
           router.push(`/learning/practice/${created.data.id}?run=${queued.data.id}`);
         } catch {
+          if (!isCurrent()) return;
           router.push(`/learning/practice/${created.data.id}?request=${planKey}`);
         }
         await client.invalidateQueries({ queryKey: practiceKeys.lists() });
@@ -257,7 +292,9 @@ export function PracticePage({
           id: setId,
           body: { expected_version: detail.data?.version ?? 1, title, config },
         });
+        if (!isCurrent()) return;
         await client.invalidateQueries({ queryKey: practiceKeys.set(setId) });
+        if (!isCurrent()) return;
         const key = crypto.randomUUID();
         await requestRun("plan", key, setId, () =>
           makePlan.mutateAsync({
@@ -265,7 +302,7 @@ export function PracticePage({
             body: { expected_version: updated.data.version, request_key: key },
           }),
         );
-        setView("main");
+        if (isCurrent()) setView("main");
       } catch (e) {
         setError(e instanceof Error ? e.message : "配置未保存");
       }
@@ -303,7 +340,7 @@ export function PracticePage({
     );
   }
   async function begin() {
-    if (!revision || !detail.data) return;
+    if (!isCurrent() || !revision || !detail.data) return;
     try {
       const created = await start.mutateAsync({
         id: setId,
@@ -313,7 +350,9 @@ export function PracticePage({
           request_key: crypto.randomUUID(),
         },
       });
+      if (!isCurrent()) return;
       await client.invalidateQueries({ queryKey: practiceKeys.set(setId) });
+      if (!isCurrent()) return;
       router.push(`/learning/practice/${setId}?attempt=${created.data.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "开始练习失败");
@@ -326,20 +365,22 @@ export function PracticePage({
     );
   }
   async function saveQuestion(question: PracticeQuestion) {
-    if (!detail.data) return;
+    if (!isCurrent() || !detail.data) return;
     const result = await editQuestion.mutateAsync({
       id: setId,
       questionId: question.question_id,
       body: { expected_version: detail.data.version, question },
     });
+    if (!isCurrent()) return;
     remember(null);
     client.setQueryData(practiceKeys.revision(setId, result.data.id), result.data);
     await client.invalidateQueries({ queryKey: practiceKeys.set(setId) });
   }
   async function deleteQuestion(questionId: string) {
-    if (!detail.data) return;
+    if (!isCurrent() || !detail.data) return;
     try {
       await removeQuestion.mutateAsync({ id: setId, questionId, version: detail.data.version });
+      if (!isCurrent()) return;
       remember(null);
       await client.invalidateQueries({ queryKey: practiceKeys.set(setId) });
     } catch (e) {
@@ -419,6 +460,7 @@ export function PracticePage({
                     void remove
                       .mutateAsync({ id: set.id, version: set.version })
                       .then(() => {
+                        if (!isCurrent()) return;
                         if (set.id === setId) router.push("/learning/practice");
                       })
                       .catch((e: unknown) => setError(e instanceof Error ? e.message : "删除失败"));

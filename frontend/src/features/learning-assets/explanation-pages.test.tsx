@@ -11,6 +11,9 @@ import { readKnowledgeRequest, writeKnowledgeRequest } from "./request-recovery"
 
 const navigation = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
+vi.mock("@/features/auth/auth-provider", () => ({
+  useAuth: () => ({ user: { id: "synthetic-owner-id", username: "synthetic-owner" } }),
+}));
 vi.mock("@/features/file-management/content-shell", () => ({
   ContentShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -40,6 +43,7 @@ vi.mock("./api", () => ({
   lookupKnowledgeRun: vi.fn(),
   createExplanation: vi.fn(),
   regenerateExplanation: vi.fn(),
+  deleteExplanation: vi.fn(),
 }));
 vi.mock("./card-content", () => ({ CardContent: () => <div>已保存卡片</div> }));
 vi.mock("./card-sources", () => ({ CardSources: () => null }));
@@ -237,7 +241,64 @@ it("详情组件切到另一个精讲时读取新的URL任务，不沿用旧run�
   expect(screen.queryByText("当前任务 run-old succeeded")).not.toBeInTheDocument();
 });
 
-it("离开旧精讲后再生的迟到响应不能把页面跳回旧目标", async () => {
+it.each([false, true])(
+  "离开旧精讲后再生的迟到响应不能跳回旧目标或清除新恢复指针（失败=%s）",
+  async (failed) => {
+    let finish!: (value: Awaited<ReturnType<typeof api.regenerateExplanation>>) => void;
+    let reject!: (error: Error) => void;
+    vi.mocked(api.regenerateExplanation).mockImplementationOnce(
+      () =>
+        new Promise((resolve, fail) => {
+          finish = resolve;
+          reject = fail;
+        }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(
+      <QueryClientProvider client={client}>
+        <ExplanationDetailPage id={detail.id} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(screen.getByRole("button", { name: "重新生成" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "重新生成" }));
+    await waitFor(() => expect(api.regenerateExplanation).toHaveBeenCalled());
+    view.rerender(
+      <QueryClientProvider client={client}>
+        <ExplanationDetailPage id="another-explanation" />
+      </QueryClientProvider>,
+    );
+    const newerKey = "22222222-2222-4222-8222-222222222222";
+    writeKnowledgeRequest(sessionStorage, "synthetic-owner", detail.id, newerKey);
+    await act(async () => {
+      if (failed) reject(new ApiError("旧版本冲突", { status: 409 }));
+      else finish({ data: { explanation: detail, run: pending }, message: "ok" });
+    });
+    expect(readKnowledgeRequest(sessionStorage, "synthetic-owner", detail.id)).toBe(newerKey);
+    expect(navigation.replace).not.toHaveBeenCalledWith(
+      `/learning/explanation/${detail.id}?run=${pending.id}`,
+    );
+  },
+);
+
+it("删除精讲请求发出后离开页面，迟到完成不能跳走当前页面", async () => {
+  let finish!: (value: Awaited<ReturnType<typeof api.deleteExplanation>>) => void;
+  vi.mocked(api.deleteExplanation).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const view = mount(<ExplanationDetailPage id={detail.id} />);
+  fireEvent.click(await screen.findByRole("button", { name: "删除精讲" }));
+  await waitFor(() => expect(api.deleteExplanation).toHaveBeenCalled());
+  view.unmount();
+  await act(async () => {
+    finish({ data: undefined, message: "ok" });
+  });
+  expect(navigation.push).not.toHaveBeenCalled();
+});
+
+it("同一精讲仍挂载时旧请求完成也只能清理自己的恢复key", async () => {
   let finish!: (value: Awaited<ReturnType<typeof api.regenerateExplanation>>) => void;
   vi.mocked(api.regenerateExplanation).mockImplementationOnce(
     () =>
@@ -245,24 +306,14 @@ it("离开旧精讲后再生的迟到响应不能把页面跳回旧目标", asyn
         finish = resolve;
       }),
   );
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const view = render(
-    <QueryClientProvider client={client}>
-      <ExplanationDetailPage id={detail.id} />
-    </QueryClientProvider>,
-  );
+  mount(<ExplanationDetailPage id={detail.id} />);
   await waitFor(() => expect(screen.getByRole("button", { name: "重新生成" })).toBeEnabled());
   fireEvent.click(screen.getByRole("button", { name: "重新生成" }));
   await waitFor(() => expect(api.regenerateExplanation).toHaveBeenCalled());
-  view.rerender(
-    <QueryClientProvider client={client}>
-      <ExplanationDetailPage id="another-explanation" />
-    </QueryClientProvider>,
-  );
+  const newerKey = "33333333-3333-4333-8333-333333333333";
+  writeKnowledgeRequest(sessionStorage, "synthetic-owner", detail.id, newerKey);
   await act(async () => {
     finish({ data: { explanation: detail, run: pending }, message: "ok" });
   });
-  expect(navigation.replace).not.toHaveBeenCalledWith(
-    `/learning/explanation/${detail.id}?run=${pending.id}`,
-  );
+  expect(readKnowledgeRequest(sessionStorage, "synthetic-owner", detail.id)).toBe(newerKey);
 });
